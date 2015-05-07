@@ -8,6 +8,12 @@ Stuff mostly done using : http://linux-sunxi.org/Building_on_Debian
 
 Usage:
 
+If you need to create armhf kernel packages using cross-compiling, please use
+the following patch :
+
+Here is a sample make-kpkg that can be used for such build:
+$ make-kpkg --arch armhf --arch-in-name --revision 1 --append-to-version sunxi --cross_compile arm-linux-gnueabihf- --rootcmd fakeroot --zimage kernel_headers kernel_image kernel_source kernel_doc
+
 --------------
 
 Contributors:
