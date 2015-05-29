@@ -1,6 +1,6 @@
 *~
 *.sw?
-chroot-armhf
+/chroot-armhf
 *.img
 *.img.gz
 *.img.bz2
