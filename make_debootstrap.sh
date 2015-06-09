@@ -37,7 +37,7 @@ do_debootstrap()
 {
     set -x
 
-    sudo /usr/sbin/debootstrap --foreign --arch armhf wheezy . "$DEBOOTSTRAP_MIRROR"
+    sudo http_proxy="$DEBOOTSTRAP_HTTP_PROXY" /usr/sbin/debootstrap --foreign --arch armhf wheezy . "$DEBOOTSTRAP_MIRROR"
 # --variant=minbase
 
 
@@ -106,6 +106,7 @@ configure_system()
 update_system_and_custom_packages()
 {
     set -x
+    apt_proxy="etc/apt/apt.conf.d/99proxy"
 
 # tmp stuff
     sudo cp /etc/resolv.conf etc
@@ -113,6 +114,10 @@ update_system_and_custom_packages()
 # updating root_fs
     sudo bash -c "echo deb http://http.debian.net/debian/ wheezy main contrib non-free > etc/apt/sources.list"
     sudo bash -c "echo deb http://security.debian.org/ wheezy/updates main contrib non-free >> etc/apt/sources.list"
+    sudo mkdir -p etc/apt/apt.conf.d
+    if [ -f "/$apt_proxy" ]; then
+        sudo bash -c "cp /$apt_proxy $apt_proxy"
+    fi
     sudo chroot . apt-get update
     sudo chroot . apt-get upgrade --yes
 
@@ -124,6 +129,7 @@ update_system_and_custom_packages()
     sudo chroot . apt-get clean
     sudo chroot . apt-get autoclean
     sudo rm etc/resolv.conf
+    sudo rm -f "$apt_proxy"
 
     set +x
 }
