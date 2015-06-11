@@ -3,4 +3,6 @@
 /chroot-armhf
 /boot.cmd
 /images
+/makefile.vars
+/config.user
 

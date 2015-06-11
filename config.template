@@ -15,7 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with CBoard.  If not, see <http://www.gnu.org/licenses/>.
 
-# Makefile variable
+
+# =============================================
+# This file is entirely written is POSIX SHELL.
+# =============================================
+
 GCC_PREFIX=arm-linux-gnueabihf-
 JOBS=4
 
@@ -34,7 +38,7 @@ QEMU_MEMORY_SIZE=512M
 DEBOOTSTRAP_MIRROR=
 
 # If a proxy is needed to make the debootstrap, set it here
-DEBOOTSTRAP_HTTP_PROXY=$http_proxy
+DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
 
 # user defined variable for the target system
 HOSTNAME=cubie
