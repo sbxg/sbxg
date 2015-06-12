@@ -27,7 +27,7 @@ set -e
 #############
 
 # Including users defined variables
-. ./makefile.vars
+. ./config.user
 
 ############
 # FUNCTION #

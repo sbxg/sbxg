@@ -32,7 +32,7 @@ TMP_VAL=$$
 DD_TIMEOUT=5
 
 # Including users defined variables
-. ./makefile.vars
+. ./config.users
 
 # user defined values
 IMG_SIZE=2048
