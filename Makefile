@@ -176,7 +176,7 @@ kernel_distclean: $(DEPS)
 
 # bootloader u-boot compile
 
-u-boot: $(DEPS)$(UBOOT_DIR)/u-boot-sunxi-with-spl.bin
+u-boot: $(DEPS) $(UBOOT_DIR)/u-boot-sunxi-with-spl.bin
 
 $(UBOOT_DIR)/u-boot-sunxi-with-spl.bin:
 	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) $(CUBIEBOARD_NAME)_config
