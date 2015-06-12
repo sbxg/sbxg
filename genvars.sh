@@ -21,10 +21,10 @@ fi
 
 # Get the *names *of all the variables in the config
 # From config.user:
-#  - exclude all comments
+#  - remove all comments
 #  - keep only variables
 #  - format them nicely (no duplicates, no empty lines)
-LIST="$(grep -v "\#" "$CONFIG_USER" | grep -o  "[a-zA-Z0-9_]*=" | cut -d '=' -f 1 | sort | uniq | tr  "\n" " ")"
+LIST="$(sed -e 's/\#.*$//g' "$CONFIG_USER" | grep -o  "[a-zA-Z0-9_]*=" | cut -d '=' -f 1 | sort | uniq | tr  "\n" " ")"
 
 
 # Create an empty file
