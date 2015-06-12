@@ -29,7 +29,6 @@ set -e
 # internal values
 BUILD_SERIAL=`date "+%Y%m%d%H%M"`
 TMP_VAL=$$
-DD_TIMEOUT=5
 
 # Including users defined variables
 . ./config.users
@@ -56,13 +55,8 @@ build_image()
 # please note that potential error (disk full) is trapped (set -e)
 
     if [ ! -e "$IMG_NAME" ]; then
-    # Start dd in background to be able to print its progress waiting it to finish
-        dd if=/dev/zero of="$IMG_NAME" bs=1M count="$IMG_SIZE" iflag=fullblock &
-    # While dd is still running, show its progress
-        while ps -p $! > /dev/null ; do
-	        kill -USR1 "$!"
-	        sleep "$DD_TIMEOUT"
-        done
+        echo "Executing dd... might take a while..."
+        dd if=/dev/zero of="$IMG_NAME" bs=1M count="$IMG_SIZE" iflag=fullblock
     fi
 
 # second step, create  3 partitions in  this image, the first  one for
