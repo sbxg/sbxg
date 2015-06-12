@@ -191,7 +191,7 @@ u-boot_distclean: $(DEPS)
 # Debootstrap
 
 boot.cmd: $(DEPS) boot.cmd.in
-	$(SED) 's/@DTB@/$(DTB)/g' $< > $@
+	$(SED) 's/@DTB@/$(DTB)/g' boot.cmd.in > $@
 
 debootstrap: $(DEPS) boot.cmd
 	./make_debootstrap.sh all
