@@ -31,7 +31,7 @@ BUILD_SERIAL=`date "+%Y%m%d%H%M"`
 TMP_VAL=$$
 
 # Including users defined variables
-. ./config.users
+. ./config.user
 
 # user defined values
 IMG_SIZE=2048
