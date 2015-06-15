@@ -37,6 +37,7 @@ EOF
 
 # Write in the makefile.vars the variables in Make's syntax
 for l in $LIST; do
-   echo "$l := $(eval echo -n $"$l")" >> "$CONFIG_MAKEFILE"
+   exp="$(eval echo \$$l)"
+   echo "$l := $(eval echo -n $exp)" >> "$CONFIG_MAKEFILE"
 done
 
