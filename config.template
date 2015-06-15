@@ -65,7 +65,7 @@ DTB=sun7i-a20-cubietruck.dtb
 DEB_ARCH=armhf
 
 # Possible values: wheezy | jessie | sid | oldstable | stable | unstable  | ...
-DEB_SUITE=wheezy
+DEB_SUITE=jessie
 
 CHROOT_DIR=chroot-${DEB_ARCH}
 
