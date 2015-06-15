@@ -31,7 +31,7 @@ export
 # therefore everything can work as expected :)
 -include makefile.vars
 
-.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity kernel_menuconfig
+.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity kernel_menuconfig config
 .PHONY: kernel_gconfig kernel_defconfig kernel_compile with_grsecurity with_lesser_grsecurity
 .PHONY: u-boot debootstrap prepare_sdcard check kernel_clean kernel_distclean clean distclean
 
@@ -39,6 +39,8 @@ help: $(DEPS)
 	@echo "What you can do:"
 	@echo ""
 	@echo "all:			Will do all the job for you."
+	@echo ""
+	@echo "config:                  Generate a user config from the template"
 	@echo ""
 	@echo "  -- git submodule management --"
 	@echo "initsm:			git submodule init"
@@ -98,6 +100,8 @@ config.user: config.template
 
 makefile.vars: config.user
 	./genvars.sh
+
+config: config.user
 
 # repositories update
 
