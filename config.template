@@ -42,7 +42,7 @@ DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
 
 # user defined variable for the target system
 HOSTNAME=cubie
-PACKAGES="locales ntp python-apt vlan vim emacs"
+PACKAGES="locales ntp python-apt vlan vim"
 MACADDR=001122334455
 ROOT_PASSWORD=root
 # compress the output image
