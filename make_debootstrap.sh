@@ -119,7 +119,6 @@ update_system_and_custom_packages()
         sudo bash -c "cp /$apt_proxy $apt_proxy"
     fi
     sudo chroot . apt-get update
-    sudo chroot . apt-get upgrade --yes
 
     # Install brcmfmac firmware for Cubietruck (wifi/BT)
     if [ x"$CUBIEBOARD_NAME" = "xCubietruck" ]; then
