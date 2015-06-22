@@ -69,3 +69,10 @@ DEB_SUITE=jessie
 
 CHROOT_DIR=chroot-${DEB_ARCH}
 
+LINUX_DEBIAN_PACKAGES="
+kernel_image
+kernel_headers
+kernel_doc
+kernel_source
+"
+

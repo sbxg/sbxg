@@ -31,9 +31,10 @@ export
 # therefore everything can work as expected :)
 -include makefile.vars
 
-.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity kernel_menuconfig config
-.PHONY: kernel_gconfig kernel_defconfig kernel_compile with_grsecurity with_lesser_grsecurity
-.PHONY: u-boot debootstrap prepare_sdcard check kernel_clean kernel_distclean clean distclean
+.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity 	    \
+   kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
+   with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
+   check kernel_clean kernel_distclean clean distclean debian
 
 help: $(DEPS)
 	@echo "What you can do:"
@@ -176,6 +177,23 @@ kernel_clean: $(DEPS)
 
 kernel_distclean: $(DEPS)
 	cd $(LINUX_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) mrproper
+
+# make-kpkg
+
+debian: $(DEPS)
+	cd $(LINUX_DIR) && \
+	ARCH=arm \
+	CC=$(GCC_PREFIX)gcc \
+	DEB_HOST_ARCH_CPU=$(DEB_ARCH) \
+        make-kpkg --rootcmd fakeroot \
+	          --revision 1 \
+		  --initrd \
+		  --arch-in-name \
+		  --jobs $(JOBS) \
+		  --arch $(DEB_ARCH) \
+		  --cross-compile $(GCC_PREFIX) \
+	       $(LINUX_DEBIAN_PACKAGES)
+
 
 
 # bootloader u-boot compile
