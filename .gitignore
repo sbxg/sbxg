@@ -6,3 +6,6 @@
 /makefile.vars
 /config.user
 
+# Kernel's Debian packages
+/linux-*.deb
+
