@@ -31,10 +31,10 @@ export
 # therefore everything can work as expected :)
 -include makefile.vars
 
-.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity 	    \
+.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity	    \
    kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
    with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
-   check kernel_clean kernel_distclean clean distclean debian
+   check kernel_clean kernel_distclean clean distclean debian kernel_config
 
 help: $(DEPS)
 	@echo "What you can do:"
@@ -52,6 +52,7 @@ help: $(DEPS)
 	@echo "prepare_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX)"
 	@echo ""
 	@echo "  -- kernel configuration --"
+	@echo "kernel_config:		copies the kernel configuration file specified in config.user as the effective .config"
 	@echo "kernel_menuconfig:	make menuconfig in LINUX_DIR"
 	@echo "kernel_gconfig:		make gconfig in LINUX_DIR"
 	@echo ""
@@ -126,6 +127,9 @@ prepare_grsecurity: $(DEPS)
 	cp conf/config_cubieboard_3.2.42_grsec linux-stable/.config
 
 # Kernel compile
+
+kernel_config: $(DEPS)
+	cp "conf/$(KERNEL_CONFIG)" $(LINUX_DIR)/.config
 
 kernel_defconfig: $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it

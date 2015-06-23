@@ -76,3 +76,7 @@ kernel_doc
 kernel_source
 "
 
+# The name of the configuration file of the linux kernel, at they are
+# listed in the conf/ directory
+KERNEL_CONFIG="config_cubieboard3_4.0.5_kvm_lxc_selinux_apparmor_headless"
+
