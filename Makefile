@@ -18,6 +18,7 @@
 # along with CBoard.  If not, see <http://www.gnu.org/licenses/>.
 
 SED := sed
+SCRIPTS_DIR := scripts
 DEPS := makefile.vars Makefile
 
 export
@@ -31,7 +32,7 @@ export
 # therefore everything can work as expected :)
 -include makefile.vars
 
-.PHONY: help all initsm updatesm patch_grsecurity prepare_grsecurity	    \
+.PHONY: help all initsm updatesm kernel_patch kernel_unpatch \
    kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
    with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
    check kernel_clean kernel_distclean clean distclean debian kernel_config
@@ -47,10 +48,6 @@ help: $(DEPS)
 	@echo "initsm:			git submodule init"
 	@echo "updatesm:		git submodule update"
 	@echo ""
-	@echo "  -- grsecurity patch management --"
-	@echo "patch_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX)"
-	@echo "prepare_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX)"
-	@echo ""
 	@echo "  -- kernel configuration --"
 	@echo "kernel_config:		copies the kernel configuration file specified in config.user as the effective .config"
 	@echo "kernel_defconfig:	Write the default kernel configuration for cubieboard or cubieboard2"
@@ -58,6 +55,8 @@ help: $(DEPS)
 	@echo "kernel_gconfig:		make gconfig in LINUX_DIR"
 	@echo ""
 	@echo "  -- kernel compilation --"
+	@echo "kernel_patch		applies patches [$(KERNEL_PATCHES)] to the kernel"
+	@echo "kernel_unpatch		removes patches [$(KERNEL_PATCHES)] that were applied to the kernel"
 	@echo "kernel_compile:		make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo "with_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo "with_lesser_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) DISABLE_PAX_PLUGINS=y uImage modules"
@@ -97,14 +96,14 @@ help: $(DEPS)
 	@echo "	You can and MUST configure these variables from the file : makefile.vars"
 	@echo ""
 
-all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
+all: $(DEPS) u-boot kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(CUBIEBOARD_NAME) :)"
 
 config.user: config.template
-	cp -u $< $@
+	cp $< $@
 
 makefile.vars: config.user
-	./genvars.sh
+	$(SCRIPTS_DIR)/genvars.sh
 
 config: config.user
 
@@ -116,15 +115,6 @@ initsm:
 
 updatesm:
 	git submodule update
-
-# grsecurity patch management
-
-patch_grsecurity: $(DEPS)
-	cd $(LINUX_DIR) && git checkout -b 3.2.42
-	cd $(LINUX_DIR) && patch -p1 < ../grsecurity/grsecurity-2.9.1-3.2.42-201304061343.patch
-
-prepare_grsecurity: $(DEPS)
-	cp conf/config_cubieboard_3.2.42_grsec linux-stable/.config
 
 # Kernel compile
 
@@ -152,6 +142,16 @@ kernel_menuconfig: $(DEPS)
 kernel_gconfig: $(DEPS)
 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) gconfig
 
+kernel_patch: $(DEPS)
+	for p in $(KERNEL_PATCHES); do \
+	   ( _PWD=$(PWD) ; cd $(LINUX_DIR) && patch -p1 < "$$_PWD/$$p" ) \
+	done ;
+
+kernel_unpatch: $(DEPS)
+	for p in $(KERNEL_PATCHES); do \
+	   ( _PWD=$(PWD) ; cd $(LINUX_DIR) && patch -p1 -R < "$$_PWD/$$p" ) \
+	done ;
+
 kernel_compile: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb
 
 $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
@@ -163,7 +163,8 @@ $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 	ARCH=arm \
 	CROSS_COMPILE=$(GCC_PREFIX) \
 	-j $(JOBS) \
-	uImage modules LOADADDR=0x40008000
+	DISABLE_PAX_PLUGINS=y \
+	uImage modules LOADADDR=$(LOADADDR)
 
 $(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb: $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts $(LINUX_DIR)/.config
 	cd $(LINUX_DIR) && make \
@@ -171,7 +172,8 @@ $(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb: $(DEPS) $(LINUX_DIR)/a
 	ARCH=arm \
 	CROSS_COMPILE=$(GCC_PREFIX) \
 	-j $(JOBS) \
-	dtbs LOADADDR=0x40008000
+	DISABLE_PAX_PLUGINS=y \
+	dtbs LOADADDR=$(LOADADDR)
 
 # with_grsecurity:
 # 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) uImage modules
@@ -188,19 +190,7 @@ kernel_distclean: $(DEPS)
 # make-kpkg
 
 debian: $(DEPS)
-	cd $(LINUX_DIR) && \
-	ARCH=arm \
-	CC=$(GCC_PREFIX)gcc \
-	DEB_HOST_ARCH_CPU=$(DEB_ARCH) \
-        make-kpkg --rootcmd fakeroot \
-	          --revision 1 \
-		  --initrd \
-		  --arch-in-name \
-		  --jobs $(JOBS) \
-		  --arch $(DEB_ARCH) \
-		  --cross-compile $(GCC_PREFIX) \
-	       $(LINUX_DEBIAN_PACKAGES)
-
+	$(SCRIPTS_DIR)/make_debian_packages.sh $(LINUX_DEBIAN_PACKAGES)
 
 
 # bootloader u-boot compile
@@ -223,10 +213,10 @@ boot.cmd: $(DEPS) boot.cmd.in
 	$(SED) 's/@DTB@/$(DTB)/g' boot.cmd.in > $@
 
 debootstrap: $(DEPS) boot.cmd
-	./make_debootstrap.sh all
+	$(SCRIPTS_DIR)/make_debootstrap.sh all
 
 prepare_sdcard: $(DEPS)
-	./prepare_sdcard.sh all
+	$(SCRIPTS_DIR)/prepare_sdcard.sh all
 
 # Check
 

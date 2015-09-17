@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+UIMAGE="/boot/uImage"
+KERNEL_VERSION="$1"
+MY_UIMAGE="$UIMAGE-$KERNEL_VERSION"
+
+# Remove the existing link (if none exist, won't do anything)
+rm -f "$UIMAGE"
+
+# Link the new uImage to /boot/uImage
+ln -vs "$MY_UIMAGE" "$UIMAGE"
+

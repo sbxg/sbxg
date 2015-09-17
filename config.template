@@ -26,6 +26,7 @@ JOBS=4
 # path to needed directories
 LINUX_DIR=linux-stable
 UBOOT_DIR=u-boot
+RESOURCES_DIR=resources
 
 # qemu is needed to check images
 QEMU_SYSTEM_ARM=qemu-system-arm
@@ -35,7 +36,7 @@ QEMU_MEMORY_SIZE=512M
 # possible values are : an url or commenting out the variable
 # examples:
 #    DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
-DEBOOTSTRAP_MIRROR=
+DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
 
 # If a proxy is needed to make the debootstrap, set it here
 DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
@@ -56,10 +57,14 @@ IMG_HASH_SHA1=yes
 IMG_HASH_SHA256=yes
 
 # Possible values : Cubieboard | Cubieboard2 | Cubietruck
-CUBIEBOARD_NAME=Cubietruck
+CUBIEBOARD_NAME=Cubieboard2
 
 # Select the DTB to be used
-DTB=sun7i-a20-cubietruck.dtb
+DTB=sun7i-a20-cubieboard2.dtb
+
+# LOADADDR used by u-boot to load the kernel from the uImage
+# Don't touch this unless you really know what you are doing!!
+LOADADDR=0x40008000
 
 # Possible values: armel | armhf
 DEB_ARCH=armhf
@@ -76,7 +81,18 @@ kernel_doc
 kernel_source
 "
 
+# Revision of the debian package to be generated
+DEBIAN_PACKAGE_REVISION=1
+
 # The name of the configuration file of the linux kernel, at they are
 # listed in the conf/ directory
 KERNEL_CONFIG="config_cubieboard3_4.0.5_kvm_lxc_selinux_apparmor_headless"
 
+# File which contains the Grsecurity patch
+# Un-comment the line below to enable grsecurity
+GRSECURITY="grsecurity/grsecurity-3.1-4.0.5-201506171322.patch"
+
+# List of patches to apply to the kernel
+KERNEL_PATCHES="
+$GRSECURITY
+"

@@ -95,8 +95,8 @@ configure_system()
 # sed -i 's/^\([3-6]:.* tty[3-6]\)/#\1/' /etc/inittab
 
 # copy basic templates of configuration files
-    sudo cp ../fstab.base etc/fstab
-    sudo cp ../interfaces.base etc/network/interfaces
+    sudo cp "../$RESOURCES_DIR/fstab.base" etc/fstab
+    sudo cp "../$RESOURCES_DIR/interfaces.base" etc/network/interfaces
 
     set +x
 }
@@ -127,7 +127,7 @@ update_system_and_custom_packages()
             echo "*** Failed to install firmware" 1>&2
             exit 1
         else
-            sudo cp ../resources/brcmfmac43362-sdio.txt lib/firmware/brcm/
+            sudo cp "../$RESOURCES_DIR/brcmfmac43362-sdio.txt" lib/firmware/brcm/
         fi
     fi
 
@@ -149,10 +149,21 @@ update_system_and_custom_packages()
 install_kernel()
 {
     set -x
+
+    # Determine the debian package to be used
+    KERNEL_IMAGE_DEB="$(head -n 1 "../$LINUX_DIR/debian/files" | cut -f 1 -d ' ')"
+    POSTINSTALL_HOOK="etc/kernel/postinst.d/zz-uimage-select"
+
 # copy linux image to the root_fs
-    sudo cp ../$LINUX_DIR/arch/arm/boot/uImage boot
+    sudo cp "../$KERNEL_IMAGE_DEB" root
+    sudo cp "../$RESOURCES_DIR/zz-uimage-select" "$POSTINSTALL_HOOK"
+    sudo chmod +x "$POSTINSTALL_HOOK"
+
+    sudo chroot . dpkg -i "root/$KERNEL_IMAGE_DEB"
+    sudo rm -f "root/$KERNEL_IMAGE_DEB" # don't need the debian package anymore
+
     sudo cp ../$LINUX_DIR/arch/arm/boot/dts/${DTB} boot
-    sudo make -C ../$LINUX_DIR INSTALL_MOD_PATH=`pwd` ARCH=arm CROSS_COMPILE="$GCC_PREFIX" modules_install
+    sudo make -C ../$LINUX_DIR INSTALL_MOD_PATH=`pwd` ARCH=arm modules_install
 
 # add some kernel boot args
     mkimage -C none -A arm -T script -d ../boot.cmd ../boot.scr
