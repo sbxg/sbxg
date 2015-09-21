@@ -1,10 +1,11 @@
 *~
 *.sw?
-/chroot-armhf
+/chroot-*/
 /boot.cmd
 /images/
 /makefile.vars
 /config.user
+/config.manifest
 
 # Kernel's Debian packages
 /linux-*.deb
