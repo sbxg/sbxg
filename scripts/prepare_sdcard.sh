@@ -132,8 +132,8 @@ copyboot2image()
 			    sudo dd \
 				    if="$UBOOT_DIR"/u-boot-sunxi-with-spl.bin \
 				    of="$IMG_NAME" \
-				    bs=1024 \
-				    seek=8 \
+				    bs="$DD_BS" \
+				    seek="$DD_SEEK" \
 				    conv=nocreat,notrunc
 	        else
 			    echo "You need to build u-boot first"
