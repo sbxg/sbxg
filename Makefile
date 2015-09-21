@@ -91,13 +91,13 @@ help: $(DEPS)
 	@echo "	You can and MUST configure these variables from the file : makefile.vars"
 	@echo ""
 
-all: $(DEPS) u-boot kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
+all: $(DEPS) u-boot kernel_config kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(BOARD_NAME) :)"
 
-config.user: config.template
+config.user: config.template config.manifest
 	cp $< $@
 
-makefile.vars: config.user
+makefile.vars: config.user config.manifest
 	$(SCRIPTS_DIR)/genvars.sh
 
 config: config.user
@@ -142,7 +142,7 @@ $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 	DISABLE_PAX_PLUGINS=y \
 	uImage modules LOADADDR=$(LOADADDR)
 
-$(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb: $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
+$(LINUX_DIR)/arch/arm/boot/dts/$(DTB): $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
 	cd $(LINUX_DIR) && make \
 	EXTRAVERSION=-`git rev-parse --short HEAD` \
 	ARCH=arm \
