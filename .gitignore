@@ -2,10 +2,16 @@
 *.sw?
 /chroot-armhf
 /boot.cmd
-/images
+/images/
 /makefile.vars
 /config.user
 
 # Kernel's Debian packages
 /linux-*.deb
 
+# Repo
+/.repo/
+/u-boot/
+/kernel-configs/
+/linux-stable/
+/boards/
