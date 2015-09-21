@@ -32,10 +32,11 @@ export
 # therefore everything can work as expected :)
 -include makefile.vars
 
-.PHONY: help all initsm updatesm kernel_patch kernel_unpatch \
+.PHONY: help all \
    kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
    with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
-   check kernel_clean kernel_distclean clean distclean debian kernel_config
+   check kernel_clean kernel_distclean clean distclean debian kernel_config \
+   repo_init repo_sync
 
 help: $(DEPS)
 	@echo "What you can do:"
@@ -44,10 +45,6 @@ help: $(DEPS)
 	@echo ""
 	@echo "config:                  Generate a user config from the template"
 	@echo ""
-	@echo "  -- git submodule management --"
-	@echo "initsm:			git submodule init"
-	@echo "updatesm:		git submodule update"
-	@echo ""
 	@echo "  -- kernel configuration --"
 	@echo "kernel_config:		copies the kernel configuration file specified in config.user as the effective .config"
 	@echo "kernel_defconfig:	Write the default kernel configuration for cubieboard or cubieboard2"
@@ -55,8 +52,6 @@ help: $(DEPS)
 	@echo "kernel_gconfig:		make gconfig in LINUX_DIR"
 	@echo ""
 	@echo "  -- kernel compilation --"
-	@echo "kernel_patch		applies patches [$(KERNEL_PATCHES)] to the kernel"
-	@echo "kernel_unpatch		removes patches [$(KERNEL_PATCHES)] that were applied to the kernel"
 	@echo "kernel_compile:		make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo "with_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo "with_lesser_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) DISABLE_PAX_PLUGINS=y uImage modules"
@@ -65,7 +60,7 @@ help: $(DEPS)
 	@echo "debian			generated debian packages of the kernel with make-kpkg"
 	@echo ""
 	@echo "  -- u-boot compilation --"
-	@echo "u-boot:			make CROSS_COMPILE=$(GCC_PREFIX) $(CUBIEBOARD_NAME)_config"
+	@echo "u-boot:			make CROSS_COMPILE=$(GCC_PREFIX) $(BOARD_NAME)_config"
 	@echo ""
 	@echo "  -- root_fs & sdcard partitionning --"
 	@echo "debootstrap:		create the root_fs (need testing)"
@@ -89,7 +84,7 @@ help: $(DEPS)
 	@echo "	JOBS			=	$(JOBS)"
 	@echo "	HOSTNAME		=	$(HOSTNAME)"
 	@echo "	PACKAGES		=	$(PACKAGES)"
-	@echo "	CUBIEBOARD_NAME		=	$(CUBIEBOARD_NAME)"
+	@echo "	BOARD_NAME		=	$(BOARD_NAME)"
 	@echo "	FORMAT_SDCARD		=	$(FORMAT_SDCARD)"
 	@echo "	SDCARD_DEVICE		=	$(SDCARD_DEVICE)"
 	@echo ""
@@ -97,7 +92,7 @@ help: $(DEPS)
 	@echo ""
 
 all: $(DEPS) u-boot kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
-	@echo "Done. You can now use your $(CUBIEBOARD_NAME) :)"
+	@echo "Done. You can now use your $(BOARD_NAME) :)"
 
 config.user: config.template
 	cp $< $@
@@ -107,29 +102,20 @@ makefile.vars: config.user
 
 config: config.user
 
-# repositories update
-
-
-initsm:
-	git submodule init
-
-updatesm:
-	git submodule update
-
 # Kernel compile
 
 kernel_config: $(DEPS)
-	cp "conf/$(KERNEL_CONFIG)" $(LINUX_DIR)/.config
+	cp "$(KERNEL_CONFIG)" $(LINUX_DIR)/.config
 
 kernel_defconfig: $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
-ifeq ($(CUBIEBOARD_NAME), Cubieboard)
+ifeq ($(BOARD_NAME), Cubieboard)
 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) sun4i_defconfig
 endif
-ifeq ($(CUBIEBOARD_NAME), Cubieboard2)
+ifeq ($(BOARD_NAME), Cubieboard2)
 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) sun7i_defconfig
 endif
-ifeq ($(CUBIEBOARD_NAME), Cubietruck)
+ifeq ($(BOARD_NAME), Cubietruck)
 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) sun7i_defconfig
 endif
 else
@@ -142,17 +128,7 @@ kernel_menuconfig: $(DEPS)
 kernel_gconfig: $(DEPS)
 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) gconfig
 
-kernel_patch: $(DEPS)
-	for p in $(KERNEL_PATCHES); do \
-	   ( _PWD=$(PWD) ; cd $(LINUX_DIR) && patch -p1 < "$$_PWD/$$p" ) \
-	done ;
-
-kernel_unpatch: $(DEPS)
-	for p in $(KERNEL_PATCHES); do \
-	   ( _PWD=$(PWD) ; cd $(LINUX_DIR) && patch -p1 -R < "$$_PWD/$$p" ) \
-	done ;
-
-kernel_compile: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb
+kernel_compile: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/$(DTB)
 
 $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 # extract current SHA1 from git linux kernel version source
@@ -166,7 +142,7 @@ $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 	DISABLE_PAX_PLUGINS=y \
 	uImage modules LOADADDR=$(LOADADDR)
 
-$(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb: $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dts $(LINUX_DIR)/.config
+$(LINUX_DIR)/arch/arm/boot/dts/sun7i-a20-cubieboard2.dtb: $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
 	cd $(LINUX_DIR) && make \
 	EXTRAVERSION=-`git rev-parse --short HEAD` \
 	ARCH=arm \
@@ -198,7 +174,7 @@ debian: $(DEPS)
 u-boot: $(DEPS) $(UBOOT_DIR)/u-boot-sunxi-with-spl.bin
 
 $(UBOOT_DIR)/u-boot-sunxi-with-spl.bin:
-	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) $(CUBIEBOARD_NAME)_config
+	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) $(BOARD_NAME)_config
 	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS)
 
 u-boot_clean: $(DEPS)
@@ -232,4 +208,15 @@ clean: $(DEPS) u-boot_clean kernel_clean
 distclean: $(DEPS) u-boot_distclean kernel_distclean
 	sudo $(RM) -r $(CHROOT_DIR)
 	$(RM) makefile.vars
+
+repo_init:
+ifeq ($(BOARD),)
+	@echo "*** You need to provide the board via 'make BOARD=xxx repo_init'"
+else
+	repo init -u git@gitlab.users.showroom.nss.thales:systembuilder-ng/manifests.git -m "$(BOARD)"
+	$(SCRIPTS_DIR)/dissect-board-manifest.py "$(BOARD)"
+endif
+
+repo_sync:
+	repo sync
 

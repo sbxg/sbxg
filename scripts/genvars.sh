@@ -5,6 +5,7 @@ set -e
 CONFIG_MAKEFILE=./makefile.vars
 CONFIG_USER=./config.user
 CONFIG_TEMPLATE=./config.template
+CONFIG_MANIFEST=./config.manifest
 
 # If config.user is not created, create one from the template
 if [ ! -f "$CONFIG_USER" ]; then
@@ -24,7 +25,8 @@ fi
 #  - remove all comments
 #  - keep only variables
 #  - format them nicely (no duplicates, no empty lines)
-LIST="$(sed -e 's/\#.*$//g' "$CONFIG_USER" | grep -o  "[a-zA-Z0-9_]*=" | cut -d '=' -f 1 | sort | uniq | tr  "\n" " ")"
+LIST="$(sed -e 's/\#.*$//g' "$CONFIG_USER" "$CONFIG_MANIFEST" "$BOARD_CONFIG" \
+   | grep -o  "[a-zA-Z0-9_]*=" | cut -d '=' -f 1 | sort | uniq | tr  "\n" " ")"
 
 
 # Create an empty file
