@@ -3,6 +3,8 @@
 # Copyright (c) 2013-2014, Sylvain Leroy <sylvain@unmondelibre.fr>
 #                    2014, Jean-Marc Lacroix <jeanmarc.lacroix@free.fr>
 #                    2014, Philippe Thierry <phil@reseau-libre.net>
+#                    2015, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#                    2015, Louis Syoën <louis.syoen@openmailbox.org>
 
 # This file is part of CBoard.
 

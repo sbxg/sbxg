@@ -1,4 +1,7 @@
 #!/usr/bin/env python2.7
+#
+# Copyright (c) 2015, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#
 
 
 import sys

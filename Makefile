@@ -1,6 +1,7 @@
 # Copyright (c) 2013-2014, Sylvain Leroy <sylvain@unmondelibre.fr>
 #                    2014, Jean-Marc Lacroix <jeanmarc.lacroix@free.fr>
 #                    2015, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#                    2015, Damien Pradier <damien.pradier@epita.fr>
 
 # This file is part of CBoard.
 

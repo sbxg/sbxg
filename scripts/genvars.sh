@@ -1,4 +1,6 @@
 #!/bin/sh
+#
+# Copyright (c)      2015, Jean Guyomarc'h <jean.guyomarch@gmail.com>
 
 set -e
 
