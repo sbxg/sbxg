@@ -123,7 +123,7 @@ update_system_and_custom_packages()
     sudo chroot . apt-get update
 
     # Install brcmfmac firmware for Cubietruck (wifi/BT)
-    if [ x"$CUBIEBOARD_NAME" = "xCubietruck" ]; then
+    if [ x"$BOARD_NAME" = "xCubietruck" ]; then
         sudo chroot . apt-get install --yes firmware-brcm80211
         if [ ! -d lib/firmware/brcm ]; then
             echo "*** Failed to install firmware" 1>&2
@@ -186,9 +186,9 @@ board_script()
 {
     set -x
 
-    # grab template fex file for cubieboard
+    # grab template fex file for board
 
-    # case "$CUBIEBOARD_NAME" in
+    # case "$BOARD_NAME" in
 	# Cubieboard)
 	#     cp ../sunxi-boards/sys_config/a10/cubieboard.fex ../script.fex
 	#     ;;
@@ -196,7 +196,7 @@ board_script()
 	#     cp ../sunxi-boards/sys_config/a20/cubieboard2.fex ../script.fex
 	#     ;;
 	# *)
-	#     echo "Unknown Cubieboard version. Leaving..."
+	#     echo "Unknown board. Leaving..."
 	#     exit 1
 	#     ;;
     # esac
