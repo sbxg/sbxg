@@ -37,46 +37,46 @@ export
    kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
    with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
    check kernel_clean kernel_distclean clean distclean debian kernel_config \
-   repo_init repo_sync
+   init sync
 
 help: $(DEPS)
 	@echo "What you can do:"
-	@echo ""
+	@echo
 	@echo "all:			Will do all the job for you."
-	@echo ""
+	@echo
 	@echo "config:                  Generate a user config from the template"
-	@echo ""
+	@echo
 	@echo "  -- kernel configuration --"
 	@echo "kernel_config:		copies the kernel configuration file specified in config.user as the effective .config"
 	@echo "kernel_defconfig:	Write the default kernel configuration for cubieboard or cubieboard2"
 	@echo "kernel_menuconfig:	make menuconfig in LINUX_DIR"
 	@echo "kernel_gconfig:		make gconfig in LINUX_DIR"
-	@echo ""
+	@echo
 	@echo "  -- kernel compilation --"
 	@echo "kernel_compile:		make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo "with_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo "with_lesser_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) DISABLE_PAX_PLUGINS=y uImage modules"
-	@echo ""
+	@echo
 	@echo "  -- make-kpkg --"
 	@echo "debian			generated debian packages of the kernel with make-kpkg"
-	@echo ""
+	@echo
 	@echo "  -- u-boot compilation --"
 	@echo "u-boot:			make CROSS_COMPILE=$(GCC_PREFIX) $(BOARD_NAME)_config"
-	@echo ""
+	@echo
 	@echo "  -- root_fs & sdcard partitionning --"
 	@echo "debootstrap:		create the root_fs (need testing)"
 	@echo "prepare_sdcard:		install u-boot and the root_fs to the sdcard"
-	@echo ""
+	@echo
 	@echo "  -- checking targets --"
 	@echo "check:			Use qemu to check the generated image"
 	@echo "			$(QEMU_SYSTEM_ARM) -machine cubieboard -m $(QEMU_MEMORY_SIZE) -nographic -serial stdio -kernel $(LINUX_DIR)/arch/arm/boot/uImage -append \"root=/dev/mmcblk0p1 rootwait panic=10\""
-	@echo ""
+	@echo
 	@echo "  -- cleaning targets --"
 	@echo "kernel_clean:		"
 	@echo "kernel_distclean:	"
 	@echo "clean:			clean the compiled files (not done yet)"
 	@echo "distclean:		clean the compilet files and the root_fs"
-	@echo ""
+	@echo
 	@echo "  -- Environnement variables --"
 	@echo "	LINUX_DIR		=	$(LINUX_DIR)"
 	@echo "	UBOOT_DIR		=	$(UBOOT_DIR)"
@@ -88,11 +88,11 @@ help: $(DEPS)
 	@echo "	BOARD_NAME		=	$(BOARD_NAME)"
 	@echo "	FORMAT_SDCARD		=	$(FORMAT_SDCARD)"
 	@echo "	SDCARD_DEVICE		=	$(SDCARD_DEVICE)"
-	@echo ""
+	@echo
 	@echo "	You can and MUST configure these variables from the file : makefile.vars"
-	@echo ""
+	@echo
 
-all: $(DEPS) u-boot kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
+all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(BOARD_NAME) :)"
 
 config.user: config.template
@@ -196,15 +196,16 @@ check: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage
 
 clean: $(DEPS) u-boot_clean kernel_clean
 	$(RM) makefile.vars
+	$(RM) config.user
+	$(RM) .board
 
 
-distclean: $(DEPS) u-boot_distclean kernel_distclean
+distclean: $(DEPS) clean u-boot_distclean kernel_distclean
 	sudo $(RM) -r $(CHROOT_DIR)
-	$(RM) makefile.vars
 
 init:
 ifeq ($(BOARD),)
-	@echo "*** You need to provide the board via 'make BOARD=xxx repo_init'"
+	@echo "*** You need to provide the board via 'make BOARD=xxx init'"
 else
 	# Keep track of the board name, to be able to source the config later
 	@echo "$(BOARD)" > .board

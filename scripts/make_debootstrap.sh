@@ -152,20 +152,10 @@ install_kernel()
 {
     set -x
 
-    # Determine the debian package to be used
-    KERNEL_IMAGE_DEB="$(head -n 1 "../$LINUX_DIR/debian/files" | cut -f 1 -d ' ')"
-    POSTINSTALL_HOOK="etc/kernel/postinst.d/zz-uimage-select"
-
-# copy linux image to the root_fs
-    sudo cp "../$KERNEL_IMAGE_DEB" root
-    sudo cp "../$RESOURCES_DIR/zz-uimage-select" "$POSTINSTALL_HOOK"
-    sudo chmod +x "$POSTINSTALL_HOOK"
-
-    sudo chroot . dpkg -i "root/$KERNEL_IMAGE_DEB"
-    sudo rm -f "root/$KERNEL_IMAGE_DEB" # don't need the debian package anymore
-
-    sudo cp ../$LINUX_DIR/arch/arm/boot/dts/${DTB} boot
-    sudo make -C ../$LINUX_DIR INSTALL_MOD_PATH=`pwd` ARCH=arm modules_install
+    # Install kernel (uImage, DTB, modules)
+    sudo cp "../$LINUX_DIR/arch/arm/boot/dts/$DTB" boot
+    sudo cp "../$LINUX_DIR/arch/arm/boot/uImage" boot
+    sudo make -C ../$LINUX_DIR INSTALL_MOD_PATH=$(pwd) ARCH=arm modules_install
 
 # add some kernel boot args
     mkimage -C none -A arm -T script -d ../boot.cmd ../boot.scr
