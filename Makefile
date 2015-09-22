@@ -92,13 +92,13 @@ help: $(DEPS)
 	@echo "	You can and MUST configure these variables from the file : makefile.vars"
 	@echo ""
 
-all: $(DEPS) u-boot kernel_config kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
+all: $(DEPS) u-boot kernel_defconfig kernel_compile debian debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(BOARD_NAME) :)"
 
-config.user: config.template config.manifest
+config.user: config.template
 	cp $< $@
 
-makefile.vars: config.user config.manifest
+makefile.vars: config.user
 	$(SCRIPTS_DIR)/genvars.sh
 
 config: config.user
@@ -110,15 +110,7 @@ kernel_config: $(DEPS)
 
 kernel_defconfig: $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
-ifeq ($(BOARD_NAME), Cubieboard)
-	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) sun4i_defconfig
-endif
-ifeq ($(BOARD_NAME), Cubieboard2)
-	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) sun7i_defconfig
-endif
-ifeq ($(BOARD_NAME), Cubietruck)
-	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) sun7i_defconfig
-endif
+	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) $(KERNEL_DEFCONFIG)
 else
 	@echo "File .config already exists."
 endif
@@ -210,14 +202,16 @@ distclean: $(DEPS) u-boot_distclean kernel_distclean
 	sudo $(RM) -r $(CHROOT_DIR)
 	$(RM) makefile.vars
 
-repo_init:
+init:
 ifeq ($(BOARD),)
 	@echo "*** You need to provide the board via 'make BOARD=xxx repo_init'"
 else
-	repo init -u git@gitlab.users.showroom.nss.thales:systembuilder-ng/manifests.git -m "$(BOARD)"
-	$(SCRIPTS_DIR)/dissect-board-manifest.py "$(BOARD)"
+	# Keep track of the board name, to be able to source the config later
+	@echo "$(BOARD)" > .board
+	repo init -u git@gitlab.users.showroom.nss.thales:systembuilder-ng/manifests.git -m "$(BOARD)/linux.xml"
 endif
 
-repo_sync:
+sync:
 	repo sync
+	$(SCRIPTS_DIR)/genvars.sh
 

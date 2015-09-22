@@ -72,8 +72,9 @@ kernel_source
 DEBIAN_PACKAGE_REVISION=1
 
 # === DO NOT MODIFY ===
-if [ -f config.manifest ]; then
-   . ./config.manifest
+if [ -f .board ]; then
+   BOARD="$(head -n 1 .board)"
+   . "./boards/${BOARD}.conf"
 fi
 # =====================
 

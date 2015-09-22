@@ -7,7 +7,9 @@ set -e
 CONFIG_MAKEFILE=./makefile.vars
 CONFIG_USER=./config.user
 CONFIG_TEMPLATE=./config.template
-CONFIG_MANIFEST=./config.manifest
+BOARD_NAME=
+CONFIG_BOARD=
+
 
 # If config.user is not created, create one from the template
 if [ ! -f "$CONFIG_USER" ]; then
@@ -19,6 +21,22 @@ if [ ! -f "$CONFIG_USER" ]; then
    cp "$CONFIG_TEMPLATE" "$CONFIG_USER"
 fi
 
+# Get the board name if the file which contains it exists
+# Also set the config board file by using the board name
+if [ -f .board ]; then
+   BOARD_NAME="$(head -n 1 .board)"
+   CONFIG_BOARD="./boards/${BOARD_NAME}.conf"
+else
+   touch .board
+fi
+
+
+# If no config board exist, set it to an empty file
+# to avoid errors with sed (while determining the variable list)
+if [ ! -f "$CONFIG_BOARD" ]; then
+   CONFIG_BOARD=".board"
+fi
+
 # Source the user config
 . "$CONFIG_USER"
 
@@ -27,7 +45,7 @@ fi
 #  - remove all comments
 #  - keep only variables
 #  - format them nicely (no duplicates, no empty lines)
-LIST="$(sed -e 's/\#.*$//g' "$CONFIG_USER" "$CONFIG_MANIFEST" "$BOARD_CONFIG" \
+LIST="$(sed -e 's/\#.*$//g' "$CONFIG_USER" "$CONFIG_BOARD" \
    | grep -o  "[a-zA-Z0-9_]*=" | cut -d '=' -f 1 | sort | uniq | tr  "\n" " ")"
 
 
