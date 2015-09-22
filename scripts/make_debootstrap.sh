@@ -164,6 +164,22 @@ install_kernel()
     set +x
 }
 
+
+hook_image_postinstall()
+{
+   set -x
+   DIR="../$HOOKS_DIR"
+
+   # Execute image-postinstall hook
+   if [ -d "$DIR" ]; then
+      if [ -x "$DIR/image-postinstall" ]; then
+         "$DIR"/image-postinstall "$(pwd)"
+      fi
+   fi
+
+   set +x
+}
+
 ##########
 
 board_script()
@@ -234,11 +250,14 @@ case "$1" in
     kernel)
 	install_kernel
 	;;
+    image_postinstall)
+        hook_image_postinstall
+        ;;
     board_script)
 	board_script
 	;;
     *)
-	echo "Usage: make_debootstrap.sh {all|debootstrap|config|custom|kernel|board_script}"
+	echo "Usage: make_debootstrap.sh {all|debootstrap|config|custom|kernel|image_postinstall|board_script}"
 	exit 1
 esac
 

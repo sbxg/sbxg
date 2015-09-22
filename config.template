@@ -28,6 +28,7 @@ JOBS=4
 LINUX_DIR=linux-stable
 UBOOT_DIR=u-boot
 RESOURCES_DIR=resources
+HOOKS_DIR=hooks
 
 # qemu is needed to check images
 QEMU_SYSTEM_ARM=qemu-system-arm

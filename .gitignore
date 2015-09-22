@@ -6,6 +6,7 @@
 /makefile.vars
 /config.user
 /config.manifest
+/hooks/
 
 # Kernel's Debian packages
 /linux-*.deb
