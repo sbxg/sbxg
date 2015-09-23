@@ -153,6 +153,7 @@ install_kernel()
     set -x
 
     # Install kernel (uImage, DTB, modules)
+    sudo cp "../$LINUX_DIR/.config" boot/config
     sudo cp "../$LINUX_DIR/arch/arm/boot/dts/$DTB" boot
     sudo cp "../$LINUX_DIR/arch/arm/boot/uImage" boot
     sudo make -C ../$LINUX_DIR INSTALL_MOD_PATH=$(pwd) ARCH=arm modules_install
