@@ -189,6 +189,7 @@ prepare_sdcard: $(DEPS)
 clean: $(DEPS) u-boot_clean kernel_clean
 	$(RM) makefile.vars
 	$(RM) config.user
+	$(RM) boot.cmd
 	$(RM) .board
 
 
