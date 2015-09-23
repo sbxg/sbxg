@@ -36,7 +36,7 @@ export
 .PHONY: help all \
    kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
    with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
-   check kernel_clean kernel_distclean clean distclean debian kernel_config \
+   kernel_clean kernel_distclean clean distclean debian kernel_config \
    init sync
 
 help: $(DEPS)
@@ -48,7 +48,7 @@ help: $(DEPS)
 	@echo
 	@echo "  -- kernel configuration --"
 	@echo "kernel_config:		copies the kernel configuration file specified in config.user as the effective .config"
-	@echo "kernel_defconfig:	Write the default kernel configuration for cubieboard or cubieboard2"
+	@echo "kernel_defconfig:	Write the default kernel configuration for the board"
 	@echo "kernel_menuconfig:	make menuconfig in LINUX_DIR"
 	@echo "kernel_gconfig:		make gconfig in LINUX_DIR"
 	@echo
@@ -67,10 +67,6 @@ help: $(DEPS)
 	@echo "debootstrap:		create the root_fs (need testing)"
 	@echo "prepare_sdcard:		install u-boot and the root_fs to the sdcard"
 	@echo
-	@echo "  -- checking targets --"
-	@echo "check:			Use qemu to check the generated image"
-	@echo "			$(QEMU_SYSTEM_ARM) -machine cubieboard -m $(QEMU_MEMORY_SIZE) -nographic -serial stdio -kernel $(LINUX_DIR)/arch/arm/boot/uImage -append \"root=/dev/mmcblk0p1 rootwait panic=10\""
-	@echo
 	@echo "  -- cleaning targets --"
 	@echo "kernel_clean:		"
 	@echo "kernel_distclean:	"
@@ -86,8 +82,6 @@ help: $(DEPS)
 	@echo "	HOSTNAME		=	$(HOSTNAME)"
 	@echo "	PACKAGES		=	$(PACKAGES)"
 	@echo "	BOARD_NAME		=	$(BOARD_NAME)"
-	@echo "	FORMAT_SDCARD		=	$(FORMAT_SDCARD)"
-	@echo "	SDCARD_DEVICE		=	$(SDCARD_DEVICE)"
 	@echo
 	@echo "	You can and MUST configure these variables from the file : makefile.vars"
 	@echo
@@ -189,11 +183,6 @@ debootstrap: $(DEPS) boot.cmd
 
 prepare_sdcard: $(DEPS)
 	$(SCRIPTS_DIR)/prepare_sdcard.sh all
-
-# Check
-
-check: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage
-	$(QEMU_SYSTEM_ARM) -machine cubieboard -m $(QEMU_MEMORY_SIZE) -nographic -serial stdio -kernel $(LINUX_DIR)/arch/arm/boot/uImage -append "root=/dev/mmcblk0p1 rootwait panic=10"
 
 # Cleaning stuff
 
