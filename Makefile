@@ -204,6 +204,7 @@ else
 	# Keep track of the board name, to be able to source the config later
 	echo "$(BOARD)" > .board
 	repo init -u git@gitlab.users.showroom.nss.thales:systembuilder-ng/manifests.git -m "$(BOARD)/linux.xml"
+	$(MAKE) sync
 endif
 
 sync:
