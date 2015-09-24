@@ -43,8 +43,10 @@ DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
 # If a proxy is needed to make the debootstrap, set it here
 DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
 
+# Default value is used for specialization by Ansible
+HOSTNAME=bd-prod-00.admin.showroom.nss.thales
+
 # user defined variable for the target system
-HOSTNAME=cubie
 PACKAGES="locales ntp python-apt vlan vim sudo openssh-server"
 MACADDR=001122334455
 ROOT_PASSWORD=root
