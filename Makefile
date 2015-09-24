@@ -104,7 +104,8 @@ kernel_config: $(DEPS)
 
 kernel_defconfig: $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
-	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) $(KERNEL_DEFCONFIG)
+	cp kernel-configs/$(BOARD_NAME)/defconfig $(LINUX_DIR)/.config
+	make -C $(LINUX_DIR) ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) olddefconfig
 else
 	@echo "File .config already exists."
 endif
