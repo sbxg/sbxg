@@ -160,9 +160,9 @@ debian: $(DEPS)
 
 # bootloader u-boot compile
 
-u-boot: $(DEPS) $(UBOOT_DIR)/u-boot-sunxi-with-spl.bin
+u-boot: $(DEPS) $(UBOOT_DIR)/$(UBOOT_BIN_NAME)
 
-$(UBOOT_DIR)/u-boot-sunxi-with-spl.bin:
+$(UBOOT_DIR)/$(UBOOT_BIN_NAME):
 	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) $(BOARD_NAME)_config
 	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS)
 
