@@ -39,6 +39,9 @@ export
    kernel_clean kernel_distclean clean distclean debian kernel_config \
    init sync
 
+all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
+	@echo "Done. You can now use your $(BOARD_NAME) :)"
+
 help: $(DEPS)
 	@echo "What you can do:"
 	@echo
@@ -86,8 +89,6 @@ help: $(DEPS)
 	@echo "	You can and MUST configure these variables from the file : makefile.vars"
 	@echo
 
-all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
-	@echo "Done. You can now use your $(BOARD_NAME) :)"
 
 config.user: config.template
 	cp $< $@
