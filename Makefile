@@ -37,7 +37,7 @@ export
    kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
    with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
    kernel_clean kernel_distclean clean distclean debian kernel_config \
-   init sync
+   init sync repo-clean
 
 all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(BOARD_NAME) :)"
@@ -45,6 +45,7 @@ all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
 help: $(DEPS)
 	@echo "What you can do:"
 	@echo
+	@echo "init:                    Usage: make BOARD=<> init. Inits SBNG for a given board"
 	@echo "all:			Will do all the job for you."
 	@echo
 	@echo "config:                  Generate a user config from the template"
@@ -75,6 +76,7 @@ help: $(DEPS)
 	@echo "kernel_distclean:	"
 	@echo "clean:			clean the compiled files (not done yet)"
 	@echo "distclean:		clean the compilet files and the root_fs"
+	@echo "repo-clean:              clears repo internal state"
 	@echo
 	@echo "  -- Environnement variables --"
 	@echo "	LINUX_DIR		=	$(LINUX_DIR)"
@@ -216,3 +218,6 @@ sync:
 	repo sync
 	$(SCRIPTS_DIR)/genvars.sh
 
+repo-clean:
+	$(RM) .board
+	$(RM) -r .repo
