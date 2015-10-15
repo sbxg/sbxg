@@ -31,6 +31,9 @@ set -e
 # Including users defined variables
 . ./config.user
 
+# On some systems (e.g. Arch Linux), PATH is unset
+CHROOT_PATH="/bin:/usr/bin:/sbin:/usr/sbin"
+
 ############
 # FUNCTION #
 ############
@@ -58,7 +61,7 @@ do_debootstrap()
 
 # debootstrap second stage and packages configuration
     sudo LC_ALL=C LANGUAGE=C LANG=C chroot . /debootstrap/debootstrap --second-stage
-    sudo LC_ALL=C LANGUAGE=C LANG=C chroot . dpkg --configure -a
+    sudo LC_ALL=C LANGUAGE=C LANG=C PATH="$CHROOT_PATH" chroot . dpkg --configure -a
 
     set +x
 }
@@ -74,7 +77,18 @@ configure_system()
     # hiding the root password when typed could be a good idea... (stty)
 	read ROOT_PASSWORD
     fi
-    sudo bash -c "echo -e root:$ROOT_PASSWORD | chroot . chpasswd"
+    sudo PATH="$CHROOT_PATH" bash -c "echo -e root:$ROOT_PASSWORD | chroot . chpasswd"
+
+# set admin account
+
+    if [ -z "$ADMIN_PASSWORD" ]; then
+    # hiding the root password when typed could be a good idea... (stty)
+        echo "Please enter the admin password: "
+	read ADMIN_PASSWORD
+    fi
+    sudo PATH="$CHROOT_PATH" bash -c "chroot . useradd admin"
+    sudo PATH="$CHROOT_PATH" bash -c "chroot . adduser admin sudo"
+    sudo PATH="$CHROOT_PATH" bash -c "echo -e admin:$ADMIN_PASSWORD | chroot . chpasswd"
 
 # this set -x does not appear before previous sudo, not to show the root password on the output.
     set -x
@@ -85,7 +99,7 @@ configure_system()
     if [ -z "$HOSTNAME" ]; then
 	read HOSTNAME
     fi
-    sudo bash -c "echo $HOSTNAME > etc/hostname"
+    sudo PATH="$CHROOT_PATH" bash -c "echo $HOSTNAME > etc/hostname"
 
 # check if a serial console already exist in the inittab file
 # we remove the error check to let grep output an error if the file does not have the line we look for
@@ -126,11 +140,11 @@ update_system_and_custom_packages()
     if [ -f "/$apt_proxy" ]; then
         sudo bash -c "cp /$apt_proxy $apt_proxy"
     fi
-    sudo chroot . apt-get update
+    sudo PATH="$CHROOT_PATH" chroot . apt-get update
 
     # Install brcmfmac firmware for Cubietruck (wifi/BT)
     if [ x"$BOARD_NAME" = "xCubietruck" ]; then
-        sudo chroot . apt-get install --yes firmware-brcm80211
+        sudo PATH="$CHROOT_PATH" chroot . apt-get install --yes firmware-brcm80211
         if [ ! -d lib/firmware/brcm ]; then
             echo "*** Failed to install firmware" 1>&2
             exit 1
@@ -141,11 +155,11 @@ update_system_and_custom_packages()
 
 # install additionnals packages
 ### Here $PACKAGES MUST be without double quotes or apt-get won't understand the list of packages
-    sudo chroot . apt-get install --yes $PACKAGES
+    sudo PATH="$CHROOT_PATH" chroot . apt-get install --yes $PACKAGES
 
 # removing tmp stuff
-    sudo chroot . apt-get clean
-    sudo chroot . apt-get autoclean
+    sudo PATH="$CHROOT_PATH" chroot . apt-get clean
+    sudo PATH="$CHROOT_PATH" chroot . apt-get autoclean
     sudo rm etc/resolv.conf
     sudo rm -f "$apt_proxy"
 
