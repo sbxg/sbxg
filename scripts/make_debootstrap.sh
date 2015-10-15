@@ -39,7 +39,13 @@ do_debootstrap()
 {
     set -x
 
-    sudo http_proxy="$DEBOOTSTRAP_HTTP_PROXY" /usr/sbin/debootstrap --foreign --arch "$DEB_ARCH" "$DEB_SUITE" . "$DEBOOTSTRAP_MIRROR"
+    # Check for debootstrap binary
+    if [ ! -x "$DEBOOTSTRAP_BIN" ]; then
+       echo "WARNING: $DEBOOTSTRAP_BIN is not available"
+       DEBOOTSTRAP_BIN="debootstrap"
+    fi
+
+    sudo http_proxy="$DEBOOTSTRAP_HTTP_PROXY" "$DEBOOTSTRAP_BIN" --foreign --arch "$DEB_ARCH" "$DEB_SUITE" . "$DEBOOTSTRAP_MIRROR"
 # --variant=minbase
 
 

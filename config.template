@@ -39,6 +39,7 @@ QEMU_MEMORY_SIZE=512M
 # examples:
 #    DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
 DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
+DEBOOTSTRAP_BIN=/usr/sbin/debootstrap
 
 # If a proxy is needed to make the debootstrap, set it here
 DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
