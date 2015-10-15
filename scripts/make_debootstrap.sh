@@ -203,46 +203,6 @@ hook_image_postinstall()
 
 ##########
 
-board_script()
-{
-    set -x
-
-    # grab template fex file for board
-
-    # case "$BOARD_NAME" in
-	# Cubieboard)
-	#     cp ../sunxi-boards/sys_config/a10/cubieboard.fex ../script.fex
-	#     ;;
-	# Cubieboard2)
-	#     cp ../sunxi-boards/sys_config/a20/cubieboard2.fex ../script.fex
-	#     ;;
-	# *)
-	#     echo "Unknown board. Leaving..."
-	#     exit 1
-	#     ;;
-    # esac
-
-    # Set Ethernet MAC addr
-    # echo "" >> ../script.fex
-    # echo "[dynamic]" >> ../script.fex
-    # echo "MAC = \"$MACADDR\"" >> ../script.fex
-
-    # Change the LEDs behavior
-    #grep leds_trigger ../script.fex
-
-    # created the binary version of the fex file
-    # ../sunxi-tools/fex2bin  ../script.fex ../script.bin
-    # sudo chown root:root ../script.bin
-    # sudo mv ../script.bin boot/
-    # rm ../script.fex
-
-    # Adding fex manipulation binary to change Ethernet MAC addr at boot time using u-boot
-    # sudo cp ../sunxi-tools/fexc root/
-    # sudo chown root:root root/fexc
-
-    set +x
-}
-
 ########
 # MAIN #
 ########
@@ -257,7 +217,6 @@ case "$1" in
 	configure_system
 	update_system_and_custom_packages
 	install_kernel
-	board_script
 	;;
     debootstrap)
 	do_debootstrap
@@ -274,11 +233,8 @@ case "$1" in
     image_postinstall)
         hook_image_postinstall
         ;;
-    board_script)
-	board_script
-	;;
     *)
-	echo "Usage: make_debootstrap.sh {all|debootstrap|config|custom|kernel|image_postinstall|board_script}"
+	echo "Usage: make_debootstrap.sh {all|debootstrap|config|custom|kernel|image_postinstall}"
 	exit 1
 esac
 
