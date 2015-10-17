@@ -7,18 +7,18 @@ SBXG Core
 SBXG est  un  projet  visant à  produire des  3  composants  logiciels
 fonctionnels différents :
 
-	- un boot de type UBOOT pour démarrer une plateforme embarquée.
-	- un noyau Linux s'exécutant sur la plateforme embarquée.
+	- un bootloader (u-boot) pour démarrer une plateforme embarquée ;
+	- un noyau Linux s'exécutant sur la plateforme embarquée ;
 	- un rootfs  contenant le minimum de  composants logiciels de type
 	Debian, à savoir un shell de login et un démon sshd.
 
-A l'issue  de la production   logicielle, un  carte  SD ou  un  disque
-bootable est préparé avec une configuration suivante:
+À l'issue  de la production   logicielle, unE carte  SD ou  un  disque
+bootable est préparé avec la configuration suivante :
 
-	- un compte root initialisé sans mot de pass
-	- un shell de login
+	- un compte root initialisé sans mot de passe ;
+	- un shell de login ;
 	- un démon  sshd en attente   de connexion sur  le port  eth0 avec
-	autorisation de login root
+	autorisation de login root ;
 	- aucune autre application n'est installée par choix.
 
 En  effet, la spécialisation de l'équipement  est assurée par d'autres
@@ -26,30 +26,32 @@ outils indpépendants de SBXG. Ce choix  vise à proposer un ensemble de
 scripts  simples à maintenir dans le cadre  du projet  décrit ici.  La
 spécialisation   de  l'équipement,  l'ajout   de  composants logiciels
 complémentaires  permettant  de    configurer l'équipement  pour   une
-activité spécifique (serveur, gateway, point d'accès Wifi télécom) est
-assurée par d'autres composants de type Ansible.
+activité spécifique (serveur, gateway, point d'accès WiFi télécom) est
+assurée par d'autres composants (Ansible).
 
 2 Dépendances
 -------------
 
 Les composants logiciels suivants  doivent être installés  avant tout
-lancement du makefile de production.
+lancement du Makefile de production.
+
+2.1 Instructions pour Debian
+----------------------------
 
 Toutes les   informations  suivantes  partent  d'une  hypothèse  d'une
 plateforme de production logicielle  basée sur une distribution Debian
 version Jessie,  architecture AMD64.  A ce   titre, le fichier suivant
-doit contenir au minimum : 
+doit contenir au minimum :
 
-# cat /etc/apt/sources.list
-
-deb http://ftp.fr.debian.org/debian/ jessie main contrib non-free
-deb http://security.debian.org/      jessie/updates main contrib non-free
+ |> cat /etc/apt/sources.list
+ |
+ | deb http://ftp.fr.debian.org/debian/ jessie main contrib non-free
+ | deb http://security.debian.org/      jessie/updates main contrib non-free
 
 La stratégie retenue utilise donc une plateforme de production de type
 croisée, il convient  par conséquent d'installer  un cross compilateur
 GCC  (arm-gcc), les packages Debian étant  disponibles  dans les repos
-standards (definies ci-dessus). Pour cela, lancer la commande suivante
-:
+standards (definies ci-dessus). Pour cela, lancer la commande suivante:
 
 apt-get install  \
 	binutils-arm-linux-gnueabihf  \
@@ -66,7 +68,11 @@ apt-get install  \
 	autoconf \
 	build-essential \
 	make \
-	automake 	
+	automake
+
+
+2.2 Repo
+--------
 
 Enfin,   l'outil repo de   Google   est  utilisé, il  convient   de le
 télécharger en lien avec la doc fournie à l'adresse suivante:
@@ -76,25 +82,25 @@ https://source.android.com/source/downloading.html#installing-repo.
 3 Organisation des dépots GIT
 -----------------------------
 
-Afin  de  maitriser la complexité,  les éléments fonctionnels suivants
+Afin  de  maîtriser la complexité,  les éléments fonctionnels suivants
 sont  installés    dans   quatre  dépots     git  indépendants.     La
 synchronisation globale des  dépots permettantr d'assurer la cohérence
 est effectuée à travers l'outils 'repo' de Google.
 
-3.1 Elément   principal  (core)  
+3.1 Elément   principal  (core)
 --------------------------------
 
 Cet élément   est le  coeur  du   projet (system-builder-ng.git).   Il
 contient l'ensemble des scripts permettant  d'assurer les fonctions de
-production logicielle.
+production logicielle. Il s'agit du dépôt contenant ce README.
 
 
 3.2 Elément de board
 --------------------
 
 Cet élément   contient les références de   toutes les cartes utilisées
-dans  le projet,  seula la description   des cartes est effectuée à ce
-niveau à  travers  la valorisation  de   variable de  type shell,  ces
+dans  le projet,  seule la description   des cartes est effectuée à ce
+niveau à  travers  la valorisation  de  variables de  type shell,  ces
 dernières étant utilisées par la  suite dans la production  logicielle
 par les scripts et Makefiles.
 
@@ -102,7 +108,7 @@ par les scripts et Makefiles.
 -----------------------
 
 Cet élément contient les  références des noyaux   Linux mis en  oeuvre
-pour les différentes boards décrites précédement.
+pour les différentes boards décrites précédement (i.e. .config).
 
 3.4 Elément de synchronisation (manifest)
 -----------------------------------------
@@ -111,12 +117,13 @@ Cet élément est  l'élément fédérateur,  il  assure la  lien entre  les
 trois précédents.
 
 Pour   contourner   ce point, dans  le    shell  courant de production
-logicile, lancer les commandes suivantes :
+logicile, lancer les commandes décrites à la section suivante.
 
-4 Build 
+
+4 Build
 -------
 
-4.1 remarques
+4.1 Remarques
 -------------
 
 L'utilisation de repo peut poser un problème de  blocage si on utilise
@@ -126,7 +133,7 @@ visiblement se mélangent se terminant finalement pas un shell de login
 en mode ssh et forcément un échec de connexion puisque le mot de passe
 du shell de login n'est pas celui de déverouillage de la clé privé.
 
-Ce point est avérée sur distribution AMD64 Debian V 8.2 avec repo dans
+Ce point est avéré sur distribution AMD64 Debian V 8.2 avec repo dans
 la version suivante :
 
  repo version v1.12.32
@@ -134,7 +141,7 @@ la version suivante :
 repo launcher version 1.22
        (from /local_home/local/bin/repo)
 git version 1.9.1
-Python 2.7.3 (default, Mar 13 2014, 11:03:55) 
+Python 2.7.3 (default, Mar 13 2014, 11:03:55)
 [GCC 4.7.2]
 
 Le contournement proposé   consiste  a utiliser la  fonctionnalité  de
@@ -144,8 +151,8 @@ ssh-agent.
 Dans le  shell  de production (celui   hébergeant  la commande  repo),
 lancer les commandes suivantes...
 
-eval $(ssh-agent -s)
-ssh-add $HOME/.ssh/id_dsa
+ |> eval $(ssh-agent -s)
+ |> ssh-add /path/to/your/private/ssh/key
 
 
 4.2 Build : phase 1
@@ -159,48 +166,52 @@ ssh-add $HOME/.ssh/id_dsa
    dessous (sous réserve de disposer des clés d'accès!)
 
 
-mkdir /tmp/SBXG
-cd /tmp/SBXG
+ |> mkdir /tmp/SBXG
+ |> cd /tmp/SBXG
+ |> git clone ssh://gitolite3@bie91-1-82-227-34-59.fbx.proxad.net:1024/public/system-builder-ng
+ | Cloning into 'system-builder-ng'...
+ | Enter passphrase for key '/path/to/your/private/ssh/key':
+ | remote: Counting objects: 185, done.
+ | remote: Compressing objects: 100% (96/96), done.
+ | remote: Total 185 (delta 111), reused 144 (delta 88)
+ | Receiving objects: 100% (185/185), 47.24 KiB | 0 bytes/s, done.
+ | Resolving deltas: 100% (111/111), done.
+ | Checking connectivity... done.
 
-lacroix@vm-jessie-x86-amd64-3:/tmp/SBXG$ git clone ssh://gitolite3@bie91-1-82-227-34-59.fbx.proxad.net:1024/public/system-builder-ng                 
-Cloning into 'system-builder-ng'...
-Enter passphrase for key '/home/lacroix/.ssh/id_dsa': 
-remote: Counting objects: 185, done.
-remote: Compressing objects: 100% (96/96), done.
-remote: Total 185 (delta 111), reused 144 (delta 88)
-Receiving objects: 100% (185/185), 47.24 KiB | 0 bytes/s, done.
-Resolving deltas: 100% (111/111), done.
-Checking connectivity... done.
 
-
-4.3 Build : phase 2 Initialiser SBXG pour une board
-----------------------------------------------------
+4.3 Build : phase 2 - Initialiser SBXG pour une board
+------------------------------------------------------
 
 Merci de relire le §4.1
 
-cd /tmp/SBXG/system-builder-ng	
-make BOARD=$myboard init
+ |> cd /tmp/SBXG/system-builder-ng
+ |> make BOARD=$myboard init
 
-   ou $myboard peut prendre une des valeurs parmi :
-      - Cubieboard2
-      - Cubietruck
+où $myboard peut prendre une des valeurs parmi :
+   - Cubieboard2
+   - Cubietruck
+   - mx6qsabresd
 
-4.4 Build : phase 3. Synchroniser les dépots de SBXG [OPTIONNEL]
-----------------------------------------------------------------
+
+4.4 Build : phase 2.1 - Synchroniser les dépots de SBXG [OPTIONNEL]
+-------------------------------------------------------------------
 
    Cette étape est faite automatiquement  par la commande `make init`,
    mais il peut être nécessaire de le refaire à  l'occasion
 
-make sync
+ |> make sync
+
+
 
 4.5 Build : phase 4. Lancement du build
 ----------------------------------------
 
-make all
+|> make all
 
    Le   résultat  est une  image générique,    stockée dans le dossier
    `images/`. Il peut être nécessaire de la spécialiser (voir le dépot
    ansible-specializer).
+
 
 4.6 Build : phase 5 Etapes du build
 -----------------------------------
@@ -217,6 +228,5 @@ qui peuvent ainsi être effectuées indépendemment.
 | Deboostrap                   | make debootstrap      |
 | Préparation de l'image flash | make prepare_sdcard   |
 +------------------------------+-----------------------+
-
 
 
