@@ -10,16 +10,16 @@ fonctionnels différents :
 	- un bootloader (u-boot) pour démarrer une plateforme embarquée ;
 	- un noyau Linux s'exécutant sur la plateforme embarquée ;
 	- un rootfs  contenant le minimum de  composants logiciels de type
-	Debian, à savoir un shell de login et un démon sshd.
+	Debian, à savoir un shell de login et un démon sshd ;
 
-À l'issue  de la production   logicielle, unE carte  SD ou  un  disque
+À l'issue  de la production   logicielle, une carte  SD ou  un  disque
 bootable est préparé avec la configuration suivante :
 
 	- un compte root initialisé sans mot de passe ;
 	- un shell de login ;
 	- un démon  sshd en attente   de connexion sur  le port  eth0 avec
 	autorisation de login root ;
-	- aucune autre application n'est installée par choix.
+	- aucune autre application n'est installée par choix ;
 
 En  effet, la spécialisation de l'équipement  est assurée par d'autres
 outils indpépendants de SBXG. Ce choix  vise à proposer un ensemble de
@@ -68,7 +68,8 @@ apt-get install  \
 	autoconf \
 	build-essential \
 	make \
-	automake
+	automake \
+	debootstrap
 
 
 2.2 Repo
@@ -88,7 +89,7 @@ synchronisation globale des  dépots permettantr d'assurer la cohérence
 est effectuée à travers l'outils 'repo' de Google.
 
 3.1 Elément   principal  (core)
---------------------------------
+-------------------------------
 
 Cet élément   est le  coeur  du   projet (system-builder-ng.git).   Il
 contient l'ensemble des scripts permettant  d'assurer les fonctions de
