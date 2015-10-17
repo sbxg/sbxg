@@ -25,8 +25,8 @@ En  effet, la spécialisation de l'équipement  est assurée par d'autres
 outils indpépendants de SBXG. Ce choix  vise à proposer un ensemble de
 scripts  simples à maintenir dans le cadre  du projet  décrit ici.  La
 spécialisation   de  l'équipement,  l'ajout   de  composants logiciels
-complémentaires  permettant  de    configurer l'equipement  pour   une
-activité spécifique (serveur, gateway, point d'accès Wifi telecom) est
+complémentaires  permettant  de    configurer l'équipement  pour   une
+activité spécifique (serveur, gateway, point d'accès Wifi télécom) est
 assurée par d'autres composants de type Ansible.
 
 2 Dépendances
@@ -59,8 +59,8 @@ apt-get install  \
 	g++-4.7-arm-linux-gnueabihf \
 	libc-bin-armhf-cross
 
-De plus, les   composants de developpement standards suivants  doivent
-etre installés:
+De plus, les   composants de développement standards suivants  doivent
+être installés:
 
 apt-get install  \
 	autoconf \
@@ -82,6 +82,7 @@ synchronisation globale des  dépots permettantr d'assurer la cohérence
 est effectuée à travers l'outils 'repo' de Google.
 
 3.1 Elément   principal  (core)  
+--------------------------------
 
 Cet élément   est le  coeur  du   projet (system-builder-ng.git).   Il
 contient l'ensemble des scripts permettant  d'assurer les fonctions de
@@ -89,6 +90,7 @@ production logicielle.
 
 
 3.2 Elément de board
+--------------------
 
 Cet élément   contient les références de   toutes les cartes utilisées
 dans  le projet,  seula la description   des cartes est effectuée à ce
@@ -97,20 +99,57 @@ dernières étant utilisées par la  suite dans la production  logicielle
 par les scripts et Makefiles.
 
 3.3 Elément noyau Linux
+-----------------------
 
 Cet élément contient les  références des noyaux   Linux mis en  oeuvre
 pour les différentes boards décrites précédement.
 
-3.4 Elément de synchornisation (manifest)
+3.4 Elément de synchronisation (manifest)
+-----------------------------------------
 
 Cet élément est  l'élément fédérateur,  il  assure la  lien entre  les
 trois précédents.
 
+Pour   contourner   ce point, dans  le    shell  courant de production
+logicile, lancer les commandes suivantes :
+
 4 Build 
 -------
 
-Build : phase 1
----------------
+4.1 remarques
+-------------
+
+L'utilisation de repo peut poser un problème de  blocage si on utilise
+des clés privés protégées par mot de passe. Dans ce cas, il semble que
+repo demande les  clés associées aux dépots git  ..., et les shell tty
+visiblement se mélangent se terminant finalement pas un shell de login
+en mode ssh et forcément un échec de connexion puisque le mot de passe
+du shell de login n'est pas celui de déverouillage de la clé privé.
+
+Ce point est avérée sur distribution AMD64 Debian V 8.2 avec repo dans
+la version suivante :
+
+ repo version v1.12.32
+       (from https://gerrit.googlesource.com/git-repo)
+repo launcher version 1.22
+       (from /local_home/local/bin/repo)
+git version 1.9.1
+Python 2.7.3 (default, Mar 13 2014, 11:03:55) 
+[GCC 4.7.2]
+
+Le contournement proposé   consiste  a utiliser la  fonctionnalité  de
+sauvegarde du secret de déverrouillage de la clé privé ssh fournie par
+ssh-agent.
+
+Dans le  shell  de production (celui   hébergeant  la commande  repo),
+lancer les commandes suivantes...
+
+eval $(ssh-agent -s)
+ssh-add $HOME/.ssh/id_dsa
+
+
+4.2 Build : phase 1
+-------------------
 
    L'organisation des dépots git est telle  qu'il n'est pas nécessaire
    de les  télécharger tous en premier lieu.   En effet,  une cible du
@@ -134,8 +173,10 @@ Resolving deltas: 100% (111/111), done.
 Checking connectivity... done.
 
 
-Build : phase 2 Initialiser SBXG pour une board
------------------------------------------------
+4.3 Build : phase 2 Initialiser SBXG pour une board
+----------------------------------------------------
+
+Merci de relire le §4.1
 
 cd /tmp/SBXG/system-builder-ng	
 make BOARD=$myboard init
@@ -144,16 +185,16 @@ make BOARD=$myboard init
       - Cubieboard2
       - Cubietruck
 
-Build : phase 3. Synchroniser les dépots de SBXG [OPTIONNEL]
-------------------------------------------------------------
+4.4 Build : phase 3. Synchroniser les dépots de SBXG [OPTIONNEL]
+----------------------------------------------------------------
 
    Cette étape est faite automatiquement  par la commande `make init`,
    mais il peut être nécessaire de le refaire à  l'occasion
 
 make sync
 
-Build : phase 4. Lancement du build
------------------------------------
+4.5 Build : phase 4. Lancement du build
+----------------------------------------
 
 make all
 
@@ -161,8 +202,8 @@ make all
    `images/`. Il peut être nécessaire de la spécialiser (voir le dépot
    ansible-specializer).
 
-Build : phase 5 Etapes du build
---------------------------------
+4.6 Build : phase 5 Etapes du build
+-----------------------------------
 
 Le tableau ci-dessous résume les principales étapes du build,
 qui peuvent ainsi être effectuées indépendemment.
