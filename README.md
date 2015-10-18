@@ -15,10 +15,13 @@ composants logiciels fonctionnels différents :
 À l'issue  de la production   logicielle, une carte  SD ou  un  disque
 bootable est préparé avec la configuration suivante :
 
-	- un compte root initialisé sans mot de passe ;
+	- un compte root initialisé avec le mot de passe spécifié dans
+          le fichier config.template ;
+        - un compte admin, sudoer avec le mot de passe spécifié dans
+          le fichier config.template ;
 	- un shell de login ;
 	- un démon  sshd en attente   de connexion sur  le port  eth0 avec
-	autorisation de login root ;
+ 	  refus de login root ;
 	- aucune autre application n'est installée par choix ;
 
 En  effet, la spécialisation de l'équipement  est assurée par d'autres
