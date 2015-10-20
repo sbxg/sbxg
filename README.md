@@ -4,8 +4,8 @@ SBXG Core
 1 Introduction
 --------------
 
-SBXG est  un  projet  visant à  produire des  3  composants  logiciels
-fonctionnels différents :
+SBXG (System Builder Next Generation) est un projet visant à produire 3
+composants logiciels fonctionnels différents :
 
 	- un bootloader (u-boot) pour démarrer une plateforme embarquée ;
 	- un noyau Linux s'exécutant sur la plateforme embarquée ;
@@ -61,15 +61,21 @@ apt-get install  \
 	g++-4.7-arm-linux-gnueabihf \
 	libc-bin-armhf-cross
 
-De plus, les   composants de développement standards suivants  doivent
-être installés:
+ 
+De plus, les composants  de  développement standards suivants  doivent
+être  installés, l'utilisation  de l'émulateur  Qemu est indispensable
+pour les dernières  phase de  construction  du  rootfs (cf  répertoire
+scripts)
 
 apt-get install  \
 	autoconf \
 	build-essential \
 	make \
 	automake \
-	debootstrap
+	debootstrap \
+	qemu-user-static \
+	qemu \
+	binfmt-support
 
 
 2.2 Repo
