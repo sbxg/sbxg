@@ -15,10 +15,10 @@ composants logiciels fonctionnels différents :
 À l'issue  de la production   logicielle, une carte  SD ou  un  disque
 bootable est préparé avec la configuration suivante :
 
-	- un compte root initialisé avec le mot de passe spécifié dans
-          le fichier config.template ;
-        - un compte admin, sudoer avec le mot de passe spécifié dans
-          le fichier config.template ;
+	- un compte root initialisé avec le mot de  passe spécifié dans le
+	  fichier config.template ;
+    - un compte admin, sudoer  avec le mot de  passe spécifié dans  le
+      fichier config.template ;
 	- un shell de login ;
 	- un démon  sshd en attente   de connexion sur  le port  eth0 avec
  	  refus de login root ;
@@ -92,10 +92,10 @@ https://source.android.com/source/downloading.html#installing-repo.
 3 Organisation des dépots GIT
 -----------------------------
 
-Afin  de  maîtriser la complexité,  les éléments fonctionnels suivants
-sont  installés    dans   quatre  dépots     git  indépendants.     La
-synchronisation globale des  dépots permettantr d'assurer la cohérence
-est effectuée à travers l'outils 'repo' de Google.
+Afin de   maîtriser la complexité, les éléments  fonctionnels suivants
+sont   installés  dans   quatre      dépots git   indépendants.     La
+synchronisation  globale  des  dépots GIT   permettant  d'assurer   la
+cohérence est effectuée à travers l'outils 'repo' de Google.
 
 3.1 Elément   principal  (core)
 -------------------------------
@@ -126,10 +126,6 @@ pour les différentes boards décrites précédement (i.e. .config).
 Cet élément est  l'élément fédérateur,  il  assure la  lien entre  les
 trois précédents.
 
-Pour   contourner   ce point, dans  le    shell  courant de production
-logicile, lancer les commandes décrites à la section suivante.
-
-
 4 Build
 -------
 
@@ -154,7 +150,10 @@ git version 1.9.1
 Python 2.7.3 (default, Mar 13 2014, 11:03:55)
 [GCC 4.7.2]
 
-Le contournement proposé   consiste  a utiliser la  fonctionnalité  de
+Pour   contourner ce  point,  dans  le  shell  courant de   production
+logicile, lancer les commandes décrites à la section suivante.
+
+Le  contournement proposé  consiste à  utiliser la  fonctionnalité  de
 sauvegarde du secret de déverrouillage de la clé privé ssh fournie par
 ssh-agent.
 
@@ -168,12 +167,12 @@ lancer les commandes suivantes...
 4.2 Build : phase 1
 -------------------
 
-   L'organisation des dépots git est telle  qu'il n'est pas nécessaire
-   de les  télécharger tous en premier lieu.   En effet,  une cible du
-   Makefile   est en  charge  de   cette activité, si    bien que pour
-   initialiser la  premiere   fois     un  projet, seul    le    dépot
-   system-builder-ng doit être téléchargé comme le montre l'exemple ci
-   dessous (sous réserve de disposer des clés d'accès!)
+L'organisation des dépots GIT est telle qu'il  n'est pas nécessaire de
+les télécharger tous en premier lieu.  En effet, une cible du Makefile
+est  en charge de  cette  activité, si  bien que  pour initialiser  la
+premiere fois un projet,  seul  le dépot system-builder-ng   doit être
+téléchargé comme  le  montre  l'exemple  ci  dessous (sous réserve  de
+disposer des clés d'accès!)
 
 
  |> mkdir /tmp/SBXG
@@ -192,7 +191,7 @@ lancer les commandes suivantes...
 4.3 Build : phase 2 - Initialiser SBXG pour une board
 ------------------------------------------------------
 
-Merci de relire le §4.1
+Merci de relire le §4.1 si difficultés
 
  |> cd /tmp/SBXG/system-builder-ng
  |> make BOARD=$myboard init
