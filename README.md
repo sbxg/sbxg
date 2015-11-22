@@ -21,7 +21,7 @@ bootable est préparé avec la configuration suivante :
       fichier config.template ;
 	- un shell de login ;
 	- un démon  sshd en attente   de connexion sur  le port  eth0 avec
- 	  refus de login root ;
+	  refus de login root ;
 	- aucune autre application n'est installée par choix ;
 
 En  effet, la spécialisation de l'équipement  est assurée par d'autres
@@ -30,21 +30,21 @@ scripts  simples à maintenir dans le cadre  du projet  décrit ici.  La
 spécialisation   de  l'équipement,  l'ajout   de  composants logiciels
 complémentaires  permettant  de    configurer l'équipement  pour   une
 activité spécifique (serveur, gateway, point d'accès WiFi télécom) est
-assurée par d'autres composants (Ansible).
+assurée par d'autres composants (cf Ansible).
 
 2 Dépendances
 -------------
 
 Les composants logiciels suivants  doivent être installés  avant tout
-lancement du Makefile de production.
+lancement du Makefile de production logicielle.
 
 2.1 Instructions pour Debian
 ----------------------------
 
-Toutes les   informations  suivantes  partent  d'une  hypothèse  d'une
-plateforme de production logicielle  basée sur une distribution Debian
-version Jessie,  architecture AMD64.  A ce   titre, le fichier suivant
-doit contenir au minimum :
+Toutes  les   informations suivantes  partent   d'une hypothèse  d'une
+plateforme de production logicielle basée  sur une distribution Debian
+version Jessie (8.x), architecture  AMD64.   A  ce titre,  le  fichier
+suivant doit contenir au minimum :
 
  |> cat /etc/apt/sources.list
  |
@@ -52,9 +52,10 @@ doit contenir au minimum :
  | deb http://security.debian.org/      jessie/updates main contrib non-free
 
 La stratégie retenue utilise donc une plateforme de production de type
-croisée, il convient  par conséquent d'installer  un cross compilateur
-GCC  (arm-gcc), les packages Debian étant  disponibles  dans les repos
-standards (definies ci-dessus). Pour cela, lancer la commande suivante:
+croisée (cible = arm), il convient par conséquent d'installer un cross
+compilateur GCC (arm-gcc), les  packages Debian étant disponibles dans
+les repos  standards  (definies   ci-dessus).  Pour  cela,   lancer la
+commande suivante:
 
 apt-get install  \
 	binutils-arm-linux-gnueabihf  \
@@ -64,7 +65,7 @@ apt-get install  \
 	g++-4.7-arm-linux-gnueabihf \
 	libc-bin-armhf-cross
 
- 
+
 De plus, les composants  de  développement standards suivants  doivent
 être  installés, l'utilisation  de l'émulateur  Qemu est indispensable
 pour les dernières  phase de  construction  du  rootfs (cf  répertoire
@@ -100,9 +101,9 @@ cohérence est effectuée à travers l'outils 'repo' de Google.
 3.1 Elément   principal  (core)
 -------------------------------
 
-Cet élément   est le  coeur  du   projet (system-builder-ng.git).   Il
-contient l'ensemble des scripts permettant  d'assurer les fonctions de
-production logicielle. Il s'agit du dépôt contenant ce README.
+Cet élément   est le  coeur   du  projet (system-builder-ng.git).   Il
+contient l'ensemble des  scripts permettant d'assurer les fonctions de
+production logicielle. Il s'agit du dépôt contenant ce fichier README.
 
 
 3.2 Elément de board
@@ -150,12 +151,13 @@ git version 1.9.1
 Python 2.7.3 (default, Mar 13 2014, 11:03:55)
 [GCC 4.7.2]
 
-Pour   contourner ce  point,  dans  le  shell  courant de   production
-logicile, lancer les commandes décrites à la section suivante.
+Pour   contourner ce  point,  dans   le shell   courant  de production
+logiciel, lancer les commandes décrites à la section suivante.
 
-Le  contournement proposé  consiste à  utiliser la  fonctionnalité  de
+Le  contournement proposé  consiste à   utiliser la  fonctionnalité de
 sauvegarde du secret de déverrouillage de la clé privé ssh fournie par
-ssh-agent.
+ssh-agent,    si bien que l'opération    de  gestion des clés  devient
+transparente.
 
 Dans le  shell  de production (celui   hébergeant  la commande  repo),
 lancer les commandes suivantes...
@@ -164,14 +166,14 @@ lancer les commandes suivantes...
  |> ssh-add /path/to/your/private/ssh/key
 
 
-4.2 Build : phase 1
--------------------
+4.2 Build : phase 1. - Initialisation du projet
+----------------------------------------------
 
-L'organisation des dépots GIT est telle qu'il  n'est pas nécessaire de
+L'organisation des dépots GIT est telle  qu'il n'est pas nécessaire de
 les télécharger tous en premier lieu.  En effet, une cible du Makefile
-est  en charge de  cette  activité, si  bien que  pour initialiser  la
-premiere fois un projet,  seul  le dépot system-builder-ng   doit être
-téléchargé comme  le  montre  l'exemple  ci  dessous (sous réserve  de
+est en charge   de cette activité, si  bien  que pour  initialiser  la
+première fois   le projet, seul  le  dépot system-builder-ng doit être
+téléchargé  comme le   montre l'exemple ci  dessous  (sous  réserve de
 disposer des clés d'accès!)
 
 
@@ -188,7 +190,7 @@ disposer des clés d'accès!)
  | Checking connectivity... done.
 
 
-4.3 Build : phase 2 - Initialiser SBXG pour une board
+4.3 Build : phase 2. - Initialiser SBXG pour une board
 ------------------------------------------------------
 
 Merci de relire le §4.1 si difficultés
@@ -202,7 +204,7 @@ où $myboard peut prendre une des valeurs parmi :
    - mx6qsabresd
 
 
-4.4 Build : phase 2.1 - Synchroniser les dépots de SBXG [OPTIONNEL]
+4.4 Build : phase 3. - Synchroniser les dépots de SBXG [OPTIONNEL]
 -------------------------------------------------------------------
 
    Cette étape est faite automatiquement  par la commande `make init`,
@@ -222,8 +224,8 @@ où $myboard peut prendre une des valeurs parmi :
    ansible-specializer).
 
 
-4.6 Build : phase 5 Etapes du build
------------------------------------
+4.6 Build : phase 5. Etapes du build
+------------------------------------
 
 Le tableau ci-dessous résume les principales étapes du build,
 qui peuvent ainsi être effectuées indépendemment.
@@ -239,3 +241,12 @@ qui peuvent ainsi être effectuées indépendemment.
 +------------------------------+-----------------------+
 
 
+5. Annexe
+---------
+
+Afin de supporter sous Xemacs21 le  mode UTF8, ajouter dans le fichier
+~/.xemacs/init.el les lignes suivantes:
+
+|> (require 'un-define)
+(set-coding-priority-list '(utf-8))
+(set-coding-category-system 'utf-8 'utf-8)
