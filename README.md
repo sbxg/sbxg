@@ -66,9 +66,9 @@ apt-get install  \
 	libc-bin-armhf-cross
 
 
-De plus, les composants  de  développement standards suivants  doivent
-être  installés, l'utilisation  de l'émulateur  Qemu est indispensable
-pour les dernières  phase de  construction  du  rootfs (cf  répertoire
+De plus, les composants de   développement standards suivants  doivent
+être  installés,  l'utilisation de l'émulateur Qemu  est indispensable
+pour   les dernières phases de construction   du rootfs (cf répertoire
 scripts)
 
 apt-get install  \
