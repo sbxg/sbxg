@@ -244,9 +244,54 @@ qui peuvent ainsi être effectuées indépendemment.
 5. Annexe
 ---------
 
+5.1 Support de Xemacs21 en mode UTF8
+------------------------------------
+
 Afin de supporter sous Xemacs21 le  mode UTF8, ajouter dans le fichier
 ~/.xemacs/init.el les lignes suivantes:
 
 |> (require 'un-define)
 (set-coding-priority-list '(utf-8))
 (set-coding-category-system 'utf-8 'utf-8)
+
+
+5.2 production logicielle (make debootstrap) dans un container LXC
+------------------------------------------------------------------
+
+Sous réserve que l'environnement de  production logiciel soit installé
+dans un container de type LXC, bien que les précautions d'installation
+telles que  définies au §2.1 soient  prise en compte,  il peut arriver
+que l'erreur suivante se produise:
+
+
+|> I: Extracting mount...
+I: Extracting util-linux...
+I: Extracting liblzma5...
+I: Extracting zlib1g...
++ sudo cp /usr/bin/qemu-arm-static usr/bin
++ sudo LC_ALL=C LANGUAGE=C LANG=C chroot . /debootstrap/debootstrap --second-stage
+chroot: failed to run command '/debootstrap/debootstrap': Exec format error
+Makefile:191: recipe for target 'debootstrap' failed
+
+
+Vérifiez que binfmt est correctement installé via la commande suivante :
+
+|>  root@vm-jessie-x86-amd64-3:~# update-binfmts --display |grep arm
+root@vm-jessie-x86-amd64-3:~# 
+
+
+Dans ce cas (absence d'emulateur qemu, docn  cause de ce problème), il
+est nécessaire d'ajouter la commande suivante :
+
+
+|>  root@vm-jessie-x86-amd64-3:~# update-binfmts --install qemu-arm /usr/bin/qemu-arm-static --magic \x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00
+
+
+A l'issue de quoi, la commande précédente retourne bien la pésence de l'émulateur qemu correctemetn installé, car :
+
+|> root@vm-jessie-x86-amd64-3:~# update-binfmts --display |grep arm
+qemu-arm (enabled):
+ interpreter = /usr/bin/qemu-arm-static
+
+L'erreur précédente est  corrigée est la  cible 'make debootstrap' est
+opérationnelle.
