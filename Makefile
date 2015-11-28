@@ -21,6 +21,9 @@
 SED := sed
 SCRIPTS_DIR := scripts
 DEPS := makefile.vars Makefile
+URL ?= ssh://gitolite3@bie91-1-82-227-34-59.fbx.proxad.net:1024/public/system-builder-ng-manifest
+
+MANIFEST ?= linux
 
 export
 
@@ -210,7 +213,7 @@ ifeq ($(BOARD),)
 else
 # Keep track of the board name, to be able to source the config later
 	echo "$(BOARD)" > .board
-	repo init -u git@gitlab.users.showroom.nss.thales:systembuilder-ng/manifests.git -m "$(BOARD)/linux.xml"
+	repo init -u $(URL) -m "$(BOARD)/$(MANIFEST).xml"
 	$(MAKE) sync
 endif
 
