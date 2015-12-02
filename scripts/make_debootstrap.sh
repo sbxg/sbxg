@@ -86,9 +86,28 @@ configure_system()
         echo "Please enter the admin password: "
 	read ADMIN_PASSWORD
     fi
-    sudo PATH="$CHROOT_PATH" bash -c "chroot . useradd admin"
-    sudo PATH="$CHROOT_PATH" bash -c "chroot . adduser admin sudo"
+
+    # Evaluate whether we should create admin and add it to sudoers
+    CREATE_USER=1
+    ADD_TO_SUDOER=1
+    set +e
+    getent passwd admin
+    if [ $? -eq 0 ]; then
+       CREATE_USER=0
+       groups admin | grep sudo &> /dev/null
+       if [ $? -eq 0 ]; then
+          ADD_TO_SUDOER=0
+       fi
+    fi
+
+    if [ "$CREATE_USER" -eq 1 ]; then
+       sudo PATH="$CHROOT_PATH" bash -c "chroot . useradd admin"
+    fi
+    if [ "$ADD_TO_SUDOER" -eq 1 ]; then
+       sudo PATH="$CHROOT_PATH" bash -c "chroot . adduser admin sudo"
+    fi
     sudo PATH="$CHROOT_PATH" bash -c "echo -e admin:$ADMIN_PASSWORD | chroot . chpasswd"
+    set -e
 
 # this set -x does not appear before previous sudo, not to show the root password on the output.
     set -x
