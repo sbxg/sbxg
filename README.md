@@ -38,7 +38,22 @@ assurée par d'autres composants (cf Ansible).
 Les composants logiciels suivants  doivent être installés  avant tout
 lancement du Makefile de production logicielle.
 
-2.1 Instructions pour Debian
+2.1.1 Build via Docker
+--------------------
+
+Il est possible de générer une image en passant par une image Docker.
+Cela permet de faire abstraction des spécificités de la distribution
+Linux sous-jacente. Les outils de builds sont maîtrisés au sein d'un
+conteneur. Le pré-requis est évidemment d'installer le paquet Docker.
+
+Sous Debian/Ubuntu :
+  |> apt-get install docker
+
+Sous Arch Linux:
+  |> pacman -S docker
+
+
+2.1.2 Instructions pour Debian
 ----------------------------
 
 Toutes  les   informations suivantes  partent   d'une hypothèse  d'une
@@ -239,6 +254,23 @@ qui peuvent ainsi être effectuées indépendemment.
 | Deboostrap                   | make debootstrap      |
 | Préparation de l'image flash | make prepare_sdcard   |
 +------------------------------+-----------------------+
+
+4.7 Build avec Docker
+---------------------
+
+Le dossier docker/ contient trois fichiers :
+  - Dockerfile, qui indique comment l'image Docker doit être construite
+  - build, qui est un script permettant de créer une image Docker
+    automatiquement à partir du Dockerfile
+  - do, qui est un script éxécutant n'importe quelle commande passée en
+    paramètre dans l'image Docker.
+
+Ainsi, pour générer l'image complète, on procèdera comme suit :
+
+  |> ./docker/build    # Afin de générer l'image Docker
+  |> ./docker/do make  # Afin de lancer le build
+
+Si l'image est déjà créée, lancer le script `build` n'est pas utile.
 
 
 5. Annexe
