@@ -1,0 +1,7 @@
+#! /usr/bin/env sh
+
+CWD="$(realpath $(dirname "$0"))"
+TOP_DIR="$(realpath "$CWD/../")"
+
+set -x
+docker run --privileged -t -i -v "$TOP_DIR":/opt/sbxg "sbxg" /bin/bash -c "$(echo "$@")"
