@@ -8,7 +8,10 @@ RUN echo "deb http://emdebian.org/tools/debian/ jessie main" >> /etc/apt/sources
 RUN curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key -o key
 RUN apt-key add key
 RUN dpkg --add-architecture armhf
+
 RUN apt-get update
+
+RUN apt-get install -y apt-utils
 RUN apt-get install -y crossbuild-essential-armhf
 RUN apt-get install -y autoconf
 RUN apt-get install -y build-essential
@@ -26,6 +29,7 @@ RUN apt-get install -y sudo
 RUN apt-get install -y debootstrap
 RUN apt-get install -y parted
 RUN apt-get install -y kpartx
+RUN apt-get install -y libncurses5-dev
 
 RUN apt-get clean
 
