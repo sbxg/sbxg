@@ -7,22 +7,28 @@ SBXG Core
 SBXG (System Builder Next Generation) est un projet visant à produire 3
 composants logiciels fonctionnels différents :
 
-	- un bootloader (u-boot) pour démarrer une plateforme embarquée ;
-	- un noyau Linux s'exécutant sur la plateforme embarquée ;
-	- un rootfs  contenant le minimum de  composants logiciels de type
+  - un bootloader (u-boot) pour démarrer une plateforme embarquée ;
+
+  - un noyau Linux s'exécutant sur la plateforme embarquée ;
+
+  - un rootfs  contenant le minimum de  composants logiciels de type
 	Debian, à savoir un shell de login et un démon sshd ;
 
-À l'issue  de la production   logicielle, une carte  SD ou  un  disque
+À  l'issue de  la production  logicielle, une  carte SD  ou un  disque
 bootable est préparé avec la configuration suivante :
 
-	- un compte root initialisé avec le mot de  passe spécifié dans le
+  - un compte  root initialisé avec le  mot de passe spécifié  dans le
 	  fichier config.template ;
-    - un compte admin, sudoer  avec le mot de  passe spécifié dans  le
-      fichier config.template ;
-	- un shell de login ;
-	- un démon  sshd en attente   de connexion sur  le port  eth0 avec
-	  refus de login root ;
-	- aucune autre application n'est installée par choix ;
+
+  - un compte  admin, sudoer  avec le  mot de  passe spécifié  dans le
+	  fichier config.template ;
+
+  - un shell de login ;
+
+  - un démon sshd en attente de  connexion sur le port eth0 avec refus
+	  de login root  ;
+
+   - aucune autre application n'est installée par choix ;
 
 En  effet, la spécialisation de l'équipement  est assurée par d'autres
 outils indpépendants de SBXG. Ce choix  vise à proposer un ensemble de
@@ -96,6 +102,64 @@ apt-get install  \
 	qemu \
 	binfmt-support
 
+2.1.3 Build natif
+-----------------
+
+Le build  natif consiste à  disposer d'une architecture  de production
+logicielle (chaine de compilation) identique à celle de la cible.
+
+Un des inconvénients  est que la pui ssance de  traitement d'une cible
+embarquée reste encore inférieure à celle d'un serveur type Amd64.
+
+Un des gros avantages de cette  solution technique est qu'il n'est pas
+fait appel à un cross compilateur et aux outils associés, ce qui reste
+un sujet  délicat si on ne  souhaite pas s'intéresser à  la production
+d'un  tel  outil.  Compte  tenu   que  Debian  dispose  TOUJOURS  d'un
+compilateur natif, l'utilisation d'une cible transformée pour la cause
+en  serveur  de  production   associée  à  l'ensemble  des  composants
+logiciels permet d'atteindre cet objectif.
+
+Enfin,  le fait  de  disposer  du compilateur  natif  est  un gage  de
+cohérence  puisque  tous  les   composants  de  la  distribution  sont
+construits avec la même chaine  de production, par voie de conséquence,
+il existe un support sur le  compilateur si un soucis arrivait dans le
+cas de la production du noyau.
+
+Les hypothèses  de travail prises ici  s'appuie sur :
+
+ - un serveur de production basée sur une cubieboard2 connectée sur un
+réseau 100 Mbit/sec.
+ - une infrastructure logicielle partagée via NFS V3
+ - un disque dure SSD de 120 Go sur la cubieboard2
+ - un container LXC hébergeant tous l'outillage Debian standard
+ - un montage NFS de /home via autofs dans le container de production
+ - un binding CPU tel que le CPU0 reste dédié au host, et le 1 pour le
+   container
+ - pas de restruction (limits) sur la gestion de la mémoire et le CPU
+ - usage du disque sata via un montage dans /tmp 
+
+Au niveau dimmensionnement, la configurationh est la suivante:
+
+lacroix@vm-jessie-arm-1:~$ df
+Filesystem                               1K-blocks   Used Available Use% Mounted on
+/dev/mapper/vg_jessie_arm-lv_rootfs       95054    35480     54454  40% /
+/dev/mapper/vg_jessie_arm-lv_var         487715   324328    137787  71% /var
+/dev/mapper/vg_jessie_arm-lv_usr        5029504   977980   3789380  21% /usr
+/dev/mapper/vg_jessie_arm-lv_tmp        3997376  2238184   1549480  60% /tmp
+tmpfs                                    102772       72    102700   1% /run
+tmpfs                                      5120        0      5120   0% /run/lock
+tmpfs                                    205520        0    205520   0% /run/shm
+srv-nfs-2-services.mydomain1.noip.org:/exports/data/lv_home/lacroix  29702272 27440128    746624  98% /home/lacroix
+
+ lacroix@vm-jessie-arm-1:~$ uname -a
+Linux vm-jessie-arm-1 4.0.5-e23a94b-be4cb23-grsec-dirty #10 SMP Wed Aug 26 15:26:58 CEST 2015 armv7l GNU/Linux
+lacroix@vm-jessie-arm-1:~$ cat /etc/debian_version 
+8.2
+
+
+Bien entendu,  l'absence de cross  compilateur se traduit par  le fait
+que le fichier de config soit etre modifie de la manière suivante :
+GCC_PREFIX=
 
 2.2 Repo
 --------
@@ -113,12 +177,17 @@ sont   installés  dans   quatre      dépots git   indépendants.     La
 synchronisation  globale  des  dépots GIT   permettant  d'assurer   la
 cohérence est effectuée à travers l'outils 'repo' de Google.
 
+
 3.1 Elément   principal  (core)
 -------------------------------
 
-Cet élément   est le  coeur   du  projet (system-builder-ng.git).   Il
-contient l'ensemble des  scripts permettant d'assurer les fonctions de
+Cet  élément  est  le  coeur du  projet  (system-builder-ng.git).   Il
+contient l'ensemble des scripts  permettant d'assurer les fonctions de
 production logicielle. Il s'agit du dépôt contenant ce fichier README.
+C'est  donc  ce  repository  qu'il faut  télécharger  en  premier,  il
+contient le Makefile  de production. De plus le  Makefile effectue les
+autres  téléchargements des  arbres  git automatiquement  à partir  du
+choix de l'utilisateur concernant la board à construire.
 
 
 3.2 Elément de board
