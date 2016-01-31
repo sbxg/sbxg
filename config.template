@@ -3,6 +3,7 @@
 
 # This file is part of CBoard.
 
+
 # CBoard is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -45,10 +46,10 @@ DEBOOTSTRAP_BIN=/usr/sbin/debootstrap
 DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
 
 # Default value is used for specialization by Ansible
-HOSTNAME=bd-prod-00.admin.showroom.nss.thales
+HOSTNAME=srv-cubie2-1
 
 # user defined variable for the target system
-PACKAGES="locales ntp python-apt vlan vim sudo openssh-server"
+PACKAGES="locales ntp tcpdump mdadm lvm2 firmware-atheros iw python-apt vlan vim sudo openssh-server"
 MACADDR=001122334455
 ROOT_PASSWORD=root
 # compress the output image
