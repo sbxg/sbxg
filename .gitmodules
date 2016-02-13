@@ -1,0 +1,3 @@
+[submodule "menuconfig"]
+	path = menuconfig
+	url = https://github.com/jeanguyomarch/menuconfig

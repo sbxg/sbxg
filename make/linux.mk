@@ -17,34 +17,39 @@
 
 .PHONY: linux linux-%
 
+# Get dts file from dtb to be generated
+DTS := $(patsubst %.dtb,%.dts,$(CONFIG_DTB))
+
 # Executes $(1) in the linux directory with JOBS, ARCH and CROSS_COMPILE
 # set to the values defined in the configuration
-linux-make = $(MAKE) -C $(LINUX_DIR) -j $(JOBS) CROSS_COMPILE=$(GCC_PREFIX) ARCH=arm $(1)
+linux-make = $(MAKE) -C $(LINUX_DIR) -j $(CONFIG_JOBS) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) ARCH=arm $(1)
 
-linux: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/$(DTB)
+linux: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
 
 $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 # extract current SHA1 from git linux kernel version source
 # and append this version to the kernel version in order to have this SHA1
 # matched in command : uname -a command and SNMP MIB
 	EXTRAVERSION=$(call git-hash-get,$(LINUX_DIR)) \
-	LOADADDR="$(LOADADDR)" \
+	LOADADDR="$(CONFIG_LOADADDR)" \
 	    $(call linux-make,uImage modules)
 
-$(LINUX_DIR)/arch/arm/boot/dts/$(DTB): $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
+$(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB): $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
 	$(call linux-make,dtbs)
 
 linux-config: $(DEPS)
 	cp "$(KERNEL_CONFIG)" $(LINUX_DIR)/.config
 
+$(LINUX_DIR)/.config:
+	$(MAKE) linux-defconfig
 
 linux-defconfig: $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
-	if [ -f kernel-configs/$(BOARD_NAME)/defconfig ]; then \
-	 cp kernel-configs/$(BOARD_NAME)/defconfig $(LINUX_DIR)/.config ; \
+	if [ -f $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig ]; then \
+	 cp $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig $(LINUX_DIR)/.config ; \
 	 $(call linux-make,olddefconfig); \
 	else \
-	 $(call linux-make,$(KERNEL_DEFCONFIG)); \
+	 $(call linux-make,defconfig); \
 	fi ;
 else
 	@echo "File .config already exists."
@@ -53,4 +58,4 @@ endif
 
 # Handle all default targets
 linux-%: $(DEPS)
-	make -C $(LINUX_DIR) ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) $(patsubst linux-%,%,$@)
+	$(call linux-make,$(patsubst linux-%,%,$@))

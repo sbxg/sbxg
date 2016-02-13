@@ -1,11 +1,13 @@
 *~
 *.sw?
+__pycache__/
+
 /chroot-*/
 /boot.cmd
+/.config
+/.config.old
+/build/
 /images/
-/makefile.vars
-/config.user
-/config.manifest
 /hooks/
 
 # Kernel's Debian packages

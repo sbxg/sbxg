@@ -15,6 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
+
+# Support for quiet/verbose make
+# Prefix commands by $(Q) to hide them by default, and enable
+# them when providing V=1 to make
+ifeq ($(V),)
+   V := 0
+else
+   V := 1
+endif
+Q_0 := @
+Q_1 :=
+Q   := $(Q_$(V))
+
+
 # Extract the git hash (short version) from a git repository specified
 # as $(1)
 define git-hash-get

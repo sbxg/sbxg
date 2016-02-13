@@ -1,0 +1,202 @@
+# Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#
+# This file is part of SBXG
+#
+# SBXG is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# SBXG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
+
+
+mainmenu "SBXG Configuration"
+
+
+#==============================================================================#
+#                         Board Selection Configuration                        #
+#==============================================================================#
+
+menu "Board Selection"
+   source "@MANIFEST_CFG@"
+endmenu
+
+
+#==============================================================================#
+#                            Toolchain Configuration                           #
+#==============================================================================#
+
+menu "Toolchain"
+   config GCC_PREFIX
+      string "Toolchain Prefix"
+      default "arm-linux-gnueabihf-"
+      help
+         Prefix of the toolchain to be used.
+         Will be exported as GCC_PREFIX.
+
+   config JOBS
+      int "Parallel Jobs"
+      default @PARALLEL_JOBS@
+      range 1 9999
+      help
+         Number of jobs make should launch in parallel.
+
+   config QEMU_ARM_STATIC
+      string "Qemu Arm Static"
+      default "qemu-arm-static"
+      help
+         Binary used to handle foreign binary format (binfmt).
+endmenu
+
+
+#==============================================================================#
+#                      Distribution Configuration Options                      #
+#==============================================================================#
+
+menu "Distribution"
+   config DEBOOTSTRAP_DISTRIBUTION
+      string "Debootstrap Distribution"
+      default "stable"
+      help
+         Distribution to be fetched by Debootstrap.
+         For Debian distributions, these values can be a value among (for example):
+         - sid
+         - jessie
+         - stable
+         - unstable
+
+   config DEBOOTSTRAP_MIRROR
+      string "Debootstrap Mirror"
+      default "http://ftp.debian.org/debian"
+      help
+         Debootstrap Mirror
+
+   config DEBOOTSTRAP
+      string "Debootstrap Program"
+      default "/usr/sbin/debootstrap"
+      help
+         Debootstrap program to use
+
+   config DEBOOTSTRAP_HTTP_PROXY
+      string "Debootstrap HTTP Proxy"
+      default "$http_proxy"
+      help
+         HTTP proxy to be used by Debootstrap
+
+   config PACKAGES
+      string "Extra Packages (space-separated)"
+      default "locales ntp vim sudo openssh-server"
+      help
+         Packages to be installed.
+         This list should be kept to a minimum. SBXG's purpose is NOT
+         to craft a full-custom rootfs!
+
+   config MAC_ADDRESS
+      string "MAC Address"
+      default 001122334455
+      help
+         MAC Address
+
+   config ROOT_PASSWORD
+      string "Root Password"
+      default "root"
+
+   config ADMIN_PASSWORD
+      string "Admin password"
+      default "admin"
+
+   config HOSTNAME
+      string "Hostname"
+      default "board-sbxg"
+endmenu
+
+
+#==============================================================================#
+#                        Kernel Generation Configuration                       #
+#==============================================================================#
+
+menu "Kernel"
+   config USE_MAKE_KPKG
+      bool "Generate Debian Kernel Packages"
+      default n
+      select MAKE_KPKG_KERNEL_IMAGE
+      help
+         Activate this option to enable building Debian kernel packages
+         with make-kpkg. You must install make-kpkg.
+
+   menu "Debian Kernel Packages"
+      visible if USE_MAKE_KPKG
+
+      config MAKE_KPKG_KERNEL_IMAGE
+         bool "Kernel Image"
+         default n
+         help
+            Build a Debian package of the Kernel image
+
+      config MAKE_KPKG_KERNEL_HEADERS
+         bool "Kernel Headers"
+         default n
+         help
+            Build a Debian package of the Kernel headers
+
+      config MAKE_KPKG_KERNEL_DOC
+         bool "Kernel Documentation"
+         default n
+         help
+            Build a Debian package of the Kernel documentation
+
+      config MAKE_KPKG_KERNEL_SOURCE
+         bool "Kernel Source"
+         default n
+         help
+            Build a Debian package of the Kernel sources
+   endmenu
+endmenu
+
+
+#==============================================================================#
+#                        Image Generation Configuration                        #
+#==============================================================================#
+
+menu "Image"
+   config IMAGE_HASH_MD5
+      bool "Hash MD5"
+      default y
+
+   config IMAGE_HASH_SHA1
+      bool "Hash SHA1"
+      default n
+
+   config IMAGE_HASH_SHA256
+      bool "Hash SHA256"
+      default n
+
+   choice
+      prompt "Image Compression"
+      default IMAGE_COMPRESSION_NONE
+      help
+         Compresion type of the final image
+
+      config IMAGE_COMPRESSION_NONE
+         bool "None"
+      config IMAGE_COMPRESSION_GZ
+         bool "Gzip"
+      config IMAGE_COMPRESSION_BZIP
+         bool "Bzip"
+      config IMAGE_COMPRESSION_XZ
+         bool "Xz"
+   endchoice
+endmenu
+
+
+#==============================================================================#
+#                           Config From Build System                           #
+#==============================================================================#
+
+@EXTRA_CONFIG@

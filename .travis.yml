@@ -57,4 +57,4 @@ before_script:
    - git config --global user.email "$(whoami)@$(hostname).ci"
    - git config --global color.ui "none"
 
-script: ./tests/run --branch "master"
+script: ./tests/run

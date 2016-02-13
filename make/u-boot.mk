@@ -15,16 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
+
 .PHONY: u-boot u-boot-%
 
 # Executes $(1) in the u-boot directory with JOBS and CROSS_COMPILE
 # set to the values defined in the configuration
-u-boot-make = $(MAKE) -C $(UBOOT_DIR) CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) $(1)
+u-boot-make = $(MAKE) -C $(UBOOT_DIR) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) -j $(CONFIG_JOBS) $(1)
 
-u-boot: $(DEPS) $(UBOOT_DIR)/$(UBOOT_BIN_NAME)
+u-boot: $(DEPS) $(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME)
 
-$(UBOOT_DIR)/$(UBOOT_BIN_NAME):
-	$(call u-boot-make,$(BOARD_NAME)_config)
+$(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME):
+	$(call u-boot-make,$(CONFIG_BOARD)_config)
 	$(call u-boot-make)
 
 # Catch all u-boot targets that were not overriden above

@@ -25,9 +25,8 @@ TOP_SRC_DIR="$(realpath "$(dirname "$0")/../")"
 
 SBXG_URL="https://github.com/sbxg/sbxg.git"
 SBXG_DIR="sbxg"
-TEST_BOARDS="Cubietruck"
 CLEANUP=1
-BRANCH="master"
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 CONFIG="$TOP_SRC_DIR/tests/config.travis"
 
 err() {
@@ -96,24 +95,19 @@ if [ "$CLEANUP" -ne 0 ]; then
       rm -rf "$TMP_DIR"
    }
    trap clean_tmp EXIT
-else # No cleanup
-   echo "Running tests in \"$TMP_DIR\""
 fi
 
+echo "Running tests in \"$TMP_DIR\""
 
-# Setup SBXG
-for board in $TEST_BOARDS; do
-    cd "$TMP_DIR"
-    rm -rf "$SBXG_DIR" # Remove results from a previous iteration
+cd "$TMP_DIR"
 
-    git clone --depth=1 --branch "$BRANCH" "$SBXG_URL" "$SBXG_DIR"
-    cd "$SBXG_DIR"
+git clone --depth=1 --branch "$BRANCH" "$SBXG_URL" "$SBXG_DIR"
+cd "$SBXG_DIR"
 
-    cp "$CONFIG" config.user
-    make BOARD="$board" init
-    make sync
-    make all
-    if [ "$CLEANUP" -ne 0 ]; then
-       make mrproper
-    fi
-done
+cp "$CONFIG" .config
+make init
+make sync
+make all
+if [ "$CLEANUP" -ne 0 ]; then
+   make mrproper
+fi

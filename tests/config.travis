@@ -1,87 +1,84 @@
 # Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
-
+#
 # This file is part of SBXG.
-
-
+#
 # SBXG is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
+#
 # SBXG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+#
 # You should have received a copy of the GNU General Public License
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# =============================================
-# This file is entirely written is POSIX SHELL.
-# =============================================
 
-GCC_PREFIX=arm-linux-gnueabihf-
-JOBS=$(( $(nproc) + 1 ))
+#
+# Board Selection
+#
+# CONFIG_BOARD_CUBIEBOARD1 is not set
+# CONFIG_BOARD_CUBIEBOARD2 is not set
+# CONFIG_BOARD_CUBIEBOARD4 is not set
+CONFIG_BOARD_CUBIETRUCK=y
+# CONFIG_BOARD_MX6QSABRESD is not set
+# CONFIG_BOARD_CUBIEBOARD1_MANIFEST_LINUX_XML is not set
+# CONFIG_BOARD_CUBIEBOARD2_MANIFEST_LINUX_XML is not set
+# CONFIG_BOARD_CUBIETRUCK_MANIFEST_LINUX_4_2_6_GRSEC_XML is not set
+# CONFIG_BOARD_CUBIETRUCK_MANIFEST_LINUX_4_3_5_GRSEC_XML is not set
+CONFIG_BOARD_CUBIETRUCK_MANIFEST_LINUX_XML=y
+CONFIG_BOARD="Cubietruck"
+CONFIG_MANIFEST="linux.xml"
 
-# path to needed directories
-LINUX_DIR=linux-stable
-UBOOT_DIR=u-boot
-RESOURCES_DIR=resources
-HOOKS_DIR=hooks
+#
+# Toolchain
+#
+CONFIG_GCC_PREFIX="arm-linux-gnueabihf-"
+CONFIG_JOBS=3
+CONFIG_QEMU_ARM_STATIC="qemu-arm-static"
 
-# qemu is needed to check images
-QEMU_SYSTEM_ARM=qemu-system-arm
-QEMU_MEMORY_SIZE=512M
+#
+# Distribution
+#
+CONFIG_DEBOOTSTRAP_DISTRIBUTION="stable"
+CONFIG_DEBOOTSTRAP_MIRROR="http://ftp.debian.org/debian"
+CONFIG_DEBOOTSTRAP="/usr/sbin/debootstrap"
+CONFIG_DEBOOTSTRAP_HTTP_PROXY="$http_proxy"
+CONFIG_PACKAGES="vim sudo openssh-server"
+CONFIG_MAC_ADDRESS="001122334455"
+CONFIG_ROOT_PASSWORD="root"
+CONFIG_ADMIN_PASSWORD="admin"
+CONFIG_HOSTNAME="board-sbxg-travis"
 
-# repository to use for debootstrap
-# possible values are : an url or commenting out the variable
-# examples:
-#    DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
-DEBOOTSTRAP_MIRROR=http://ftp.debian.org/debian
-DEBOOTSTRAP_BIN=/usr/sbin/debootstrap
+#
+# Kernel
+#
+# CONFIG_USE_MAKE_KPKG is not set
+# CONFIG_MAKE_KPKG_KERNEL_IMAGE is not set
+# CONFIG_MAKE_KPKG_KERNEL_HEADERS is not set
+# CONFIG_MAKE_KPKG_KERNEL_DOC is not set
+# CONFIG_MAKE_KPKG_KERNEL_SOURCE is not set
 
-# If a proxy is needed to make the debootstrap, set it here
-DEBOOTSTRAP_HTTP_PROXY=${http_proxy}
-
-# Default value is used for specialization by Ansible
-HOSTNAME=travis
-
-# user defined variable for the target system
-PACKAGES="locales ntp tcpdump mdadm lvm2 firmware-atheros iw python-apt vlan vim sudo openssh-server"
-MACADDR=001122334455
-ROOT_PASSWORD=root
-ADMIN_PASSWORD=admin
-# compress the output image
-# possible values are : gz, bzip, xz, none
-COMPRESS_IMG=none
-
-# create hashes files for integrity checking
-# possible values are : yes, no
-IMG_HASH_MD5=yes
-IMG_HASH_SHA1=yes
-IMG_HASH_SHA256=yes
-
-# Possible values: wheezy | jessie | sid | oldstable | stable | unstable  | ...
-DEB_SUITE=oldstable
-
-
-LINUX_DEBIAN_PACKAGES="
-kernel_image
-kernel_headers
-kernel_doc
-kernel_source
-"
-
-# Revision of the debian package to be generated
-DEBIAN_PACKAGE_REVISION=1
-
-# === DO NOT MODIFY ===
-if [ -f .board ]; then
-   BOARD="$(head -n 1 .board)"
-   . "./boards/${BOARD}.conf"
-fi
-# =====================
-
-DTS="${DTB%.dtb}.dts"
-CHROOT_DIR="chroot-${DEB_ARCH}"
+#
+# Image
+#
+CONFIG_IMAGE_HASH_MD5=y
+# CONFIG_IMAGE_HASH_SHA1 is not set
+# CONFIG_IMAGE_HASH_SHA256 is not set
+CONFIG_IMAGE_COMPRESSION_NONE=y
+# CONFIG_IMAGE_COMPRESSION_GZ is not set
+# CONFIG_IMAGE_COMPRESSION_BZIP is not set
+# CONFIG_IMAGE_COMPRESSION_XZ is not set
+CONFIG_LINUX_DIR="linux-stable"
+CONFIG_UBOOT_DIR="u-boot"
+CONFIG_BOARDS_DIR="boards"
+CONFIG_KERNEL_CONFIGS_DIR="kernel-configs"
+CONFIG_SCRIPTS_DIR="scripts"
+CONFIG_CHROOT_DIR="build/chroot-arm"
+CONFIG_RESOURCES_DIR="resources"
+CONFIG_HOOKS_DIR="hooks"
+CONFIG_IMAGES_DIR="build/images"
+CONFIG_BUILD_DIR="build"

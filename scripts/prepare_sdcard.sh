@@ -33,15 +33,14 @@ BUILD_SERIAL=`date "+%Y%m%d%H%M"`
 TMP_VAL=$$
 
 # Including users defined variables
-. ./config.user
+. "$(dirname "$0")"/config
 
 # user defined values
 IMG_SIZE=3700
 CONF_SIZE=50
 PARTITION_SIZE=$((($IMG_SIZE - $CONF_SIZE) / 2))
 FS_TYPE=ext3
-OUT_DIR=images
-IMG_NAME="$OUT_DIR/$BOARD_NAME"-"$BUILD_SERIAL"-"$IMG_SIZE".img
+IMG_NAME="$CONFIG_IMAGES_DIR/$CONFIG_BOARD"-"$BUILD_SERIAL"-"$IMG_SIZE".img
 EXIT_ERROR=1
 EXIT_OK=0
 
@@ -129,13 +128,13 @@ copyboot2image()
     # Should match a device regexp or something like that.
     if [ -n "$IMG_NAME" ]; then
 	    if [ -f "$IMG_NAME" ]; then
-               if [ -f "$UBOOT_DIR"/$UBOOT_BIN_NAME ]; then
+               if [ -f "$CONFIG_UBOOT_DIR"/$CONFIG_UBOOT_BIN_NAME ]; then
 			# copy previously generated u-boot files on image
 			    sudo dd \
-                                    if="$UBOOT_DIR"/$UBOOT_BIN_NAME \
+                                    if="$CONFIG_UBOOT_DIR"/$CONFIG_UBOOT_BIN_NAME \
 				    of="$IMG_NAME" \
-				    bs="$DD_BS" \
-				    seek="$DD_SEEK" \
+				    bs="$CONFIG_DD_BS" \
+				    seek="$CONFIG_DD_SEEK" \
 				    conv=nocreat,notrunc
 	        else
 			    echo "You need to build u-boot first"
@@ -174,12 +173,13 @@ copyrootfs2image()
             # cd  "$CHROOT_DIR" because not  existant,  and we must be
             # sure to mount device, otherwise not  possible to
             # free loop device later because 'in used by mount'
-			if [ -d "$CHROOT_DIR" ] ;then
-				cd "$CHROOT_DIR"
+			if [ -d "$CONFIG_CHROOT_DIR" ] ;then
+                           (
+				cd "$CONFIG_CHROOT_DIR"
 				sudo mount "$LOOP_DEV" /mnt
 				sudo bash -c "tar --exclude=qemu-arm-static -cf - . | tar -C /mnt -xvf -"
-				cd ..
 				sudo umount /mnt
+                           )
 			else
 				echo " $CHROOT_DIR not existant, please run make debootstrap first"
 				sudo /sbin/kpartx -d -p "$TMP_VAL" "$IMG_NAME"
@@ -204,30 +204,27 @@ copyrootfs2image()
 # Calling this function alone is useless because the IMG_NAME will surely be wrong...
 compress_image()
 {
-    case "$COMPRESS_IMG" in
-        "gz")
-            echo "Compressing image using gzip"
-            gzip "$IMG_NAME"
-            md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
-            ;;
-        "bz")
-            echo "Compressing image using bzip2"
-            bzip2 -v "$IMG_NAME"
-            md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
-            ;;
-        "xz")
-            echo "Compressing image using xz"
-            xz -zv "$IMG_NAME"
-            md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
-            ;;
-        "none")
-            echo "Not compressing the image"
-            # do nothing
-            ;;
-        *)
-            # do nothing
-            ;;
-    esac
+   if [ "x$CONFIG_IMAGE_COMPRESSION_GZ" = "xy" ]; then
+      echo "Compressing image using gzip"
+      gzip "$IMG_NAME"
+      md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
+   fi
+
+   if [ "x$CONFIG_IMAGE_COMPRESSION_BZIP" = "xy" ]; then
+      echo "Compressing image using bzip2"
+      bzip2 -v "$IMG_NAME"
+      md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
+   fi
+
+   if [ "x$CONFIG_IMAGE_COMPRESSION_XZ" = "xy" ]; then
+      echo "Compressing image using xz"
+      xz -zv "$IMG_NAME"
+      md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
+   fi
+
+   if [ "x$CONFIG_IMAGE_COMPRESSION_NONE" = "xy" ]; then
+      echo "Not compressing the image"
+   fi
 }
 
 ########
@@ -248,15 +245,15 @@ hash_image()
     fi
 
     # now we have the right name, let's compute hashes
-    if [ "yes" = "$IMG_HASH_MD5" ]; then
+    if [ "xy" = x"$CONFIG_IMAGE_HASH_MD5" ]; then
         echo "Creating md5 hash"
         md5sum "$IMG" >> "$IMG".md5
     fi
-    if [ "yes" = "$IMG_HASH_SHA1" ]; then
+    if [ "xy" = x"$CONFIG_IMAGE_HASH_SHA1" ]; then
         echo "Creating sha1 hash"
         sha1sum "$IMG" >> "$IMG".sha1
     fi
-    if [ "yes" = "$IMG_HASH_SHA256" ]; then
+    if [ "xy" = x"$CONFIG_IMAGE_HASH_SHA256" ]; then
         echo "Creating sha256 hash"
         sha256sum "$IMG" >> "$IMG".sha256
     fi
@@ -267,7 +264,7 @@ hash_image()
 ########
 
     set -x
-    mkdir -p "$OUT_DIR"
+    mkdir -p "$CONFIG_IMAGES_DIR"
 
 case "$1" in
     all)
@@ -298,12 +295,3 @@ case "$1" in
 esac
 
 exit $EXIT_OK
-
-########
-
-# Local Variables:
-# mode:sh
-# tab-width: 4
-# indent-tabs-mode: nil
-# End:
-# vim: filetype=sh:expandtab:shiftwidth=4:tabstop=4:softtabstop=4
