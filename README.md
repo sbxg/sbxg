@@ -136,7 +136,7 @@ réseau 100 Mbit/sec.
  - un binding CPU tel que le CPU0 reste dédié au host, et le 1 pour le
    container
  - pas de restruction (limits) sur la gestion de la mémoire et le CPU
- - usage du disque sata via un montage dans /tmp 
+ - usage du disque sata via un montage dans /tmp
 
 Au niveau dimmensionnement, la configurationh est la suivante:
 
@@ -153,7 +153,7 @@ srv-nfs-2-services.mydomain1.noip.org:/exports/data/lv_home/lacroix  29702272 27
 
  lacroix@vm-jessie-arm-1:~$ uname -a
 Linux vm-jessie-arm-1 4.0.5-e23a94b-be4cb23-grsec-dirty #10 SMP Wed Aug 26 15:26:58 CEST 2015 armv7l GNU/Linux
-lacroix@vm-jessie-arm-1:~$ cat /etc/debian_version 
+lacroix@vm-jessie-arm-1:~$ cat /etc/debian_version
 8.2
 
 
@@ -378,7 +378,7 @@ Makefile:191: recipe for target 'debootstrap' failed
 Vérifiez que binfmt est correctement installé via la commande suivante :
 
 |>  root@vm-jessie-x86-amd64-3:~# update-binfmts --display |grep arm
-root@vm-jessie-x86-amd64-3:~# 
+root@vm-jessie-x86-amd64-3:~#
 
 
 Dans ce cas (absence d'emulateur qemu, docn  cause de ce problème), il
