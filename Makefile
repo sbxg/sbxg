@@ -21,7 +21,8 @@
 SED := sed
 SCRIPTS_DIR := scripts
 DEPS := makefile.vars Makefile
-URL ?= ssh://gitolite3@bie91-1-82-227-34-59.fbx.proxad.net:1024/public/system-builder-ng-manifest
+
+MANIFESTS_URL := $(shell $(SCRIPTS_DIR)/get_remote_url.sh)/manifests
 
 MANIFEST ?= linux
 
@@ -213,7 +214,7 @@ ifeq ($(BOARD),)
 else
 # Keep track of the board name, to be able to source the config later
 	echo "$(BOARD)" > .board
-	repo init -u $(URL) -m "$(BOARD)/$(MANIFEST).xml"
+	repo init -u $(MANIFESTS_URL) -m "$(BOARD)/$(MANIFEST).xml"
 	$(MAKE) sync
 endif
 
