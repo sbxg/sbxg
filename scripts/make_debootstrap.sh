@@ -71,10 +71,10 @@ do_debootstrap()
 configure_system()
 {
 # set root password
-    echo "Please enter the root password: "
 
     if [ -z "$ROOT_PASSWORD" ]; then
-    # hiding the root password when typed could be a good idea... (stty)
+        echo "Please enter the root password: "
+        # hiding the root password when typed could be a good idea... (stty)
 	read ROOT_PASSWORD
     fi
     sudo PATH="$CHROOT_PATH" bash -c "echo -e root:$ROOT_PASSWORD | chroot . chpasswd"
@@ -113,10 +113,10 @@ configure_system()
     set -x
 
 # set hostname
-    echo "Please enter the hostname of the host: "
 
     if [ -z "$HOSTNAME" ]; then
-	read HOSTNAME
+        echo "Please enter the hostname of the host: "
+        read HOSTNAME
     fi
     sudo PATH="$CHROOT_PATH" bash -c "echo $HOSTNAME > etc/hostname"
 
