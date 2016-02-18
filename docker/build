@@ -1,5 +1,4 @@
 #! /usr/bin/env sh
 
-CWD="$(realpath $(dirname "$0"))"
-docker build -t sbng "$CWD"
-
+CWD="$(realpath "$(dirname "$0")")"
+docker build -t sbxg "$CWD"
