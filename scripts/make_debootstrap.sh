@@ -6,20 +6,20 @@
 #                    2015, Jean Guyomarc'h <jean.guyomarch@gmail.com>
 #                    2015, Louis Syoën <louis.syoen@openmailbox.org>
 
-# This file is part of CBoard.
+# This file is part of SBXG.
 
-# CBoard is free software: you can redistribute it and/or modify
+# SBXG is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# CBoard is distributed in the hope that it will be useful,
+# SBXG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with CBoard.  If not, see <http://www.gnu.org/licenses/>.
+# along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
 #set -x
 set -e
