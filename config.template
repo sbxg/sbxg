@@ -52,6 +52,7 @@ HOSTNAME=srv-cubie2-1
 PACKAGES="locales ntp tcpdump mdadm lvm2 firmware-atheros iw python-apt vlan vim sudo openssh-server"
 MACADDR=001122334455
 ROOT_PASSWORD=root
+ADMIN_PASSWORD=admin
 # compress the output image
 # possible values are : gz, bzip, xz, none
 COMPRESS_IMG=none
