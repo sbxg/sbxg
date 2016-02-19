@@ -20,11 +20,12 @@
 
 SED := sed
 SCRIPTS_DIR := scripts
+MAKE_DIR := make
 DEPS := makefile.vars Makefile
 
 MANIFESTS_URL := $(shell $(SCRIPTS_DIR)/get_remote_url.sh)/manifests
-
 MANIFEST ?= linux
+
 
 export
 
@@ -37,14 +38,18 @@ export
 # therefore everything can work as expected :)
 -include makefile.vars
 
-.PHONY: help all \
-   kernel_menuconfig config kernel_gconfig kernel_defconfig kernel_compile  \
-   with_grsecurity with_lesser_grsecurity u-boot debootstrap prepare_sdcard \
-   kernel_clean kernel_distclean clean distclean debian kernel_config \
-   init sync repo-clean
 
-all: $(DEPS) u-boot kernel_defconfig kernel_compile debootstrap prepare_sdcard
+all: $(DEPS) u-boot linux-defconfig linux debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(BOARD_NAME) :)"
+
+include $(MAKE_DIR)/common.mk
+include $(MAKE_DIR)/linux.mk
+include $(MAKE_DIR)/u-boot.mk
+
+.PHONY: help all \
+   debootstrap prepare_sdcard \
+   clean distclean debian \
+   init sync repo-clean
 
 help: $(DEPS)
 	@echo "What you can do:"
@@ -55,15 +60,10 @@ help: $(DEPS)
 	@echo "config:                  Generate a user config from the template"
 	@echo
 	@echo "  -- kernel configuration --"
-	@echo "kernel_config:		copies the kernel configuration file specified in config.user as the effective .config"
-	@echo "kernel_defconfig:	Write the default kernel configuration for the board"
-	@echo "kernel_menuconfig:	make menuconfig in LINUX_DIR"
-	@echo "kernel_gconfig:		make gconfig in LINUX_DIR"
+	@echo "linux-<TARGET>		Will call <TARGET> in the linux directory. E.g linux-menuconfig"
 	@echo
 	@echo "  -- kernel compilation --"
-	@echo "kernel_compile:		make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
-	@echo "with_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
-	@echo "with_lesser_grsecurity:	make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) DISABLE_PAX_PLUGINS=y uImage modules"
+	@echo "linux:			make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) uImage modules"
 	@echo
 	@echo "  -- make-kpkg --"
 	@echo "debian			generated debian packages of the kernel with make-kpkg"
@@ -76,8 +76,6 @@ help: $(DEPS)
 	@echo "prepare_sdcard:		install u-boot and the root_fs to the sdcard"
 	@echo
 	@echo "  -- cleaning targets --"
-	@echo "kernel_clean:		"
-	@echo "kernel_distclean:	"
 	@echo "clean:			clean the compiled files (not done yet)"
 	@echo "distclean:		clean the compilet files and the root_fs"
 	@echo "repo-clean:              clears repo internal state"
@@ -104,85 +102,9 @@ makefile.vars: config.user
 
 config: config.user
 
-# Kernel compile
-
-kernel_config: $(DEPS)
-	cp "$(KERNEL_CONFIG)" $(LINUX_DIR)/.config
-
-kernel_defconfig: $(DEPS)
-ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
-	if [ -f kernel-configs/$(BOARD_NAME)/defconfig ]; then \
-	 cp kernel-configs/$(BOARD_NAME)/defconfig $(LINUX_DIR)/.config ; \
-	 make -C $(LINUX_DIR) ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) olddefconfig ; \
-	else \
-	 make -C $(LINUX_DIR) ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) $(KERNEL_DEFCONFIG) ; \
-	fi ;
-else
-	@echo "File .config already exists."
-endif
-
-kernel_menuconfig: $(DEPS)
-	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) menuconfig
-
-kernel_gconfig: $(DEPS)
-	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) gconfig
-
-kernel_compile: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/$(DTB)
-
-$(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
-# extract current SHA1 from git linux kernel version source
-# and append this version to the kernel version in order to have this SHA1
-# matched in command : uname -a command and SNMP MIB
-	cd $(LINUX_DIR) && make \
-	EXTRAVERSION=-`git rev-parse --short HEAD` \
-	ARCH=arm \
-	CROSS_COMPILE=$(GCC_PREFIX) \
-	-j $(JOBS) \
-	DISABLE_PAX_PLUGINS=y \
-	uImage modules LOADADDR=$(LOADADDR)
-
-$(LINUX_DIR)/arch/arm/boot/dts/$(DTB): $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
-	cd $(LINUX_DIR) && make \
-	EXTRAVERSION=-`git rev-parse --short HEAD` \
-	ARCH=arm \
-	CROSS_COMPILE=$(GCC_PREFIX) \
-	-j $(JOBS) \
-	DISABLE_PAX_PLUGINS=y \
-	dtbs LOADADDR=$(LOADADDR)
-
-# with_grsecurity:
-# 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) uImage modules
-
-# with_lesser_grsecurity:
-# 	cd $(LINUX_DIR) && make ARCH=arm CROSS_COMPILE=$(GCC_PREFIX) DISABLE_PAX_PLUGINS=y -j $(JOBS) uImage modules
-
-kernel_clean: $(DEPS)
-	cd $(LINUX_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) clean
-
-kernel_distclean: $(DEPS)
-	cd $(LINUX_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) mrproper
-
-# make-kpkg
 
 debian: $(DEPS)
 	$(SCRIPTS_DIR)/make_debian_packages.sh $(LINUX_DEBIAN_PACKAGES)
-
-
-# bootloader u-boot compile
-
-u-boot: $(DEPS) $(UBOOT_DIR)/$(UBOOT_BIN_NAME)
-
-$(UBOOT_DIR)/$(UBOOT_BIN_NAME):
-	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS) $(BOARD_NAME)_config
-	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) -j $(JOBS)
-
-u-boot_clean: $(DEPS)
-	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) clean
-
-u-boot_distclean: $(DEPS)
-	cd $(UBOOT_DIR) && make CROSS_COMPILE=$(GCC_PREFIX) distclean
-
-# Debootstrap
 
 boot.cmd: $(DEPS) boot.cmd.in
 	$(SED) \
@@ -198,15 +120,17 @@ prepare_sdcard: $(DEPS)
 
 # Cleaning stuff
 
-clean: $(DEPS) u-boot_clean kernel_clean
+clean: $(DEPS) u-boot-clean linux-clean
 	$(RM) makefile.vars
 	$(RM) config.user
 	$(RM) boot.cmd
 	$(RM) .board
 
 
-distclean: $(DEPS) clean u-boot_distclean kernel_distclean
+distclean: $(DEPS) clean u-boot-distclean linux-distclean
 	sudo $(RM) -r $(CHROOT_DIR)
+
+mrproper: $(DEPS) distclean u-boot-mrproper linux-mrproper repo-clean
 
 init:
 ifeq ($(BOARD),)
