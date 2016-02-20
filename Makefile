@@ -124,8 +124,6 @@ clean: $(DEPS) u-boot-clean linux-clean
 	$(RM) makefile.vars
 	$(RM) config.user
 	$(RM) boot.cmd
-	$(RM) .board
-
 
 distclean: $(DEPS) clean u-boot-distclean linux-distclean
 	sudo $(RM) -r $(CHROOT_DIR)
