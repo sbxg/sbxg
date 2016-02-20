@@ -33,9 +33,9 @@ RUN apt-get install -y libncurses5-dev
 
 RUN apt-get clean
 
-RUN mkdir -p /opt/sbng
-VOLUME /opt/sbng
+RUN mkdir -p /opt/sbxg
+VOLUME /opt/sbxg
 
 USER root
-WORKDIR /opt/sbng
+WORKDIR /opt/sbxg
 
