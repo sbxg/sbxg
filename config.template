@@ -23,7 +23,7 @@
 # =============================================
 
 GCC_PREFIX=arm-linux-gnueabihf-
-JOBS=4
+JOBS=$(( $(nproc) + 1 ))
 
 # path to needed directories
 LINUX_DIR=linux-stable
