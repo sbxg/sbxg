@@ -137,7 +137,6 @@ else
 # Keep track of the board name, to be able to source the config later
 	echo "$(BOARD)" > .board
 	repo init -u $(MANIFESTS_URL) -m "$(BOARD)/$(MANIFEST).xml"
-	$(MAKE) sync
 endif
 
 sync:
