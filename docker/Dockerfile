@@ -35,13 +35,11 @@ RUN apt-get install -y autoconf
 RUN apt-get install -y build-essential
 RUN apt-get install -y make
 RUN apt-get install -y automake
-RUN apt-get install -y debootstrap
 RUN apt-get install -y qemu-user-static
 RUN apt-get install -y qemu
 RUN apt-get install -y binfmt-support
 RUN apt-get install -y git
 RUN apt-get install -y kernel-package
-RUN apt-get install -y u-boot-tools
 RUN apt-get install -y u-boot-tools
 RUN apt-get install -y sudo
 RUN apt-get install -y debootstrap
