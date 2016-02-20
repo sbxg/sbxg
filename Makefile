@@ -149,3 +149,4 @@ sync:
 repo-clean:
 	$(RM) .board
 	$(RM) -r .repo
+	$(RM) makefile.vars
