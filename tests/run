@@ -1,0 +1,119 @@
+#! /usr/bin/env sh
+#
+# Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#
+# This file is part of SBXG
+#
+# SBXG is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# SBXG is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
+
+
+set -e
+set -u
+
+TOP_SRC_DIR="$(realpath "$(dirname "$0")/../")"
+
+SBXG_URL="https://github.com/sbxg/sbxg.git"
+SBXG_DIR="sbxg"
+TEST_BOARDS="Cubietruck"
+CLEANUP=1
+BRANCH="master"
+CONFIG="$TOP_SRC_DIR/tests/config.travis"
+
+err() {
+   echo "*** $@" 1>&2
+}
+
+#==============================================================================#
+#                                    Getopt                                    #
+#==============================================================================#
+
+usage() {
+   echo "Usage: $0 [OPTIONS]"
+   echo "  -l,--local     clone the local SBXG"
+   echo "  --no-cleanup   don't remove build directory"
+   echo "  -b=,--branch=  clone the specified branch instead of HEAD"
+   echo "  -c=,--config=  specify the configuration os SBXG"
+   echo "  -h,--help      show this message"
+   exit "$1"
+}
+
+test_arg() {
+   if [ $# -le 1 ]; then
+      err "Missing argument to \"$1\""
+      usage 1
+   fi
+}
+
+while [ $# -gt 0 ]; do
+   case "$1" in
+      (-l|--local)
+         SBXG_URL="file://$TOP_SRC_DIR"
+         ;;
+      (-h|--help)
+         usage 0
+         ;;
+      (-b|--branch)
+         test_arg $*
+         shift
+         BRANCH="$1"
+         ;;
+      (--no-cleanup)
+         CLEANUP=0
+         ;;
+      (-c|--config)
+         test_arg $*
+         shift
+         CONFIG="$(realpath "$1")"
+         ;;
+      (*)
+         err "Invalid arguments"
+         usage 1 1>&2
+         ;;
+   esac
+   shift
+done
+
+
+#==============================================================================#
+#                      Run Tests in a Temporary Directory                      #
+#==============================================================================#
+
+TMP_DIR="$(mktemp -d)"
+
+if [ "$CLEANUP" -ne 0 ]; then
+   clean_tmp() {
+      rm -rf "$TMP_DIR"
+   }
+   trap clean_tmp EXIT
+else # No cleanup
+   echo "Running tests in \"$TMP_DIR\""
+fi
+
+
+# Setup SBXG
+for board in $TEST_BOARDS; do
+    cd "$TMP_DIR"
+    rm -rf "$SBXG_DIR" # Remove results from a previous iteration
+
+    git clone --depth=1 --branch "$BRANCH" "$SBXG_URL" "$SBXG_DIR"
+    cd "$SBXG_DIR"
+
+    cp "$CONFIG" config.user
+    make BOARD="$board" init
+    make sync
+    make all
+    if [ "$CLEANUP" -ne 0 ]; then
+       make mrproper
+    fi
+done
