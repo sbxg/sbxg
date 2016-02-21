@@ -1,6 +1,8 @@
 SBXG Core
 =========
 
+[![Build Status](https://travis-ci.org/sbxg/sbxg.svg?branch=master)](https://travis-ci.org/sbxg/sbxg)
+
 SBXG aims at producing software components for a dedicated embedded board
 (e.g. [Cubietruck](http://www.cubietruck.com/),
       [Cubieboard](http://cubieboard.org/),
