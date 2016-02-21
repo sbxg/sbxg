@@ -19,10 +19,27 @@
 
 CWD="$(dirname "$0")" # Where the script resides
 
+# Returns the git version as an integer
+git_version_get() {
+   echo "$(git --version | grep -o "[0-9]\.[0-9]\.[0-9]" | sed 's/\.//g')"
+}
+
+git_remote_get() {
+   # FIXME origin is assumed to be the remote
+   echo "origin"
+}
+
 git_dir="$CWD/../.git"
 if [ -d "$git_dir" ]; then
-   # FIXME origin is assumed to be the remote
-   url="$(git --git-dir "$git_dir" remote get-url origin)"
+   git_version="$(git_version_get)"
+   remote="$(git_remote_get)"
+
+   # Git 2.7.0 provides git remote get-url. Previous versions don't...
+   if [ "$git_version" -ge 270 ]; then
+      url="$(git --git-dir "$git_dir" remote get-url "$remote")"
+   else # < git 2.7.0
+      url="$(git remote -v | grep "${remote}.*(fetch)$" | cut -d ' ' -f 1 | cut -f 2)"
+   fi
    base_url="$(dirname "$url")"
    echo "$base_url"
 else
