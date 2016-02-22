@@ -17,6 +17,11 @@
 
 sudo: true
 
+branches:
+   only:
+      - master
+      - /^testing\/.*$/
+
 addons:
    apt:
       sources:
