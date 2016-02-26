@@ -37,6 +37,7 @@ RUN apt-get install -y make
 RUN apt-get install -y automake
 RUN apt-get install -y qemu-user-static
 RUN apt-get install -y qemu
+RUN apt-get install -y cmake
 RUN apt-get install -y binfmt-support
 RUN apt-get install -y git
 RUN apt-get install -y kernel-package
