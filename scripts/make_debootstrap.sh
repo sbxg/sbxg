@@ -208,7 +208,7 @@ install_kernel()
     sudo cp "$CONFIG_LINUX_DIR/.config" "$CONFIG_CHROOT_DIR"/boot/config
     sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/dts/$CONFIG_DTB" "$CONFIG_CHROOT_DIR"/boot
     sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/uImage" "$CONFIG_CHROOT_DIR"/boot
-    sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$CONFIG_CHROOT_DIR" ARCH=arm modules_install
+    sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$(realpath "$CONFIG_CHROOT_DIR")" ARCH=arm modules_install
 
 # add some kernel boot args
     mkimage -C none -A arm -T script -d boot.cmd boot.scr
