@@ -88,6 +88,14 @@ done
 #                      Run Tests in a Temporary Directory                      #
 #==============================================================================#
 
+# "Detached states" will make the branch detection fail.
+# No fallback for this, just crash!
+if [ x"$BRANCH" = x"HEAD" ]; then
+   err "Current branch detection failed (was detected as \"HEAD\")"
+   err "This might be because the repository is in a \"detached\" state."
+   exit 127
+fi
+
 TMP_DIR="$(mktemp -d)"
 
 if [ "$CLEANUP" -ne 0 ]; then
