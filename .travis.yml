@@ -57,4 +57,4 @@ before_script:
    - git config --global user.email "$(whoami)@$(hostname).ci"
    - git config --global color.ui "false"
 
-script: ./tests/run --no-cleanup
+script: ./tests/run --no-cleanup --branch "$TRAVIS_BRANCH"
