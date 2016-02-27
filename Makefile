@@ -142,7 +142,7 @@ init: $(DEPS)
 ifeq ($(CONFIG_BOARD),)
 	$(error No configuration found. Please run 'make menuconfig')
 else
-	repo init -u $(MANIFESTS_URL) -m "$(CONFIG_BOARD)/$(CONFIG_MANIFEST)"
+	repo init -u $(MANIFESTS_URL) -m $(CONFIG_BOARD)/$(CONFIG_MANIFEST)
 endif
 
 sync: $(DEPS)
