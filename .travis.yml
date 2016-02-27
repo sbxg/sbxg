@@ -55,6 +55,6 @@ before_script:
    - export PATH="$HOME/bin:$PATH"
    - git config --global user.name "travis"
    - git config --global user.email "$(whoami)@$(hostname).ci"
-   - git config --global color.ui "none"
+   - git config --global color.ui "false"
 
 script: ./tests/run --no-cleanup
