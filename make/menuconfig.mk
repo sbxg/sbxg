@@ -39,12 +39,18 @@ $(MANIFEST_CFG): $(CONF_BUILD_DIR)
 	$(Q)$(SCRIPTS_DIR)/generate_manifest_cfg $(MANIFESTS_URL) $@
 
 
+# This macro takes a configuration parameter as a first argument and
+# generates a Kconfig from it.
+# All backslashes are escaped because this macro will be expanded twice
 define generate-config
 config $(1)\\n \
 \\tstring\\n \
 \\tdefault \"$(call $(1))\"\\n
 endef
 
+# This macro takes all the variables mentioned in EXPORTED_VARIABLES
+# and pass them to generate-config to generate a Kconfig block
+# for each of these variables
 define generate-extra-config
 $(foreach var,$(EXPORTED_VARIABLES),$(call generate-config,$(var)))
 endef
