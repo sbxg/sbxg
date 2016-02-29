@@ -6,7 +6,7 @@ SBXG Core
 SBXG aims at producing software components for a dedicated embedded board
 (e.g. [Cubietruck](http://www.cubietruck.com/),
       [Cubieboard](http://cubieboard.org/),
-      [Raspberry PI(https://www.raspberrypi.org/)).
+      [Raspberry PI](https://www.raspberrypi.org/)).
 These include:
 - a bootloader ([u-boot](http://www.denx.de/wiki/U-Boot));
 - a kernel (only Linux is supported for now);
