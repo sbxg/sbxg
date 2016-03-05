@@ -58,9 +58,14 @@ do_debootstrap()
        "$CONFIG_CHROOT_DIR" \
        "$CONFIG_DEBOOTSTRAP_MIRROR"
 
+# According user   choice, if  $CONFIG_QEMU_ARM_STATIC is  empty, then
+# user wishes to generate  on a native  build  (without cross), so  we
+# assume here we are running on ARM devices.
+	if [ -n "$CONFIG_QEMU_ARM_STATIC" ]; then
 # that command is useful to run target host binaries (ARM) on the build host (x86)
-    qemu_path="$(which "$CONFIG_QEMU_ARM_STATIC")"
-    sudo cp "$qemu_path" "$CONFIG_CHROOT_DIR"/usr/bin
+		qemu_path="$(which "$CONFIG_QEMU_ARM_STATIC")"
+		sudo cp "$qemu_path" "$CONFIG_CHROOT_DIR"/usr/bin
+	fi
 
 # if you use grsecurity on build host, you should uncomment that line
 #sudo /sbin/paxctl -cm usr/bin/qemu-arm-static
@@ -194,6 +199,9 @@ update_system_and_custom_packages()
     sudo PATH="$CHROOT_PATH" chroot "$CONFIG_CHROOT_DIR" apt-get autoclean
     sudo rm -f "$CONFIG_CHROOT_DIR"/etc/resolv.conf
     sudo rm -f "$CONFIG_CHROOT_DIR"/"$apt_proxy"
+	if [ -n "$CONFIG_QEMU_ARM_STATIC" ]; then
+		sudo rm -f "$CONFIG_CHROOT_DIR"/usr/bin/qemu-arm-static
+	fi
 
     set +x
 }

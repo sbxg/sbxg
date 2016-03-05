@@ -51,7 +51,10 @@ menu "Toolchain"
       string "Qemu Arm Static"
       default "qemu-arm-static"
       help
-         Binary used to handle foreign binary format (binfmt).
+         Binary used to handle  foreign binary format (binfmt). Please
+         note that if this sting is empty, then sbxg does not use qemu
+         emulator on host platform. It is assume here you are runnning
+         this tool on ARM architecture.
 endmenu
 
 
