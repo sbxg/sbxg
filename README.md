@@ -39,6 +39,7 @@ Usage
 =====
 
 SBXG's workflow is decomposed into several parts:
+
 1. board configuration;
 2. collecting the sources:
   1. (re-)initializing repo's internal state;
