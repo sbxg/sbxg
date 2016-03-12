@@ -77,6 +77,8 @@ do_debootstrap()
 
 configure_system()
 {
+   set -x
+
 # set root password
 
     if [ -z "$CONFIG_ROOT_PASSWORD" ]; then
@@ -95,28 +97,20 @@ configure_system()
     fi
 
     # Evaluate whether we should create admin and add it to sudoers
-    CREATE_USER=1
-    ADD_TO_SUDOER=1
+    create_user=1
 
-    # FIXME This is pointless! We are doing this test in the host, not in the chroot...
-    #set +e
-    #getent passwd admin
-    #if [ $? -eq 0 ]; then
-    #   CREATE_USER=0
-    #   groups admin | grep sudo &> /dev/null
-    #   if [ $? -eq 0 ]; then
-    #      ADD_TO_SUDOER=0
-    #   fi
-    #fi
+    set +e
+    grep "^admin\:" "$CONFIG_CHROOT_DIR"/etc/passwd
+    if [ $? -eq 0 ]; then # admin user alreasy exist
+       create_user=0
+    fi
+    set -e
 
-    if [ "$CREATE_USER" -eq 1 ]; then
+    if [ "$create_user" -ne 0 ]; then
        sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd admin"
     fi
-    if [ "$ADD_TO_SUDOER" -eq 1 ]; then
-       sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR adduser admin sudo"
-    fi
+    sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR adduser admin sudo"
     sudo PATH="$CHROOT_PATH" bash -c "echo -e admin:$CONFIG_ADMIN_PASSWORD | chroot $CONFIG_CHROOT_DIR chpasswd"
-    set -e
 
 # this set -x does not appear before previous sudo, not to show the root password on the output.
     set -x
