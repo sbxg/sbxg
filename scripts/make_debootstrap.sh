@@ -50,13 +50,15 @@ do_debootstrap()
        CONFIG_DEBOOTSTRAP="debootstrap"
     fi
 
-    sudo http_proxy="$CONFIG_DEBOOTSTRAP_HTTP_PROXY" \
-       "$CONFIG_DEBOOTSTRAP" \
-       --foreign \
-       --arch "$CONFIG_ARCH" \
-       "$CONFIG_DEBOOTSTRAP_DISTRIBUTION" \
-       "$CONFIG_CHROOT_DIR" \
-       "$CONFIG_DEBOOTSTRAP_MIRROR"
+    if [ ! -f "$CONFIG_CHROOT_DIR"/etc/os-release ]; then
+       sudo http_proxy="$CONFIG_DEBOOTSTRAP_HTTP_PROXY" \
+          "$CONFIG_DEBOOTSTRAP" \
+          --foreign \
+          --arch "$CONFIG_ARCH" \
+          "$CONFIG_DEBOOTSTRAP_DISTRIBUTION" \
+          "$CONFIG_CHROOT_DIR" \
+          "$CONFIG_DEBOOTSTRAP_MIRROR"
+    fi
 
 # that command is useful to run target host binaries (ARM) on the build host (x86)
     qemu_path="$(which "$CONFIG_QEMU_ARM_STATIC")"
@@ -67,8 +69,10 @@ do_debootstrap()
 #sudo /sbin/paxctl -cpexrms usr/bin/qemu-arm-static
 
 # debootstrap second stage and packages configuration
-    sudo LC_ALL=C LANGUAGE=C LANG=C chroot "$CONFIG_CHROOT_DIR" /debootstrap/debootstrap --second-stage
-    sudo LC_ALL=C LANGUAGE=C LANG=C PATH="$CHROOT_PATH" chroot "$CONFIG_CHROOT_DIR" dpkg --configure -a
+    if [ -d "$CONFIG_CHROOT_DIR"/debootstrap/ ]; then
+       sudo LC_ALL=C LANGUAGE=C LANG=C chroot "$CONFIG_CHROOT_DIR" /debootstrap/debootstrap --second-stage
+       sudo LC_ALL=C LANGUAGE=C LANG=C PATH="$CHROOT_PATH" chroot "$CONFIG_CHROOT_DIR" dpkg --configure -a
+    fi
 
     set +x
 }

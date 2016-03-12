@@ -94,6 +94,7 @@ help:
 	@echo "distclean........: Run distclean in linux and u-boot. Remove build directory."
 	@echo "mrproper.........: Remove everything that was generated or fetched"
 	@echo "repo-clean.......: Remove sources fetched by repo"
+	@echo "debootstrap-clean: Remove the rootfs created by debootstrap"
 	@echo
 
 
@@ -109,10 +110,13 @@ boot.cmd: $(DEPS) boot.cmd.in
 	   boot.cmd.in > $@
 
 
-.PHONY: debootstrap prepare_sdcard
+.PHONY: debootstrap debootstrap-clean prepare_sdcard
 
 debootstrap: $(DEPS) boot.cmd
 	$(SCRIPTS_DIR)/make_debootstrap.sh all
+
+debootstrap-clean: $(DEPS)
+	sudo $(RM) -r $(CONFIG_CHROOT_DIR)
 
 prepare_sdcard: $(DEPS)
 	$(SCRIPTS_DIR)/prepare_sdcard.sh all
@@ -125,7 +129,7 @@ clean: $(DEPS) u-boot-clean linux-clean
 
 .PHONY: distclean
 
-distclean: $(DEPS) clean u-boot-distclean linux-distclean
+distclean: $(DEPS) clean u-boot-distclean linux-distclean debootstrap-clean
 	sudo $(RM) -r $(CHROOT_DIR)
 	$(RM) -r $(BUILD_DIR)
 	$(RM) $(CONFIG)
