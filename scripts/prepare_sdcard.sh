@@ -97,8 +97,8 @@ build_image()
 # add map loop0221572 (253:74): 0 192512 linear /dev/loop0 196608
 # add map loop0221573 (253:75): 0 96256 linear /dev/loop0 389120
 
-    MY_LOOP_DEV=$(echo $RES |awk '{print $8}')
-    MY_LOOP_DEV=$(basename $MY_LOOP_DEV)
+    MY_LOOP_DEV=$(echo "$RES" |awk '{print $8}')
+    MY_LOOP_DEV=$(basename "$MY_LOOP_DEV")
 
 # add current process id to loopdev
     LOOP_DEV=/dev/mapper/"$MY_LOOP_DEV""$TMP_VAL"
@@ -128,10 +128,10 @@ copyboot2image()
     # Should match a device regexp or something like that.
     if [ -n "$IMG_NAME" ]; then
 	    if [ -f "$IMG_NAME" ]; then
-               if [ -f "$CONFIG_UBOOT_DIR"/$CONFIG_UBOOT_BIN_NAME ]; then
+               if [ -f "$CONFIG_UBOOT_DIR"/"$CONFIG_UBOOT_BIN_NAME" ]; then
 			# copy previously generated u-boot files on image
 			    sudo dd \
-                                    if="$CONFIG_UBOOT_DIR"/$CONFIG_UBOOT_BIN_NAME \
+                                    if="$CONFIG_UBOOT_DIR"/"$CONFIG_UBOOT_BIN_NAME" \
 				    of="$IMG_NAME" \
 				    bs="$CONFIG_DD_BS" \
 				    seek="$CONFIG_DD_SEEK" \
@@ -186,7 +186,7 @@ copyrootfs2image()
 				exit $EXIT_ERROR
 			fi
 		else
-			echo $LOOP_DEV" does not seem to be a block device..."
+			echo "$LOOP_DEV does not seem to be a block device..."
 			sudo /sbin/kpartx -d -p "$TMP_VAL" "$IMG_NAME"
 			exit $EXIT_ERROR
 		fi
