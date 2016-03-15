@@ -32,10 +32,6 @@ kernel_doc
 kernel_source
 "
 
-# Where debian files will be placed and patched
-DEB_DIR_OVERLAY="$PWD/debian_overlay"
-
-
 #==============================================================================#
 #                          Create the debian packages                          #
 #==============================================================================#
