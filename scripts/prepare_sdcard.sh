@@ -29,7 +29,7 @@ set -e
 #############
 
 # internal values
-BUILD_SERIAL=`date "+%Y%m%d%H%M"`
+BUILD_SERIAL=$(date "+%Y%m%d%H%M")
 TMP_VAL=$$
 
 # Including users defined variables
@@ -80,7 +80,7 @@ build_image()
 
 # !!! why do we remove error checking? !!!
     set +e
-    RES=`sudo /sbin/kpartx -a -v -s -p "$TMP_VAL" "$IMG_NAME"`
+    RES=$(sudo /sbin/kpartx -a -v -s -p "$TMP_VAL" "$IMG_NAME")
     if [ $? -ne 0 ]; then
 	# some time, error  when using kpartx,  probably bad free internal
 	# loop  ressource, look at following error....
@@ -97,8 +97,8 @@ build_image()
 # add map loop0221572 (253:74): 0 192512 linear /dev/loop0 196608
 # add map loop0221573 (253:75): 0 96256 linear /dev/loop0 389120
 
-    MY_LOOP_DEV=`echo $RES |awk '{print $8}'`
-    MY_LOOP_DEV=`basename $MY_LOOP_DEV`
+    MY_LOOP_DEV=$(echo $RES |awk '{print $8}')
+    MY_LOOP_DEV=$(basename $MY_LOOP_DEV)
 
 # add current process id to loopdev
     LOOP_DEV=/dev/mapper/"$MY_LOOP_DEV""$TMP_VAL"
