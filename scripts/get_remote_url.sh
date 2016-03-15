@@ -21,7 +21,7 @@ CWD="$(dirname "$0")" # Where the script resides
 
 # Returns the git version as an integer
 git_version_get() {
-   echo "$(git --version | grep -o "[0-9]\.[0-9]\.[0-9]" | sed 's/\.//g')"
+   git --version | grep -o "[0-9]\.[0-9]\.[0-9]" | sed 's/\.//g'
 }
 
 git_remote_get() {
