@@ -32,6 +32,7 @@ $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 # matched in command : uname -a command and SNMP MIB
 	EXTRAVERSION=$(call git-hash-get,$(LINUX_DIR)) \
 	LOADADDR="$(CONFIG_LOADADDR)" \
+	DISABLE_PAX_PLUGINS="$(CONFIG_DISABLE_PAX_PLUGINS)" \
 	    $(call linux-make,uImage modules)
 
 $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB): $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config

@@ -122,6 +122,15 @@ endmenu
 #==============================================================================#
 
 menu "Kernel"
+   config DISABLE_PAX_PLUGINS
+      bool "Disable PaX Plugins"
+      default n
+      help
+         If your kernel support Grsecurity, you might not want to enable PaX
+         plugins for GCC. They require that the gcc bundled by your toolchain
+         to support plugins.
+         Say Y here if your toolchain does not support plugins.
+
    config USE_MAKE_KPKG
       bool "Generate Debian Kernel Packages"
       default n
