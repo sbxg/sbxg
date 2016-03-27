@@ -130,7 +130,6 @@ clean: $(DEPS) u-boot-clean linux-clean
 .PHONY: distclean
 
 distclean: $(DEPS) clean u-boot-distclean linux-distclean debootstrap-clean
-	sudo $(RM) -r $(CHROOT_DIR)
 	$(RM) -r $(BUILD_DIR)
 	$(RM) $(CONFIG)
 
