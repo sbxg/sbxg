@@ -44,12 +44,6 @@ do_debootstrap()
 {
     set -x
 
-    # Check for debootstrap binary
-    if [ ! -x "$CONFIG_DEBOOTSTRAP" ]; then
-       echo "WARNING: $CONFIG_DEBOOTSTRAP is not explicitely defined"
-       CONFIG_DEBOOTSTRAP="debootstrap"
-    fi
-
     if [ ! -f "$CONFIG_CHROOT_DIR"/etc/os-release ]; then
        sudo http_proxy="$CONFIG_DEBOOTSTRAP_HTTP_PROXY" \
           "$CONFIG_DEBOOTSTRAP" \
