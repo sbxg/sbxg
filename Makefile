@@ -136,7 +136,7 @@ distclean: $(DEPS) clean u-boot-distclean linux-distclean debootstrap-clean
 .PHONY: mrproper
 
 mrproper: $(DEPS) distclean u-boot-mrproper linux-mrproper repo-clean
-	git clean -dfx
+	if [ -d .git/ ]; then git clean -dfx; fi
 
 
 .PHONY: init sync repo-clean
