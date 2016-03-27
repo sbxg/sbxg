@@ -82,7 +82,7 @@ configure_system()
     if [ -z "$CONFIG_ROOT_PASSWORD" ]; then
         echo "Please enter the root password: "
         # hiding the root password when typed could be a good idea... (stty)
-	read CONFIG_ROOT_PASSWORD
+	read -r CONFIG_ROOT_PASSWORD
     fi
     sudo PATH="$CHROOT_PATH" bash -c "echo -e root:$CONFIG_ROOT_PASSWORD | chroot $CONFIG_CHROOT_DIR chpasswd"
 
@@ -91,7 +91,7 @@ configure_system()
     if [ -z "$CONFIG_ADMIN_PASSWORD" ]; then
     # hiding the root password when typed could be a good idea... (stty)
         echo "Please enter the admin password: "
-	read CONFIG_ADMIN_PASSWORD
+	read -r CONFIG_ADMIN_PASSWORD
     fi
 
     # Evaluate whether we should create admin and add it to sudoers
@@ -125,7 +125,7 @@ configure_system()
 
     if [ -z "$CONFIG_HOSTNAME" ]; then
         echo "Please enter the hostname of the host: "
-        read CONFIG_HOSTNAME
+        read -r CONFIG_HOSTNAME
     fi
     sudo PATH="$CHROOT_PATH" bash -c "echo $CONFIG_HOSTNAME > $CONFIG_CHROOT_DIR/etc/hostname"
 
