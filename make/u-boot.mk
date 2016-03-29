@@ -24,10 +24,10 @@ u-boot-make = $(MAKE) -C $(UBOOT_DIR) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) -j $(CO
 
 u-boot: $(DEPS) $(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME)
 
-$(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME):
+$(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME): board-config-required
 	$(call u-boot-make,$(CONFIG_BOARD)_config)
 	$(call u-boot-make)
 
 # Catch all u-boot targets that were not overriden above
-u-boot-%: $(DEPS)
+u-boot-%: board-config-required $(DEPS)
 	$(call u-boot-make,$(patsubst u-boot-%,%,$@))

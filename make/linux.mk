@@ -24,9 +24,11 @@ DTS := $(patsubst %.dtb,%.dts,$(CONFIG_DTB))
 # set to the values defined in the configuration
 linux-make = $(MAKE) -C $(LINUX_DIR) -j $(CONFIG_JOBS) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) ARCH=arm $(1)
 
-linux: $(DEPS) $(LINUX_DIR)/arch/arm/boot/uImage $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
+linux: $(DEPS) \
+   $(LINUX_DIR)/arch/arm/boot/uImage \
+   $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
 
-$(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
+$(LINUX_DIR)/arch/arm/boot/uImage: board-config-required $(DEPS) $(LINUX_DIR)/.config
 # extract current SHA1 from git linux kernel version source
 # and append this version to the kernel version in order to have this SHA1
 # matched in command : uname -a command and SNMP MIB
@@ -35,17 +37,17 @@ $(LINUX_DIR)/arch/arm/boot/uImage: $(DEPS) $(LINUX_DIR)/.config
 	DISABLE_PAX_PLUGINS="$(CONFIG_DISABLE_PAX_PLUGINS)" \
 	    $(call linux-make,uImage modules)
 
-$(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB): $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
+$(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB): board-config-required \
+   $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
 	$(call linux-make,dtbs)
 
-linux-config: $(DEPS)
+linux-config: board-config-required $(DEPS)
 	cp "$(KERNEL_CONFIG)" $(LINUX_DIR)/.config
 
-$(LINUX_DIR)/.config:
+$(LINUX_DIR)/.config: board-config-required
 	$(MAKE) linux-defconfig
 
-linux-defconfig: $(DEPS)
-ifeq ($(CONFIG_DEFCONFIG),) # No built-in config
+linux-defconfig: board-config-required $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
 	if [ -f $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig ]; then \
 	 cp $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig $(LINUX_DIR)/.config ; \
@@ -62,5 +64,5 @@ endif
 
 
 # Handle all default targets
-linux-%: $(DEPS)
+linux-%: board-config-required $(DEPS)
 	$(call linux-make,$(patsubst linux-%,%,$@))

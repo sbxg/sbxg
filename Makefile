@@ -27,10 +27,18 @@
 # Configuration parameters
 include makefile.vars
 
+
+# Determine whether config exists or not
+ifneq ($(findstring .config,$(wildcard ./$(CONFIG))),)
+   HAS_CONFIG = y
+else
+   HAS_CONFIG = n
+endif
+
 # Include .config only if it is already present. The test is mandatory,
 # because $(CONFIG) would be treated as a dependency, which would led to
 # launching the menuconfig.
-ifneq ($(findstring .config,$(wildcard ./$(CONFIG))),)
+ifeq ($(HAS_CONFIG),y)
    include $(CONFIG)
 
    # It gets a bit tricky here. .config stores strings with double quotes.
@@ -40,7 +48,17 @@ ifneq ($(findstring .config,$(wildcard ./$(CONFIG))),)
    # for Make.
    BOARD_CONFIG := $(shell echo "$(BOARDS_DIR)/$(CONFIG_BOARD).conf")
    ifneq ($(findstring $(BOARD_CONFIG),$(wildcard ./$(BOARD_CONFIG))),)
+      HAS_BOARD_CONFIG = y
+   else
+      HAS_BOARD_CONFIG = n
+      $(error [$(BOARD_CONFIG)])
+      $(error [$(findstring $(BOARD_CONFIG),$(wildcard ./$(BOARD_CONFIG)))])
+   endif
+
+   ifeq ($(HAS_BOARD_CONFIG),y)
       include $(BOARD_CONFIG)
+   else
+   $(error $(findstring $(BOARD_CONFIG),$(wildcard ./$(BOARD_CONFIG))))
    endif
 endif
 
@@ -50,14 +68,16 @@ include $(MAKE_DIR)/menuconfig.mk
 include $(MAKE_DIR)/linux.mk
 include $(MAKE_DIR)/u-boot.mk
 
+MAKEFILE_DEPS := makefile.vars Makefile
+
 # $(DEPS) allow to rebuild targets when main configuration files or
 # the build system have been alterated.
-DEPS := makefile.vars Makefile $(CONFIG)
+DEPS := $(MAKEFILE_DEPS) $(CONFIG)
 
 
 .PHONY: all
 
-all: $(DEPS) u-boot linux-defconfig linux debootstrap prepare_sdcard
+all: board-config-required $(DEPS) u-boot linux-defconfig linux debootstrap prepare_sdcard
 	@echo "Done. You can now use your $(CONFIG_BOARD) :)"
 
 
@@ -100,7 +120,7 @@ help:
 
 .PHONY: debian
 
-debian: $(CONFIG)
+debian: board-config-required $(CONFIG)
 	$(SCRIPTS_DIR)/make_debian_packages.sh
 
 boot.cmd: $(DEPS) boot.cmd.in
@@ -112,43 +132,39 @@ boot.cmd: $(DEPS) boot.cmd.in
 
 .PHONY: debootstrap debootstrap-clean prepare_sdcard
 
-debootstrap: $(DEPS) boot.cmd
+debootstrap: board-config-required $(DEPS) boot.cmd
 	$(SCRIPTS_DIR)/make_debootstrap.sh all
 
-debootstrap-clean: $(DEPS)
-	sudo $(RM) -r $(CONFIG_CHROOT_DIR)
+debootstrap-clean: $(MAKEFILE_DEPS)
+	sudo $(RM) -r $(CHROOT_DIR)
 
-prepare_sdcard: $(DEPS)
+prepare_sdcard: board-config-required $(DEPS)
 	$(SCRIPTS_DIR)/prepare_sdcard.sh all
 
 
 .PHONY: clean
 
-clean: $(DEPS) u-boot-clean linux-clean
+clean: $(MAKEFILE_DEPS) $(call clean-targets,$@)
 	$(RM) boot.cmd
 
 .PHONY: distclean
 
-distclean: $(DEPS) clean u-boot-distclean linux-distclean debootstrap-clean
+distclean: $(MAKEFILE_DEPS) clean $(call clean-targets,$@) debootstrap-clean
 	$(RM) -r $(BUILD_DIR)
 	$(RM) $(CONFIG)
 
 .PHONY: mrproper
 
-mrproper: $(DEPS) distclean u-boot-mrproper linux-mrproper repo-clean
+mrproper: $(MAKEFILE_DEPS) distclean $(call clean-targets,$@) repo-clean
 	if [ -d .git/ ]; then git clean -dfx; fi
 
 
 .PHONY: init sync repo-clean
 
-init: $(DEPS)
-ifeq ($(CONFIG_BOARD),)
-	$(error No configuration found. Please run 'make menuconfig')
-else
+init: config-required $(DEPS)
 	$(PYTHON) $$(which repo) init -u $(MANIFESTS_URL) -m $(CONFIG_BOARD)/$(CONFIG_MANIFEST) -b $(MANIFESTS_REVISION)
-endif
 
-sync: $(DEPS)
+sync: config-required $(DEPS)
 	$(PYTHON) $$(which repo) sync
 
 repo-clean:

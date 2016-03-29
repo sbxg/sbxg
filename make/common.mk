@@ -39,3 +39,30 @@ $(shell \
    fi
 )
 endef
+
+.PHONY: config-required
+
+config-required:
+ifneq ($(HAS_CONFIG),y)
+	$(error No configuration found. Please run 'make menuconfig')
+endif
+
+
+.PHONY: board-config-required
+
+board-config-required: $(REPO_STAMP)
+
+$(REPO_STAMP): $(CONFIG)
+ifneq ($(HAS_CONFIG),y)
+	$(error No configuration found. Please run 'make menuconfig')
+else
+	@echo "Configuration changed. Reloading repo..."
+	$(MAKE) init
+	$(MAKE) sync
+	@touch $@
+endif
+
+clean-targets = $(1)
+ifeq ($(HAS_BOARD_CONFIG),y)
+   clean-targets += u-boot-$(1) linux-$(1)
+endif
