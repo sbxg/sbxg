@@ -16,10 +16,7 @@
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
 
-$(MENUCONFIG_BUILD_DIR):
-	$(Q)mkdir -p $@
-
-$(CONF_BUILD_DIR):
+$(MENUCONFIG_BUILD_DIR) $(CONF_BUILD_DIR):
 	$(Q)mkdir -p $@
 
 $(MENUCONFIG_BUILD_DIR)/Makefile: $(MENUCONFIG_BUILD_DIR)
