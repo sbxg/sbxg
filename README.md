@@ -115,6 +115,16 @@ a board), you need to run the setup **first**:
 make menuconfig
 ```
 
+Please note that the menuconfig will require `python3`. This binary will be
+called behind the hood. If your distribution does not provide a `python3`,
+you can override the `PYTHON` environment variable to a path to a valid
+python 3 interpreter. For example:
+
+```bash
+make PYTHON=/usr/bin/python3.4 menuconfig
+```
+
+
 The most important configuration step is to select your board. In the menu
 `Board Selection` you need first to select the `Board Type`. Then, you
 have to select a manifest file corresponding to the board you previously
