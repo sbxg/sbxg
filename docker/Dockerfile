@@ -1,4 +1,4 @@
-# Copyright (c) 2015-2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+# Copyright (c) 2015-2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #
 # This file is part of SBXG
 #
@@ -17,7 +17,7 @@
 
 
 FROM debian:8.2
-MAINTAINER Jean Guyomarc'h <jean.guyomarch@gmail.com>
+MAINTAINER Jean Guyomarc'h <jean@guyomarch.bzh>
 
 RUN apt-get update
 RUN apt-get install -y curl
@@ -26,6 +26,10 @@ RUN echo "deb http://emdebian.org/tools/debian/ jessie main" >> /etc/apt/sources
 RUN curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key -o key
 RUN apt-key add key
 RUN dpkg --add-architecture armhf
+
+# Install repo
+RUN curl https://storage.googleapis.com/git-repo-downloads/repo > /usr/bin/repo
+RUN chmod +x /usr/bin/repo
 
 RUN apt-get update
 
@@ -47,6 +51,7 @@ RUN apt-get install -y debootstrap
 RUN apt-get install -y parted
 RUN apt-get install -y kpartx
 RUN apt-get install -y libncurses5-dev
+RUN apt-get install -y python3.4
 
 RUN apt-get clean
 
@@ -56,3 +61,5 @@ VOLUME /opt/sbxg
 USER root
 WORKDIR /opt/sbxg
 
+RUN git config --global user.email "docker@container"
+RUN git config --global user.name "Docker"
