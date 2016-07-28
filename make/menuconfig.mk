@@ -36,7 +36,7 @@ $(CONFIG):
 	$(MAKE) menuconfig
 
 $(MANIFEST_CFG): $(CONF_BUILD_DIR)
-	$(Q)$(SCRIPTS_DIR)/generate_manifest_cfg $(MANIFESTS_URL) $@
+	$(Q)$(PYTHON) $(SCRIPTS_DIR)/generate_manifest_cfg.py $(MANIFESTS_URL) $@
 
 
 # This macro takes a configuration parameter as a first argument and
