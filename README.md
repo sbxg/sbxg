@@ -141,8 +141,8 @@ make MANIFESTS_REVISION="devs/dev/feature" menuconfig
 ```
 
 
-Collecting Sources
-------------------
+Collecting the Sources
+----------------------
 
 After you hve **saved** before quitting the configuration menu, you are
 ready to collect the sources from the manifest you have previously
