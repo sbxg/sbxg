@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-# Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+# Copyright (c) 2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #
 # This file is part of SBXG
 #
@@ -37,10 +37,8 @@ def parse_options(argv):
     """
         Simple getopt
 
-        Args:
-            argv: arguments from the command-line
-
-        Returns: object containing the parsed arguments
+        :param argv: Arguments from the command-line
+        :returns: object containing the parsed arguments
     """
 
     parser = argparse.ArgumentParser(description='Openconf generator')
@@ -54,10 +52,8 @@ def canonicalize_config(name):
         Converts to uppercases and all non-alphanumeric characters
         into underscores '_'.
 
-        Args:
-            name (str): The name to canonicalize
-
-        Returns: the canonicalized name
+        :param name: The name to canonicalize
+        :returns: the canonicalized name
     """
 
     canon = ""
@@ -73,10 +69,8 @@ def board_config_get(board):
         Generates the name of a configuration parameter
         for a given board
 
-        Args:
-            board (str): the board's name
-
-        Returns: the configuration name
+        :param board: the board's name
+        :returns: the configuration name
     """
 
     return "BOARD_{0}".format(canonicalize_config(board))
@@ -86,11 +80,9 @@ def manifest_config_get(board, xml):
         Generates the name of a configuration parameter
         for a given board and manifest
 
-        Args:
-            board (str): the board's name
-            xml (str): the board's manifest
-
-        Returns: the configuration name
+        :param board: the board's name
+        :param xml: the board's manifest
+        :returns: the configuration name
     """
 
     return "BOARD_{0}_MANIFEST_{1}".format(canonicalize_config(board),
@@ -103,12 +95,9 @@ def write_menuconfig(output_file, manifests):
         This function is in charge to provide a CONFIG_BOARD="Board"
         and CONFIG_MANIFEST="Manifest" using the Kconfig capabilities
 
-        Args:
-            output_file (str): Kconfig to be generated
-            manifests (dict): Dictionnary: keys are the boards, values
-                              are lists of manifests files
-
-        Returns: None
+        :param output_file: Kconfig to be generated
+        :param manifests: Dictionnary: keys are the boards, values
+                          are lists of manifests files
     """
 
     with open(output_file, 'w') as filp:
@@ -182,10 +171,8 @@ def manifests_lookup(directory):
         Extracts a dictionary where the keys are the boards
         and the values are lists of manifests files.
 
-        Args:
-            directory (str): the directory to walk
-
-        Returns: The dictionary described earlier.
+        :param directory: the directory to walk
+        :returns: The dictionary described earlier.
     """
 
     manifests = {}
@@ -216,8 +203,8 @@ def main(argv):
     """
         Main routines
 
-        Args:
-            argv: arguments from the command-line
+        :params argv: arguments from the command-line
+        :returns: the exit code of the main()
     """
 
     ret = 0 # Return status
