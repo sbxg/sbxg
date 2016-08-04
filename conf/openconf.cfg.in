@@ -23,8 +23,16 @@ mainmenu "SBXG Configuration"
 #                         Board Selection Configuration                        #
 #==============================================================================#
 
-menu "Board Selection"
+menu "Board and System Selection"
    source "@MANIFEST_CFG@"
+   config USE_BUILTIN_CONFIG
+      bool "Use a Built-In Configuration"
+      default y
+      help
+         Say Y here if you want to choose among the various kernel configuration
+         provided by the manifest you selected.
+         If you choose N, SBXG will attempt a default configuration.
+   source "@KERNEL_CONFIGS_CFG@"
 endmenu
 
 
