@@ -35,8 +35,9 @@ $(MCONF): $(MENUCONFIG_DIR)/CMakeLists.txt $(MENUCONFIG_BUILD_DIR)/Makefile
 $(CONFIG):
 	$(MAKE) menuconfig
 
-$(MANIFEST_CFG): $(CONF_BUILD_DIR)
-	$(Q)$(PYTHON) $(SCRIPTS_DIR)/gen_extra_config.py $(MANIFESTS_URL) $@
+$(MANIFEST_CFG) $(KERNEL_CONFIGS_CFG): $(CONF_BUILD_DIR)
+	$(Q)$(PYTHON) $(SCRIPTS_DIR)/gen_extra_config.py $(MANIFESTS_URL) \
+	   $(MANIFEST_CFG) $(KERNEL_CONFIGS_CFG)
 
 
 # This macro takes a configuration parameter as a first argument and
@@ -58,6 +59,7 @@ endef
 $(OPENCONF_CFG): $(OPENCONF_CFG_IN) $(MCONF) Makefile makefile.vars
 	$(Q)$(SED) \
 	   -e "s|@MANIFEST_CFG@|$$(basename $(MANIFEST_CFG))|g" \
+	   -e "s|@KERNEL_CONFIGS_CFG@|$$(basename $(KERNEL_CONFIGS_CFG))|g" \
 	   -e "s|@PARALLEL_JOBS@|$$(( $$(nproc) + 1 ))|g" \
 	   -e "s|@EXTRA_CONFIG@|$(call generate-extra-config)|g" \
 	   $< > $@

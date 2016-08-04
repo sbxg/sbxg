@@ -45,6 +45,7 @@ $(LINUX_DIR)/.config:
 	$(MAKE) linux-defconfig
 
 linux-defconfig: $(DEPS)
+ifeq ($(CONFIG_DEFCONFIG),) # No built-in config
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
 	if [ -f $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig ]; then \
 	 cp $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig $(LINUX_DIR)/.config ; \
@@ -52,8 +53,11 @@ ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .conf
 	else \
 	 $(call linux-make,defconfig); \
 	fi ;
-else
+else # .config exists
 	@echo "File .config already exists."
+endif # .config nonexistant
+else
+	cp $(CONFIG_KERNEL_CONFIGS_DIR)/$(CONFIG_DEFCONFIG) $(LINUX_DIR)/.config
 endif
 
 
