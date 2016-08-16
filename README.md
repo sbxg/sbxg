@@ -75,10 +75,12 @@ selected in the menu `Manifest Selection`.
 
 Please note that if you have your own manifest repository, you can
 specify your git repository URL via the `MANIFESTS_URL` environment
+variable. You can also specify a revision thanks to the `MANIFESTS_REVISION`
 variable:
 
 ```bash
-make MANIFESTS_URL=https://git.mycompany.com/secret_manifests.git" menuconfig
+make MANIFESTS_URL="https://git.mycompany.com/secret_manifests.git" menuconfig
+make MANIFESTS_REVISION="devs/dev/feature" menuconfig
 ```
 
 
