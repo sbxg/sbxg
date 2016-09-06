@@ -29,7 +29,7 @@ set -e
 #############
 
 # internal values
-BUILD_SERIAL=$(date "+%Y%m%d%H%M")
+BUILD_SERIAL=$(date "+%Y-%m-%d-%Hh-%Mmin")
 TMP_VAL=$$
 
 # Including users defined variables
@@ -40,7 +40,7 @@ IMG_SIZE=3700
 CONF_SIZE=50
 PARTITION_SIZE=$(((IMG_SIZE - CONF_SIZE) / 2))
 FS_TYPE=ext3
-IMG_NAME="$CONFIG_IMAGES_DIR/$CONFIG_BOARD"-"$BUILD_SERIAL"-"$IMG_SIZE".img
+IMG_NAME="$CONFIG_IMAGES_DIR/$CONFIG_BOARD"-"$CONFIG_DEBOOTSTRAP_DISTRIBUTION"-"$BUILD_SERIAL"-"$IMG_SIZE".img
 EXIT_ERROR=1
 EXIT_OK=0
 
@@ -84,9 +84,14 @@ build_image()
     if [ $? -ne 0 ]; then
 	# some time, error  when using kpartx,  probably bad free internal
 	# loop  ressource, look at following error....
-	# mount: could  not find any free loop deviceBad address
-	# can't set up loop
-	    echo "error when launching : sudo /sbin/kpartx -a -v -s -p $TMP_VAL $IMG_NAME"
+	# mount: could  not find any free loop device Bad address
+    # can't set up loop
+	# or other some time ????
+	# + sudo /sbin/kpartx -d -p 16111 build/images/Cubieboard2-jessie-2016-09-06-15h-48min-3700.img
+	# device-mapper: remove ioctl on loop3161113 failed: Device or resource busy
+	# loop deleted : /dev/loop3
+	# Makefile:122: recipe for target 'prepare_sdcard' failed
+		echo "error when launching : sudo /sbin/kpartx -a -v -s -p $TMP_VAL $IMG_NAME"
 	    exit $EXIT_ERROR
     fi
     set -e
