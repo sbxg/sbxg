@@ -29,9 +29,21 @@ import sys
 import argparse
 import shutil
 import os
+import random
 import distutils.spawn
 import tempfile
 import subprocess
+import xml.etree.ElementTree as ET
+
+def git_clone(url, path, shallow=True, revision=None):
+    args = ["git",  "clone"]
+    if shallow:
+        args += ["--depth", "1"]
+    args += [url, path]
+    subprocess.check_call(args)
+
+    if revision is not None:
+        subprocess.check_call(["git", "-C", path, "checkout", revision])
 
 def parse_options(argv):
     """
@@ -42,9 +54,9 @@ def parse_options(argv):
     """
 
     parser = argparse.ArgumentParser(description='Openconf generator')
-    parser.add_argument('--fetch-dir', type=str)
-    parser.add_argument('url', type=str)
-    parser.add_argument('openconf', type=str)
+    parser.add_argument('manifests_url', type=str)
+    parser.add_argument('manifests_config', type=str)
+    parser.add_argument('kernel_config', type=str)
     return parser.parse_args(argv[1:])
 
 def canonicalize_config(name):
@@ -66,7 +78,7 @@ def canonicalize_config(name):
 
 def board_config_get(board):
     """
-        Generates the name of a configuration parameter
+        Gets the name of a configuration parameter
         for a given board
 
         :param board: the board's name
@@ -77,7 +89,7 @@ def board_config_get(board):
 
 def manifest_config_get(board, xml):
     """
-        Generates the name of a configuration parameter
+        Gets the name of a configuration parameter
         for a given board and manifest
 
         :param board: the board's name
@@ -88,7 +100,23 @@ def manifest_config_get(board, xml):
     return "BOARD_{0}_MANIFEST_{1}".format(canonicalize_config(board),
                                            canonicalize_config(xml))
 
-def write_menuconfig(output_file, manifests):
+def defconfig_config_gen(board, defconfig):
+    """
+        Generates the name of a configuration parameter
+        for a given board and defconfig.
+        It is randomized because the same config name can
+        exist for multiple manifests
+
+        :param board: the board's name
+        :param defconfig: the defconfig name
+        :returns: the configuration name
+    """
+    return "BOARD_{0}_DEFCONFIG_{1}_{2}{3}".format(canonicalize_config(board),
+                                                   canonicalize_config(defconfig),
+                                                   random.randint(0, 99999999),
+                                                   random.randint(0, 99999999))
+
+def write_manifests_menuconfig(output_file, manifests):
     """
         Writes a Kconfig file that allows selection of boards
         and manifests.
@@ -166,6 +194,52 @@ def write_menuconfig(output_file, manifests):
                        .format(manifest, config))
         #==
 
+def write_kconfigs_menuconfig(output_file, kconfigs):
+    """
+        Writes a Kconfig file that allows selection of kernel configurations.
+        This function is in charge to provide a CONFIG_BOARD="Board"
+        and CONFIG_MANIFEST="Manifest" using the Kconfig capabilities
+
+        :param output_file: Kconfig to be generated
+        :param manifests: Dictionnary: keys are the boards, values are
+                          dictionnaries where keys are the  and values
+                          the list of kernel configurations
+    """
+    database = {}
+    with open(output_file, 'w') as filp:
+        filp.write("if USE_BUILTIN_CONFIG\n")
+        for board, dic in kconfigs.items():
+            board_cfg = board_config_get(board)
+            filp.write("if {0}\n".format(board_cfg))
+            for man, configs in dic.items():
+                man_cfg = manifest_config_get(board, man)
+                filp.write("    if {0}\n"
+                           "        choice\n"
+                           "            prompt \"Kernel Configuration Selection\"\n"
+                           "            help\n"
+                           "                Selection of the Kernel configuration\n"
+                           "\n"
+                           .format(man_cfg))
+                for config in configs:
+                    cfg_param = defconfig_config_gen(board, config)
+                    filp.write("            config {0}\n"
+                               "                bool \"{1}\"\n"
+                               .format(cfg_param, config))
+                    database[cfg_param] = (board, config)
+
+                filp.write("        endchoice\n"
+                           "    endif # {0}\n".format(man_cfg))
+            filp.write("endif # {0}\n".format(board_cfg))
+
+        filp.write("\n\n"
+                   "config DEFCONFIG\n"
+                   "    string\n")
+        for cfg_param, pair in database.items():
+            filp.write("    default \"{0}/{1}\" if {2}\n"
+                       .format(pair[0], pair[1], cfg_param))
+        filp.write("endif\n")
+
+
 def manifests_lookup(directory):
     """
         Extracts a dictionary where the keys are the boards
@@ -199,6 +273,80 @@ def manifests_lookup(directory):
     return manifests
 
 
+def kconfigs_lookup(directory, manifests):
+    """
+        Extracts a dictionary where the keys are the manifests
+        and the values a dictionary where the keys are the boards
+        and the values are a list of kernel configurations.
+
+        :param manifests: a dictionary of manifests for each board configuration
+                          as returned by the manifests_lookup() function
+        :returns: The dictionary described in the preamble
+    """
+
+    kconfigs = {}
+    clones_cache = {}
+
+    for board, manifs in manifests.items():
+        kconfigs[board] = {}
+        for man in manifs:
+            # Path of the manifest file
+            path = "{0}/{1}/{2}".format(directory, board, man)
+
+            # Iterate over the XML of the manifest to find out the
+            # remote and where to fetch it
+            tree = ET.parse(path)
+            root = tree.getroot()
+            remotes = root.findall('remote')
+            for child in root:
+                if child.tag == "project" and child.attrib["path"] == "kernel-configs":
+                    name = child.attrib["name"]
+                    remote = child.attrib["remote"]
+                    revision = child.attrib["revision"]
+                    remote_url = None
+                    for rem in remotes:
+                        if rem.attrib["name"] == remote:
+                            remote_url = rem.attrib["fetch"]
+                            break
+                    if remote_url is None:
+                        raise RuntimeError("Failed to find remote")
+                    break
+
+            # Remote is found, this is what we must clone
+            clone_url = "{0}/{1}".format(remote_url, name)
+
+            # Cloning takes a loooot of time. If there are duplicated
+            # URLs to be cloned (there will!!), clone them only once.
+            cache_entry = (clone_url, revision)
+            if not cache_entry in clones_cache:
+                tmpdir = tempfile.mkdtemp()
+                try:
+                    git_clone(clone_url, tmpdir, False, revision)
+                except subprocess.CalledProcessError:
+                    clones_cache[cache_entry] = None
+                else:
+                    clones_cache[cache_entry] = tmpdir
+
+            # In the kernel configs directory get for the current board
+            tmpdir = clones_cache[cache_entry]
+
+            if tmpdir is not None:
+                for d in os.listdir(tmpdir):
+                    if board == d:
+                        configs = os.listdir("{0}/{1}".format(tmpdir, d))
+                        kconfigs[board][man] = configs
+                        break
+
+    # Remove all temporary directories after all clones are done
+    for _, tmpdir in clones_cache.items():
+        if tmpdir is not None:
+            shutil.rmtree(tmpdir)
+
+    print(kconfigs)
+
+    return kconfigs
+
+
 def main(argv):
     """
         Main routines
@@ -213,27 +361,23 @@ def main(argv):
         parser = parse_options(argv)
 
         # Determine in which folder should the manifests be retrieved
-        if parser.fetch_dir is None:
-            lookup_dir = tempfile.mkdtemp()
-        else:
-            lookup_dir = parser.fetch_dir
+        lookup_dir = tempfile.mkdtemp()
 
         # Collect the manifests from their git repository
-        git = distutils.spawn.find_executable("git")
-        subprocess.check_call(
-            [git, "clone", "--depth", "1", parser.url, lookup_dir]
-        )
+        git_clone(parser.manifests_url, lookup_dir)
+
         manifests = manifests_lookup(lookup_dir)
+        kconfigs = kconfigs_lookup(lookup_dir, manifests)
 
         # Remove generated directory when none was specified
-        if parser.fetch_dir is None:
-            shutil.rmtree(lookup_dir)
+        shutil.rmtree(lookup_dir)
 
-        write_menuconfig(parser.openconf, manifests)
+        write_manifests_menuconfig(parser.manifests_config, manifests)
+        write_kconfigs_menuconfig(parser.kernel_config, kconfigs)
 
     except RuntimeError as exc:
         print("*** {0}".format(exc), file=sys.stderr)
-        ret = 1
+        ret = -1
 
     return ret
 
