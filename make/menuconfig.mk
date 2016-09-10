@@ -37,7 +37,8 @@ $(CONFIG):
 
 $(MANIFEST_CFG) $(KERNEL_CONFIGS_CFG): $(CONF_BUILD_DIR)
 	$(Q)$(PYTHON) $(SCRIPTS_DIR)/gen_extra_config.py $(MANIFESTS_URL) \
-	   $(MANIFEST_CFG) $(KERNEL_CONFIGS_CFG)
+	   $(MANIFEST_CFG) $(KERNEL_CONFIGS_CFG) \
+	   --manifests-revision $(MANIFESTS_REVISION)
 
 
 # This macro takes a configuration parameter as a first argument and
