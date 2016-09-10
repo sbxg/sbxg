@@ -54,6 +54,7 @@ def parse_options(argv):
     """
 
     parser = argparse.ArgumentParser(description='Openconf generator')
+    parser.add_argument('--manifests-revision', type=str)
     parser.add_argument('manifests_url', type=str)
     parser.add_argument('manifests_config', type=str)
     parser.add_argument('kernel_config', type=str)
@@ -364,7 +365,11 @@ def main(argv):
         lookup_dir = tempfile.mkdtemp()
 
         # Collect the manifests from their git repository
-        git_clone(parser.manifests_url, lookup_dir)
+        if parser.manifests_revision:
+            git_clone(parser.manifests_url, lookup_dir, False,
+                      parser.manifests_revision)
+        else:
+            git_clone(parser.manifests_url, lookup_dir)
 
         manifests = manifests_lookup(lookup_dir)
         kconfigs = kconfigs_lookup(lookup_dir, manifests)
