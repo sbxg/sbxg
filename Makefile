@@ -145,11 +145,11 @@ init: $(DEPS)
 ifeq ($(CONFIG_BOARD),)
 	$(error No configuration found. Please run 'make menuconfig')
 else
-	repo init -u $(MANIFESTS_URL) -m $(CONFIG_BOARD)/$(CONFIG_MANIFEST) -b $(MANIFESTS_REVISION)
+	$(PYTHON) $$(which repo) init -u $(MANIFESTS_URL) -m $(CONFIG_BOARD)/$(CONFIG_MANIFEST) -b $(MANIFESTS_REVISION)
 endif
 
 sync: $(DEPS)
-	repo sync
+	$(PYTHON) $$(which repo) sync
 
 repo-clean:
 	$(RM) -r .repo
