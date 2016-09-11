@@ -31,8 +31,55 @@ You need to have installed the following tools:
 - `binfmts`;
 - `build-essential`.
 
-The list of packages on a Debian distribution can be found in the file
-`docker/Dockerfile`. For Ubuntu, please have a look at `.travis.yml`.
+
+**Debian packages:**
+
+```bash
+sudo apt-get install     \
+    autoconf             \
+    crossbuild-essential-armhf \
+    build-essential      \
+    make                 \
+    automake             \
+    qemu-user-static     \
+    qemu                 \
+    cmake                \
+    binfmt-support       \
+    git                  \
+    kernel-package       \
+    u-boot-tools         \
+    sudo                 \
+    debootstrap          \
+    parted               \
+    kpartx               \
+    libncurses5-dev      \
+    python3.4
+```
+
+**Ubuntu packages:**
+
+```bash
+sudo apt-get install         \
+    realpath                 \
+    git                      \
+    parted                   \
+    apt-utils                \
+    gcc-arm-linux-gnueabihf  \
+    autoconf                 \
+    build-essential          \
+    make                     \
+    automake                 \
+    debootstrap              \
+    qemu-user-static         \
+    qemu                     \
+    binfmt-support           \
+    kernel-package           \
+    u-boot-tools             \
+    sudo                     \
+    kpartx                   \
+    libncurses5-dev          \
+    curl
+```
 
 
 Usage
