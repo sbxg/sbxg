@@ -133,10 +133,10 @@ copyboot2image()
     # Should match a device regexp or something like that.
     if [ -n "$IMG_NAME" ]; then
 	    if [ -f "$IMG_NAME" ]; then
-               if [ -f "$CONFIG_UBOOT_DIR"/"$CONFIG_UBOOT_BIN_NAME" ]; then
+			if [ -f "$CONFIG_UBOOT_DIR"/"$CONFIG_UBOOT_BIN_NAME" ]; then
 			# copy previously generated u-boot files on image
 			    sudo dd \
-                                    if="$CONFIG_UBOOT_DIR"/"$CONFIG_UBOOT_BIN_NAME" \
+					if="$CONFIG_UBOOT_DIR"/"$CONFIG_UBOOT_BIN_NAME" \
 				    of="$IMG_NAME" \
 				    bs="$CONFIG_DD_BS" \
 				    seek="$CONFIG_DD_SEEK" \
@@ -150,7 +150,7 @@ copyboot2image()
 		    exit $EXIT_ERROR
 	    fi
     else
-		echo "The variable IMG_NAME does not seem to exist..."
+		echo "The variable $IMG_NAME does not seem to exist..."
 		exit $EXIT_ERROR
     fi
 }
