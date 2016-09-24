@@ -162,10 +162,10 @@ mrproper: $(MAKEFILE_DEPS) distclean $(call clean-targets,$@) repo-clean
 .PHONY: init sync repo-clean
 
 init: config-required $(DEPS)
-	$(PYTHON) $$(which repo) init -u $(MANIFESTS_URL) -m $(CONFIG_BOARD)/$(CONFIG_MANIFEST) -b $(MANIFESTS_REVISION)
+	$(PYTHON2) $$(which repo) init -u $(MANIFESTS_URL) -m $(CONFIG_BOARD)/$(CONFIG_MANIFEST) -b $(MANIFESTS_REVISION)
 
 sync: config-required $(DEPS)
-	$(PYTHON) $$(which repo) sync
+	$(PYTHON2) $$(which repo) sync
 
 repo-clean:
 	$(RM) -r .repo
