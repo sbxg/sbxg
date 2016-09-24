@@ -49,8 +49,8 @@ $(LINUX_DIR)/.config: board-config-required
 
 linux-defconfig: board-config-required $(DEPS)
 ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .config can be erased, else do not erase it
-	if [ -f $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig ]; then \
-	 cp $(KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig $(LINUX_DIR)/.config ; \
+	if [ -f $(CONFIG_KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig ]; then \
+	 cp $(CONFIG_KERNEL_CONFIGS_DIR)/$(CONFIG_BOARD)/defconfig $(LINUX_DIR)/.config ; \
 	 $(call linux-make,olddefconfig); \
 	else \
 	 $(call linux-make,defconfig); \
@@ -58,9 +58,6 @@ ifeq ($(findstring .config,$(wildcard $(LINUX_DIR)/.config)), ) # check if .conf
 else # .config exists
 	@echo "File .config already exists."
 endif # .config nonexistant
-else
-	cp $(CONFIG_KERNEL_CONFIGS_DIR)/$(CONFIG_DEFCONFIG) $(LINUX_DIR)/.config
-endif
 
 
 # Handle all default targets
