@@ -61,11 +61,16 @@ $(OPENCONF_CFG): $(OPENCONF_CFG_IN) $(MCONF) Makefile makefile.vars
 	   -e "s|@PARALLEL_JOBS@|$$(( $$(nproc) + 1 ))|g" \
 	   -e "s|@EXTRA_CONFIG@|$(call generate-extra-config)|g" \
 	   $< > $@
-	$(Q)if [ -f "$(CONFIG)" ]; then $(CONF) --oldconfig $@; fi
+	$(Q)if [ -f "$(CONFIG)" ]; then $(CONF) --silentoldconfig $@; fi
 
-.PHONY: menuconfig
+.PHONY: menuconfig menuconfig-recheck
 
-menuconfig: $(MCONF) $(MANIFEST_CFG) $(OPENCONF_CFG)
+menuconfig-recheck: FORCE
+	$(MAKE) $(MANIFEST_CFG) $(OPENCONF_CFG)
+
+FORCE:
+
+menuconfig: $(MCONF) menuconfig-recheck
 	$(Q)KCONFIG_CONFIG=$(CONFIG) $(MCONF) $(OPENCONF_CFG)
 
 
