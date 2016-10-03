@@ -27,19 +27,14 @@
 # Configuration parameters
 include makefile.vars
 
-
 # Determine whether config exists or not
 ifneq ($(findstring .config,$(wildcard ./$(CONFIG))),)
    HAS_CONFIG = y
+   include $(CONFIG)
 else
    HAS_CONFIG = n
 endif
 
-# Include .config only if it is already present. The test is mandatory,
-# because $(CONFIG) would be treated as a dependency, which would led to
-# launching the menuconfig.
-ifeq ($(HAS_CONFIG),y)
-   include $(CONFIG)
 
    # It gets a bit tricky here. .config stores strings with double quotes.
    # That's Okay: it's understood by shells when composing arguments,
@@ -51,17 +46,9 @@ ifeq ($(HAS_CONFIG),y)
       HAS_BOARD_CONFIG = y
    else
       HAS_BOARD_CONFIG = n
-      $(error [$(BOARD_CONFIG)])
-      $(error [$(findstring $(BOARD_CONFIG),$(wildcard ./$(BOARD_CONFIG)))])
    endif
 
-   ifeq ($(HAS_BOARD_CONFIG),y)
-      include $(BOARD_CONFIG)
-   else
-   $(error $(findstring $(BOARD_CONFIG),$(wildcard ./$(BOARD_CONFIG))))
-   endif
-endif
-
+-include $(BOARD_CONFIG)
 # Include other components of the build system
 include $(MAKE_DIR)/common.mk
 include $(MAKE_DIR)/menuconfig.mk
