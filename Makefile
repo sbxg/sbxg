@@ -107,7 +107,7 @@ help:
 
 .PHONY: debian
 
-debian: board-config-required $(CONFIG)
+debian: board-config-required $(DEPS) linux-defconfig linux
 	$(SCRIPTS_DIR)/make_debian_packages.sh
 
 boot.cmd: $(DEPS) boot.cmd.in
