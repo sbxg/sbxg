@@ -250,10 +250,6 @@ hash_image()
     fi
 
     # now we have the right name, let's compute hashes
-    if [ "xy" = x"$CONFIG_IMAGE_HASH_MD5" ]; then
-        echo "Creating md5 hash"
-        md5sum "$IMG" >> "$IMG".md5
-    fi
     if [ "xy" = x"$CONFIG_IMAGE_HASH_SHA1" ]; then
         echo "Creating sha1 hash"
         sha1sum "$IMG" >> "$IMG".sha1

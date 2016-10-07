@@ -192,17 +192,13 @@ endmenu
 #==============================================================================#
 
 menu "Image"
-   config IMAGE_HASH_MD5
-      bool "Hash MD5"
-      default y
-
    config IMAGE_HASH_SHA1
       bool "Hash SHA1"
       default n
 
    config IMAGE_HASH_SHA256
       bool "Hash SHA256"
-      default n
+      default y
 
    choice
       prompt "Image Compression"
