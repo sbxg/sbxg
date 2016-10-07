@@ -1,61 +1,45 @@
-# Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
 #
-# This file is part of SBXG.
+# Automatically generated file; DO NOT EDIT.
+# SBXG Configuration
 #
-# SBXG is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# SBXG is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
-
-
+# CONFIG_DEBUG_SBXG is not set
 
 #
-# Board Selection
+# Board and System Selection
 #
-# CONFIG_BOARD_CUBIEBOARD1 is not set
-# CONFIG_BOARD_CUBIEBOARD2 is not set
-# CONFIG_BOARD_CUBIEBOARD4 is not set
-CONFIG_BOARD_CUBIETRUCK=y
-# CONFIG_BOARD_MX6QSABRESD is not set
-# CONFIG_BOARD_CUBIEBOARD1_MANIFEST_LINUX_XML is not set
-# CONFIG_BOARD_CUBIEBOARD2_MANIFEST_LINUX_XML is not set
-# CONFIG_BOARD_CUBIETRUCK_MANIFEST_LINUX_4_2_6_GRSEC_XML is not set
-# CONFIG_BOARD_CUBIETRUCK_MANIFEST_LINUX_4_3_5_GRSEC_XML is not set
-CONFIG_BOARD_CUBIETRUCK_MANIFEST_LINUX_XML=y
-CONFIG_BOARD="Cubietruck"
-CONFIG_MANIFEST="linux.xml"
+CONFIG_BOARD="tests"
+CONFIG_MANIFEST="manifest.xml"
+CONFIG_USE_BUILTIN_CONFIG=y
+CONFIG_DEFCONFIG=""
 
 #
 # Toolchain
 #
-CONFIG_GCC_PREFIX="arm-linux-gnueabihf-"
-CONFIG_JOBS=3
+CONFIG_TOOLCHAIN_AUTOMATIC=y
+# CONFIG_TOOLCHAIN_PREFIX_CHOICE is not set
+CONFIG_JOBS=1
 CONFIG_QEMU_ARM_STATIC="qemu-arm-static"
 
 #
 # Distribution
 #
-CONFIG_DEBOOTSTRAP_DISTRIBUTION="stable"
-CONFIG_DEBOOTSTRAP_MIRROR="http://ftp.debian.org/debian"
+CONFIG_DEBOOTSTRAP_DISTRIBUTION="potato"
+CONFIG_DEBOOTSTRAP_MIRROR="http://archive.debian.org/debian"
 CONFIG_DEBOOTSTRAP="/usr/sbin/debootstrap"
 CONFIG_DEBOOTSTRAP_HTTP_PROXY="$http_proxy"
-CONFIG_PACKAGES="vim sudo openssh-server"
-CONFIG_MAC_ADDRESS="001122334455"
+CONFIG_PACKAGES=""
 CONFIG_ROOT_PASSWORD="root"
+CONFIG_ADMIN_USERNAME="admin"
 CONFIG_ADMIN_PASSWORD="admin"
+CONFIG_ADMIN_UID=1000
+CONFIG_ADMIN_GID=1000
+CONFIG_ADMIN_AUTHORIZED_KEYS=""
 CONFIG_HOSTNAME="board-sbxg-travis"
 
 #
 # Kernel
 #
+# CONFIG_DISABLE_PAX_PLUGINS is not set
 # CONFIG_USE_MAKE_KPKG is not set
 # CONFIG_MAKE_KPKG_KERNEL_IMAGE is not set
 # CONFIG_MAKE_KPKG_KERNEL_HEADERS is not set
@@ -63,18 +47,23 @@ CONFIG_HOSTNAME="board-sbxg-travis"
 # CONFIG_MAKE_KPKG_KERNEL_SOURCE is not set
 
 #
+# Boot Configuration
+#
+CONFIG_EXTRA_BOOTARGS=""
+
+#
 # Image
 #
-CONFIG_IMAGE_HASH_MD5=y
 # CONFIG_IMAGE_HASH_SHA1 is not set
 # CONFIG_IMAGE_HASH_SHA256 is not set
 CONFIG_IMAGE_COMPRESSION_NONE=y
 # CONFIG_IMAGE_COMPRESSION_GZ is not set
 # CONFIG_IMAGE_COMPRESSION_BZIP is not set
 # CONFIG_IMAGE_COMPRESSION_XZ is not set
-CONFIG_LINUX_DIR="linux-stable"
-CONFIG_UBOOT_DIR="u-boot"
-CONFIG_BOARDS_DIR="boards"
+CONFIG_LINUX_DIR="tests/dummy-linux"
+CONFIG_UBOOT_DIR="tests/dummy-uboot"
+CONFIG_BUSYBOX_DIR="tests/dummy-busybox"
+CONFIG_BOARDS_DIR="tests"
 CONFIG_KERNEL_CONFIGS_DIR="kernel-configs"
 CONFIG_SCRIPTS_DIR="scripts"
 CONFIG_CHROOT_DIR="build/chroot-arm"
@@ -82,3 +71,4 @@ CONFIG_RESOURCES_DIR="resources"
 CONFIG_HOOKS_DIR="hooks"
 CONFIG_IMAGES_DIR="build/images"
 CONFIG_BUILD_DIR="build"
+CONFIG_TOOLCHAIN_PREFIX="arm-linux-gnueabihf-"

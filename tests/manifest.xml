@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+   This is a dummy manifest. It fetches NOTHING! And that's on purpose.
+   We will highjack make's variables to point to our dummies for linux,
+   u-boot and so.
+
+   Out goal is NOT to test for repo to work, or for u-boot and linux to
+   compile, but for SBXG to behave as expected.
+
+-->
+
+<manifest>
+</manifest>

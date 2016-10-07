@@ -18,16 +18,28 @@
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
 
+set -x
+
+# Try to determine the distribution
+. /etc/os-release
+if [ $? -ne 0 ]; then
+   echo "*** Cannot determine the Linux distribution"
+   # This is not a failure!
+fi
+if [ "x$NAME" = "xDebian" ]; then
+   IS_DEBIAN=1
+else
+   IS_DEBIAN=0
+fi
+
+# Enable script errors only from here
 set -e
 set -u
 
 TOP_SRC_DIR="$(realpath "$(dirname "$0")/../")"
-
 SBXG_URL="https://github.com/sbxg/sbxg.git"
-SBXG_DIR="sbxg"
-CLEANUP=1
-BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 CONFIG="$TOP_SRC_DIR/tests/config.travis"
+
 
 err() {
    echo "*** $@" 1>&2
@@ -39,10 +51,8 @@ err() {
 
 usage() {
    echo "Usage: $0 [OPTIONS]"
-   echo "  -l,--local     clone the local SBXG"
-   echo "  --no-cleanup   don't remove build directory"
-   echo "  -b=,--branch=  clone the specified branch instead of HEAD"
    echo "  -c=,--config=  specify the configuration os SBXG"
+   echo "  -l,--local     run tests locally"
    echo "  -h,--help      show this message"
    exit "$1"
 }
@@ -56,19 +66,11 @@ test_arg() {
 
 while [ $# -gt 0 ]; do
    case "$1" in
-      (-l|--local)
-         SBXG_URL="file://$TOP_SRC_DIR"
-         ;;
       (-h|--help)
          usage 0
          ;;
-      (-b|--branch)
-         test_arg $*
-         shift
-         BRANCH="$1"
-         ;;
-      (--no-cleanup)
-         CLEANUP=0
+      (-l|--local)
+         SBXG_URL="file://$TOP_SRC_DIR"
          ;;
       (-c|--config)
          test_arg $*
@@ -88,34 +90,19 @@ done
 #                      Run Tests in a Temporary Directory                      #
 #==============================================================================#
 
-# "Detached states" will make the branch detection fail.
-# No fallback for this, just crash!
-if [ x"$BRANCH" = x"HEAD" ]; then
-   err "Current branch detection failed (was detected as \"HEAD\")"
-   err "This might be because the repository is in a \"detached\" state."
-   exit 127
-fi
+export MANIFESTS_URL="$SBXG_URL"
+export MANIFESTS_REVISION="$TRAVIS_BRANCH"
 
-TMP_DIR="$(mktemp -d)"
-
-if [ "$CLEANUP" -ne 0 ]; then
-   clean_tmp() {
-      rm -rf "$TMP_DIR"
-   }
-   trap clean_tmp EXIT
-fi
-
-echo "Running tests in \"$TMP_DIR\""
-
-cd "$TMP_DIR"
-
-git clone --depth=1 --branch "$BRANCH" "$SBXG_URL" "$SBXG_DIR"
-cd "$SBXG_DIR"
+cd "$TOP_SRC_DIR"
 
 cp "$CONFIG" .config
-make init
-make sync
+cp tests/makefile.vars makefile.vars.override
+
+make init sync
 make all
-if [ "$CLEANUP" -ne 0 ]; then
-   make mrproper
+
+if [ "$IS_DEBIAN" -eq 1 ]; then
+   make debian
 fi
+
+make mrproper

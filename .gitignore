@@ -9,6 +9,7 @@ __pycache__/
 /build/
 /images/
 /hooks/
+/makefile.vars.override
 
 # Kernel's Debian packages
 /linux-*.deb
