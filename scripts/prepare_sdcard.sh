@@ -212,19 +212,16 @@ compress_image()
    if [ "x$CONFIG_IMAGE_COMPRESSION_GZ" = "xy" ]; then
       echo "Compressing image using gzip"
       gzip "$IMG_NAME"
-      md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
    fi
 
    if [ "x$CONFIG_IMAGE_COMPRESSION_BZIP" = "xy" ]; then
       echo "Compressing image using bzip2"
       bzip2 -v "$IMG_NAME"
-      md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
    fi
 
    if [ "x$CONFIG_IMAGE_COMPRESSION_XZ" = "xy" ]; then
       echo "Compressing image using xz"
       xz -zv "$IMG_NAME"
-      md5sum "$IMG_NAME"."$COMPRESS_IMG" >> "$IMG_NAME"."$COMPRESS_IMG".md5
    fi
 
    if [ "x$CONFIG_IMAGE_COMPRESSION_NONE" = "xy" ]; then
