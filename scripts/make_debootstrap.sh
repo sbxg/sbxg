@@ -202,6 +202,11 @@ install_kernel()
     sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/uImage" "$CONFIG_CHROOT_DIR"/boot
     sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$(realpath "$CONFIG_CHROOT_DIR")" ARCH=arm modules_install
 
+    if [ x"$CONFIG_USE_MAKE_KPKG" = "xy" ]; then
+       sudo cp "$CONFIG_RESOURCES_DIR/zz-uimage-select" \
+          "$CONFIG_CHROOT_DIR/etc/kernel/postinst.d"
+    fi
+
 # add some kernel boot args
     mkimage -C none -A arm -T script -d boot.cmd boot.scr
     sudo mv boot.scr "$CONFIG_CHROOT_DIR"/boot/
