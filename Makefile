@@ -64,7 +64,14 @@ DEPS := $(MAKEFILE_DEPS) $(CONFIG)
 
 .PHONY: all
 
-all: board-config-required $(DEPS) u-boot linux-defconfig linux debootstrap prepare_sdcard
+ALL_TARGETS := board-config-required $(DEPS) u-boot linux-defconfig linux
+ifeq ($(CONFIG_INSTALL_DEBIAN_KERNEL_PACKAGE),y)
+   ALL_TARGETS += debian
+endif
+ALL_TARGETS += debootstrap prepare_sdcard
+
+
+all: $(ALL_TARGETS)
 	@echo "Done. You can now use your $(CONFIG_BOARD) :)"
 
 

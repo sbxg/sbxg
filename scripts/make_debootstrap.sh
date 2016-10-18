@@ -3,7 +3,7 @@
 # Copyright (c) 2013-2014, Sylvain Leroy <sylvain@unmondelibre.fr>
 #                    2014, Jean-Marc Lacroix <jeanmarc.lacroix@free.fr>
 #                    2014, Philippe Thierry <phil@reseau-libre.net>
-#                    2015, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#               2015-2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #                    2015, Louis Syoën <louis.syoen@openmailbox.org>
 
 # This file is part of SBXG.
@@ -196,15 +196,23 @@ install_kernel()
 {
     set -x
 
-    # Install kernel (uImage, DTB, modules)
-    sudo cp "$CONFIG_LINUX_DIR/.config" "$CONFIG_CHROOT_DIR"/boot/config
-    sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/dts/$CONFIG_DTB" "$CONFIG_CHROOT_DIR"/boot
-    sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/uImage" "$CONFIG_CHROOT_DIR"/boot
-    sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$(realpath "$CONFIG_CHROOT_DIR")" ARCH=arm modules_install
+    # Always install the postinstall script
+    sudo cp "$CONFIG_RESOURCES_DIR/zz-uimage-select" "$CONFIG_CHROOT_DIR/etc/kernel/postinst.d"
 
-    if [ x"$CONFIG_USE_MAKE_KPKG" = "xy" ]; then
-       sudo cp "$CONFIG_RESOURCES_DIR/zz-uimage-select" \
-          "$CONFIG_CHROOT_DIR/etc/kernel/postinst.d"
+    # Install kernel (uImage, DTB, modules)
+    sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/dts/$CONFIG_DTB" "$CONFIG_CHROOT_DIR"/boot
+
+    if [ x"$CONFIG_INSTALL_DEBIAN_KERNEL_PACKAGE" = "xy" ]; then
+       # Install from the kernel debian packages
+       KERNEL_IMAGE_DEB="$(head -n 1 "$CONFIG_LINUX_DIR/debian/files" | cut -f 1 -d ' ')"
+       sudo cp "$KERNEL_IMAGE_DEB" "$CONFIG_CHROOT_DIR"
+       sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR dpkg -i $KERNEL_IMAGE_DEB"
+       sudo rm "$CONFIG_CHROOT_DIR/$KERNEL_IMAGE_DEB"
+    else
+       # Manual install
+       sudo cp "$CONFIG_LINUX_DIR/.config" "$CONFIG_CHROOT_DIR"/boot/config
+       sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/uImage" "$CONFIG_CHROOT_DIR"/boot
+       sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$(realpath "$CONFIG_CHROOT_DIR")" ARCH=arm modules_install
     fi
 
 # add some kernel boot args
