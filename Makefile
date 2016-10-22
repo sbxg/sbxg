@@ -138,18 +138,21 @@ prepare_sdcard: board-config-required $(DEPS)
 
 .PHONY: clean
 
-clean: $(MAKEFILE_DEPS) $(call clean-targets,$@)
+clean: $(MAKEFILE_DEPS)
+	$(MAKE) $(call clean-targets,$@)
 	$(RM) boot.cmd
 
 .PHONY: distclean
 
-distclean: $(MAKEFILE_DEPS) clean $(call clean-targets,$@) debootstrap-clean
+distclean: $(MAKEFILE_DEPS) clean debootstrap-clean
+	$(MAKE) $(call clean-targets,$@)
 	$(RM) -r $(BUILD_DIR)
 	$(RM) $(CONFIG)
 
 .PHONY: mrproper
 
-mrproper: $(MAKEFILE_DEPS) distclean $(call clean-targets,$@) repo-clean
+mrproper: $(MAKEFILE_DEPS) distclean repo-clean
+	$(MAKE) $(call clean-targets,$@)
 	if [ -d .git/ ]; then git clean -dfx; fi
 
 
