@@ -202,13 +202,17 @@ install_kernel()
     # Install kernel (uImage, DTB, modules)
     sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/dts/$CONFIG_DTB" "$CONFIG_CHROOT_DIR"/boot
 
+    # FIXME
+    set +u
     if [ x"$CONFIG_INSTALL_DEBIAN_KERNEL_PACKAGE" = "xy" ]; then
+       set -u
        # Install from the kernel debian packages
        KERNEL_IMAGE_DEB="$(head -n 1 "$CONFIG_LINUX_DIR/debian/files" | cut -f 1 -d ' ')"
        sudo cp "$KERNEL_IMAGE_DEB" "$CONFIG_CHROOT_DIR"
        sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR dpkg -i $KERNEL_IMAGE_DEB"
        sudo rm "$CONFIG_CHROOT_DIR/$KERNEL_IMAGE_DEB"
     else
+       set -u
        # Manual install
        sudo cp "$CONFIG_LINUX_DIR/.config" "$CONFIG_CHROOT_DIR"/boot/config
        sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/uImage" "$CONFIG_CHROOT_DIR"/boot
