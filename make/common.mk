@@ -33,9 +33,8 @@ Q   := $(Q_$(V))
 # as $(1)
 define git-hash-get
 $(shell \
-   git_dir="$(1)/.git"; \
-   if [ -d "$$git_dir" ]; then \
-      git --git-dir "$$git_dir" rev-parse --short HEAD; \
+   if [ -d "$(1)/.git/" ]; then \
+      git -C "$(1)" rev-parse --short HEAD; \
    fi
 )
 endef
