@@ -81,6 +81,15 @@ sudo apt-get install         \
     curl
 ```
 
+If the distribution is supported, you can run (as root):
+
+```bash
+make install-deps # as root (i.e. with sudo)
+```
+
+to install the dependencies automatically. Be aware that this command will
+modify (understand alter) your system. So run this carefully.
+
 
 Usage
 =====

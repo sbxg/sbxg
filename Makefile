@@ -80,7 +80,8 @@ all: $(ALL_TARGETS)
 help:
 	@echo "What you can do:"
 	@echo
-	@echo "menuconfig.......:  Starts the configuration menu. Output is stored as .config."
+	@echo "install-deps.....: Install requirements for your platform"
+	@echo "menuconfig.......: Starts the configuration menu. Output is stored as .config."
 	@echo "init.............: Intializes repo with a manifest (implicitely selected)."
 	@echo "sync.............: Fetches all sources mentioned by the manifest file."
 	@echo "all [default]....: Generates the image by proceeding all the build steps."
@@ -166,3 +167,8 @@ sync: config-required $(DEPS)
 
 repo-clean:
 	$(RM) -r .repo
+
+.PHONY: install-deps
+
+install-deps:
+	./scripts/install-deps
