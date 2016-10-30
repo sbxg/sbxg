@@ -197,6 +197,7 @@ install_kernel()
     set -x
 
     # Always install the postinstall script
+    sudo mkdir -p "$CONFIG_CHROOT_DIR"/etc/kernel/postinst.d
     sudo cp "$CONFIG_RESOURCES_DIR/zz-uimage-select" "$CONFIG_CHROOT_DIR/etc/kernel/postinst.d"
 
     # Install kernel (uImage, DTB, modules)
