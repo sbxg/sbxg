@@ -105,9 +105,8 @@ configure_system()
     set -e
 
     if [ "$create_user" -ne 0 ]; then
-       sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd admin"
+       sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd -m /home/admin -G sudo admin"
     fi
-    sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR adduser admin sudo"
     sudo PATH="$CHROOT_PATH" bash -c "echo -e admin:$CONFIG_ADMIN_PASSWORD | chroot $CONFIG_CHROOT_DIR chpasswd"
 
 # this set -x does not appear before previous sudo, not to show the root password on the output.
