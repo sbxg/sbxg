@@ -99,7 +99,7 @@ menu "Distribution"
 
    config PACKAGES
       string "Extra Packages (space-separated)"
-      default "locales ntp vim sudo openssh-server firmware-atheros firmware-brcm80211 firmware-ralink firmware-realtek  vlan bridge-utils usbutils wireless-tools"
+      default "locales ntp vim sudo openssh-server python python-apt firmware-atheros firmware-brcm80211 firmware-ralink firmware-realtek vlan bridge-utils usbutils wireless-tools"
       help
          Packages to be installed.
          This list should be kept to a minimum. SBXG's purpose is NOT
