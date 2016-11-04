@@ -86,26 +86,29 @@ configure_system()
 
 # set admin account
 
-    if [ -z "$CONFIG_ADMIN_PASSWORD" ]; then
-    # hiding the root password when typed could be a good idea... (stty)
-        echo "Please enter the admin password: "
-	read -r CONFIG_ADMIN_PASSWORD
-    fi
+    if [ "x$CONFIG_ADMIN_USERNAME" != "xroot" ]; then
+        if [ -z "$CONFIG_ADMIN_PASSWORD" ]; then
+        # FIXME hiding the root password when typed could be a good idea... (stty)
+            echo "Please enter the admin password: "
+            read -r CONFIG_ADMIN_PASSWORD
+        fi
 
-    # Evaluate whether we should create admin and add it to sudoers
-    create_user=1
+        # Evaluate whether we should create admin and add it to sudoers
+        create_user=1
 
-    set +e
-    grep "^admin\:" "$CONFIG_CHROOT_DIR"/etc/passwd
-    if [ $? -eq 0 ]; then # admin user alreasy exist
-       create_user=0
-    fi
-    set -e
+        set +e
+        grep "^$CONFIG_ADMIN_USERNAME\:" "$CONFIG_CHROOT_DIR"/etc/passwd
+        if [ $? -eq 0 ]; then # admin user already exists
+           create_user=0
+        fi
+        set -e
 
-    if [ "$create_user" -ne 0 ]; then
-       sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd -m -G sudo admin"
+        if [ "$create_user" -ne 0 ]; then
+           sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR groupadd -f -g $CONFIG_ADMIN_GID $CONFIG_ADMIN_USERNAME"
+           sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd --create-home -u $CONFIG_ADMIN_UID -g $CONFIG_ADMIN_GID -G sudo $CONFIG_ADMIN_USERNAME"
+        fi
+        sudo PATH="$CHROOT_PATH" bash -c "echo -e $CONFIG_ADMIN_USERNAME:$CONFIG_ADMIN_PASSWORD | chroot $CONFIG_CHROOT_DIR chpasswd"
     fi
-    sudo PATH="$CHROOT_PATH" bash -c "echo -e admin:$CONFIG_ADMIN_PASSWORD | chroot $CONFIG_CHROOT_DIR chpasswd"
 
 # this set -x does not appear before previous sudo, not to show the root password on the output.
     set -x
@@ -138,6 +141,30 @@ configure_system()
 # copy basic templates of configuration files
     sudo cp "$CONFIG_RESOURCES_DIR/fstab.base" "$CONFIG_CHROOT_DIR"/etc/fstab
     sudo cp "$CONFIG_RESOURCES_DIR/interfaces.base" "$CONFIG_CHROOT_DIR"/etc/network/interfaces
+
+    # Create the ~/.ssh directory and ~/.ssh/authorized_keys. It may be empty.
+    if [ "x$CONFIG_ADMIN_USERNAME" = "xroot" ]; then
+       admin_home="$CONFIG_CHROOT_DIR/root"
+    else
+       admin_home="$CONFIG_CHROOT_DIR/home/$CONFIG_ADMIN_USERNAME"
+    fi
+    sudo mkdir -p "$admin_home/.ssh"
+    sudo touch "$admin_home/.ssh/authorized_keys"
+
+    if [ -n "$CONFIG_ADMIN_AUTHORIZED_KEYS" ]; then
+       (
+         IFS=,
+         for key in "$CONFIG_ADMIN_AUTHORIZED_KEYS"; do
+            echo "Adding \"$key\" to authorized_keys"
+            sudo bash -c "cat \"$key\" >> \"$admin_home/.ssh/authorized_keys\""
+         done
+       )
+    fi
+
+    # Make sure ~/.ssh belongs to the admin user and authorized_keys is RW for admin only
+    sudo PATH="$CHROOT_PATH" bash -c "chmod 600 $admin_home/.ssh/authorized_keys"
+    sudo PATH="$CHROOT_PATH" bash -c "chmod 700 $admin_home/.ssh"
+    sudo PATH="$CHROOT_PATH" bash -c "chown -R $CONFIG_ADMIN_UID:$CONFIG_ADMIN_GID $admin_home/.ssh"
 
     set +x
 }
