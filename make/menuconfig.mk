@@ -66,6 +66,7 @@ $(OPENCONF_CFG): $(OPENCONF_CFG_IN) $(MCONF) Makefile makefile.vars
 .PHONY: menuconfig menuconfig-recheck
 
 menuconfig-recheck: FORCE
+	$(RM) -r $(CONF_BUILD_DIR)
 	$(MAKE) $(MANIFEST_CFG) $(OPENCONF_CFG)
 
 FORCE:
