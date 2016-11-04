@@ -109,13 +109,33 @@ menu "Distribution"
       string "Root Password"
       default "root"
 
+   config ADMIN_USERNAME
+      string "Administrator Account Username"
+      default "admin"
+
    config ADMIN_PASSWORD
       string "Admin password"
       default "admin"
 
+   config ADMIN_UID
+      int "Admin UID"
+      range 1000 65536
+      default 1000
+
+   config ADMIN_GID
+      int "Admin GID"
+      range 1000 65536
+      default 1000
+
+   config ADMIN_AUTHORIZED_KEYS
+      string "Public SSH keys"
+      help
+         A comma-separated list of public SSH keys to add to the Admin user.
+
    config HOSTNAME
       string "Hostname"
       default "board-sbxg"
+
 endmenu
 
 
