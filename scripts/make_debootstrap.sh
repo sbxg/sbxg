@@ -75,8 +75,6 @@ do_debootstrap()
 
 configure_system()
 {
-   set -x
-
 # set root password
 
     if [ -z "$CONFIG_ROOT_PASSWORD" ]; then
