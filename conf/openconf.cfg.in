@@ -105,12 +105,6 @@ menu "Distribution"
          This list should be kept to a minimum. SBXG's purpose is NOT
          to craft a full-custom rootfs!
 
-   config MAC_ADDRESS
-      string "MAC Address"
-      default 001122334455
-      help
-         MAC Address
-
    config ROOT_PASSWORD
       string "Root Password"
       default "root"
