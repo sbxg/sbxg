@@ -187,6 +187,32 @@ make
 And boom, done!
 
 
+Using Vagrant Build VM
+======================
+
+It is preferred to build SBXG on Debian to take profit of all the features.
+The most sensible is the use of make-kpkg that can provide Debian packages
+of the kernel. If you don't use Debian, don't worry though, as we provide a
+VM image description with [Vagrant](https://www.vagrantup.com/).
+
+In the top source directory, run:
+
+```bash
+vagrant up --provision --provider virtualbox # The very first time (to install it)
+vagrant up # All the other times, to bring up the VM
+```
+
+to get your Debian VM up and running.
+
+You can then connect to it via:
+
+```bash
+vagrant ssh
+```
+
+SBXG files are available in `/srv/sbxg`. Changes in the VM are reflected on your
+host system (and vice versa).
+
 
 Build Steps
 ===========
