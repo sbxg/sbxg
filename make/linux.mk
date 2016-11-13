@@ -78,6 +78,8 @@ else # .config exists
 	@echo "File .config already exists."
 endif # .config nonexistant
 
+linux-menuconfig: board-config-required $(DEPS)
+	$(call linux-make,menuconfig)
 
 # Forward linux targets  by prefixing fwd-
 linux-fwd-%: board-config-required $(DEPS)
