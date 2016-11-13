@@ -28,7 +28,12 @@ endif
 
 # Executes $(1) in the linux directory with JOBS, ARCH and CROSS_COMPILE
 # set to the values defined in the configuration
-linux-make = $(MAKE) -C $(LINUX_DIR) -j $(CONFIG_JOBS) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) ARCH=arm $(1)
+# Custom make environment variables are in $(2)
+linux-make = $(MAKE) \
+   EXTRAVERSION=$(call git-hash-get,$(LINUX_DIR)) \
+   DISABLE_PAX_PLUGINS=$(CONFIG_DISABLE_PAX_PLUGINS) \
+   $(2) \
+   -C $(LINUX_DIR) -j $(CONFIG_JOBS) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) ARCH=arm $(1)
 
 linux: $(DEPS) $(LINUX_IMAGE_TARGET) \
    $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
@@ -42,19 +47,14 @@ $(LINUX_DIR)/arch/arm/boot/zImage: board-config-required $(DEPS) $(LINUX_DIR)/.c
 	if grep -q "CONFIG_MODULES=y" $(LINUX_DIR)/.config ; then \
 	 targets="$$targets modules"; \
 	fi; \
-	EXTRAVERSION=$(call git-hash-get,$(LINUX_DIR)) \
-	DISABLE_PAX_PLUGINS="$(CONFIG_DISABLE_PAX_PLUGINS)" \
-	    $(call linux-make,$$targets)
+	$(call linux-make,$$targets)
 
 $(LINUX_DIR)/arch/arm/boot/uImage: board-config-required $(DEPS) $(LINUX_DIR)/.config
 	targets="uImage"; \
 	if grep -q "CONFIG_MODULES=y" $(LINUX_DIR)/.config ; then \
 	 targets="$$targets modules"; \
 	fi; \
-	EXTRAVERSION=$(call git-hash-get,$(LINUX_DIR)) \
-	LOADADDR="$(CONFIG_LOADADDR)" \
-	DISABLE_PAX_PLUGINS="$(CONFIG_DISABLE_PAX_PLUGINS)" \
-	    $(call linux-make,$$targets)
+	$(call linux-make,$$targets,LOADADDR=$(CONFIG_LOADADDR))
 
 $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB): board-config-required \
    $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
