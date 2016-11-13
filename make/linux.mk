@@ -79,6 +79,6 @@ else # .config exists
 endif # .config nonexistant
 
 
-# Handle all default targets
-linux-%: board-config-required $(DEPS)
-	$(call linux-make,$(patsubst linux-%,%,$@))
+# Forward linux targets  by prefixing fwd-
+linux-fwd-%: board-config-required $(DEPS)
+	$(call linux-make,$(patsubst linux-%,%,$@),MAGIC_TARGET=y)
