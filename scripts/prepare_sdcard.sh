@@ -29,7 +29,7 @@ set -e
 #############
 
 # internal values
-BUILD_SERIAL=$(date "+%Y-%m-%d-%Hh-%Mmin")
+BUILD_SERIAL=$(date "+%Y%m%d%H%M")
 TMP_VAL=$$
 
 # Including users defined variables
