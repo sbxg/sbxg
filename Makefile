@@ -122,6 +122,7 @@ boot.cmd: $(DEPS) boot.cmd.in
 	$(SED) \
 	   -e 's|@DTB@|$(CONFIG_DTB)|g' \
 	   -e 's|@ROOTFS@|$(CONFIG_ROOTFS)|g' \
+	   -e 's|@CONFIG_EXTRA_BOOTARGS@|$(patsubst "%",%,$(CONFIG_EXTRA_BOOTARGS))|g' \
 	   boot.cmd.in > $@
 
 
