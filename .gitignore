@@ -23,3 +23,7 @@ __pycache__/
 
 # Vagrant
 /.vagrant/
+
+# SBXG logs
+sbxg.log
+sbxg_*.log
