@@ -241,7 +241,9 @@ install_kernel()
        # Manual install
        sudo cp "$CONFIG_LINUX_DIR/.config" "$CONFIG_CHROOT_DIR"/boot/config
        sudo cp "$CONFIG_LINUX_DIR/arch/arm/boot/uImage" "$CONFIG_CHROOT_DIR"/boot
-       sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$(realpath "$CONFIG_CHROOT_DIR")" ARCH=arm modules_install
+       if grep -q "CONFIG_MODULES=y" "$CONFIG_CHROOT_DIR/boot/config"; then
+          sudo make -C "$CONFIG_LINUX_DIR" INSTALL_MOD_PATH="$(realpath "$CONFIG_CHROOT_DIR")" ARCH=arm modules_install
+       fi
     fi
 
 # add some kernel boot args
