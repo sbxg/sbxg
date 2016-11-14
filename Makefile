@@ -55,6 +55,11 @@ include $(MAKE_DIR)/menuconfig.mk
 include $(MAKE_DIR)/linux.mk
 include $(MAKE_DIR)/u-boot.mk
 
+ifeq ($(CONFIG_DEBUG_SBXG),y)
+   export MAKE_SHELL := $(SHELL)
+   SHELL := $(SCRIPTS_DIR)/hooker.sh
+endif
+
 MAKEFILE_DEPS := makefile.vars Makefile
 
 # $(DEPS) allow to rebuild targets when main configuration files or
