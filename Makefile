@@ -85,6 +85,7 @@ all: $(ALL_TARGETS)
 help:
 	@echo "What you can do:"
 	@echo
+	@echo "list-deps........: Shows the dependedcies to be installed"
 	@echo "install-deps.....: Install requirements for your platform"
 	@echo "menuconfig.......: Starts the configuration menu. Output is stored as .config."
 	@echo "init.............: Intializes repo with a manifest (implicitely selected)."
@@ -174,7 +175,10 @@ sync: config-required $(DEPS)
 repo-clean:
 	$(RM) -r .repo
 
-.PHONY: install-deps
+.PHONY: install-deps list-deps
 
 install-deps:
 	./scripts/install-deps
+
+list-deps:
+	$(Q)./scripts/install-deps --list
