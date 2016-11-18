@@ -67,6 +67,7 @@ COMMANDS = {
         "apt-get install -y parted",
         "apt-get install -y kpartx",
         "apt-get install -y libncurses5-dev",
+        "apt-get install -y libssl-dev",
         "apt-get install -y python3.4",
     ]
 }

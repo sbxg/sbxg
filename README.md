@@ -29,6 +29,7 @@ You need to have installed the following tools:
 - `libncurses`;
 - `parted`;
 - `binfmts`;
+- `libssl` headers will be needed if you want to enable Linux modules signing;
 - `build-essential`.
 
 
