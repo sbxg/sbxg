@@ -32,60 +32,10 @@ You need to have installed the following tools:
 - `libssl` headers will be needed if you want to enable Linux modules signing;
 - `build-essential`.
 
-
-**Debian packages:**
-
-```bash
-sudo apt-get install     \
-    autoconf             \
-    crossbuild-essential-armhf \
-    build-essential      \
-    make                 \
-    automake             \
-    qemu-user-static     \
-    qemu                 \
-    cmake                \
-    binfmt-support       \
-    git                  \
-    kernel-package       \
-    u-boot-tools         \
-    sudo                 \
-    debootstrap          \
-    parted               \
-    kpartx               \
-    libncurses5-dev      \
-    python3.4
-```
-
-**Ubuntu packages:**
+You can run (as root):
 
 ```bash
-sudo apt-get install         \
-    realpath                 \
-    git                      \
-    parted                   \
-    apt-utils                \
-    gcc-arm-linux-gnueabihf  \
-    autoconf                 \
-    build-essential          \
-    make                     \
-    automake                 \
-    debootstrap              \
-    qemu-user-static         \
-    qemu                     \
-    binfmt-support           \
-    kernel-package           \
-    u-boot-tools             \
-    sudo                     \
-    kpartx                   \
-    libncurses5-dev          \
-    curl
-```
-
-If the distribution is supported, you can run (as root):
-
-```bash
-make install-deps # as root (i.e. with sudo)
+make install-deps
 ```
 
 to install the dependencies automatically. Be aware that this command will
