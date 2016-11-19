@@ -1,6 +1,6 @@
 # Copyright (c) 2013-2014, Sylvain Leroy <sylvain@unmondelibre.fr>
 #                    2014, Jean-Marc Lacroix <jeanmarc.lacroix@free.fr>
-#               2015-2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+#               2015-2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #                    2015, Damien Pradier <damien.pradier@epita.fr>
 #
 # This file is part of SBXG
@@ -55,6 +55,11 @@ include $(MAKE_DIR)/menuconfig.mk
 include $(MAKE_DIR)/linux.mk
 include $(MAKE_DIR)/u-boot.mk
 
+ifeq ($(CONFIG_DEBUG_SBXG),y)
+   export MAKE_SHELL := $(SHELL)
+   SHELL := $(SCRIPTS_DIR)/hooker.sh
+endif
+
 MAKEFILE_DEPS := makefile.vars Makefile
 
 # $(DEPS) allow to rebuild targets when main configuration files or
@@ -80,6 +85,7 @@ all: $(ALL_TARGETS)
 help:
 	@echo "What you can do:"
 	@echo
+	@echo "list-deps........: Shows the dependedcies to be installed"
 	@echo "install-deps.....: Install requirements for your platform"
 	@echo "menuconfig.......: Starts the configuration menu. Output is stored as .config."
 	@echo "init.............: Intializes repo with a manifest (implicitely selected)."
@@ -122,6 +128,7 @@ boot.cmd: $(DEPS) boot.cmd.in
 	$(SED) \
 	   -e 's|@DTB@|$(CONFIG_DTB)|g' \
 	   -e 's|@ROOTFS@|$(CONFIG_ROOTFS)|g' \
+	   -e 's|@CONFIG_EXTRA_BOOTARGS@|$(patsubst "%",%,$(CONFIG_EXTRA_BOOTARGS))|g' \
 	   boot.cmd.in > $@
 
 
@@ -168,7 +175,10 @@ sync: config-required $(DEPS)
 repo-clean:
 	$(RM) -r .repo
 
-.PHONY: install-deps
+.PHONY: install-deps list-deps
 
 install-deps:
 	./scripts/install-deps
+
+list-deps:
+	$(Q)./scripts/install-deps --list

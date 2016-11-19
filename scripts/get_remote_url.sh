@@ -1,6 +1,6 @@
 #! /usr/bin/env sh
 #
-# Copyright (c) 2016 Jean Guyomarc'h <jean.guyomarch@gmail.com>
+# Copyright (c) 2016 Jean Guyomarc'h <jean@guyomarch.bzh>
 #
 #
 # SBXG is free software: you can redistribute it and/or modify

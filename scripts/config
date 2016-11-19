@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+# Copyright (c) 2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #
 # This file is part of SBXG
 #
@@ -25,6 +25,9 @@
 # Get the top source directory
 TOP_SOURCE_DIR="$(dirname "$0")"/..
 
+# Default log file
+LOG_FILE="sbxg_$(basename "$0").log"
+
 # Source .config if it exists, otherwise throws an error
 MAIN_CONFIG_PATH="$TOP_SOURCE_DIR"/.config
 if [ ! -e "$MAIN_CONFIG_PATH" ]; then
@@ -35,6 +38,12 @@ fi
 . "$MAIN_CONFIG_PATH"
 
 
+# Copy stdout and stderr to a log file
+if [ "x$CONFIG_DEBUG_SBXG" = "xy" ]; then
+   exec > >(tee -i "$LOG_FILE")
+   exec 2>&1
+fi
+
 # Source board config if it exists, otherwise throws an error
 BOARD_CONFIG_PATH="$TOP_SOURCE_DIR"/"$CONFIG_BOARDS_DIR"/"$CONFIG_BOARD".conf
 if [ ! -e "$BOARD_CONFIG_PATH" ]; then
@@ -44,8 +53,8 @@ if [ ! -e "$BOARD_CONFIG_PATH" ]; then
 fi
 . "$BOARD_CONFIG_PATH"
 
-
 # Don't keep around variables used in this file
 unset MAIN_CONFIG_PATH
 unset BOARD_CONFIG_PATH
 unset TOP_SOURCE_DIR
+unset LOG_FILE

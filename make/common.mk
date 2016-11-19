@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Jean Guyomarc'h <jean.guyomarch@gmail.com>
+# Copyright (c) 2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #
 # This file is part of SBXG
 #

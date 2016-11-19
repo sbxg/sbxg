@@ -29,62 +29,13 @@ You need to have installed the following tools:
 - `libncurses`;
 - `parted`;
 - `binfmts`;
+- `libssl` headers will be needed if you want to enable Linux modules signing;
 - `build-essential`.
 
-
-**Debian packages:**
-
-```bash
-sudo apt-get install     \
-    autoconf             \
-    crossbuild-essential-armhf \
-    build-essential      \
-    make                 \
-    automake             \
-    qemu-user-static     \
-    qemu                 \
-    cmake                \
-    binfmt-support       \
-    git                  \
-    kernel-package       \
-    u-boot-tools         \
-    sudo                 \
-    debootstrap          \
-    parted               \
-    kpartx               \
-    libncurses5-dev      \
-    python3.4
-```
-
-**Ubuntu packages:**
+You can run (as root):
 
 ```bash
-sudo apt-get install         \
-    realpath                 \
-    git                      \
-    parted                   \
-    apt-utils                \
-    gcc-arm-linux-gnueabihf  \
-    autoconf                 \
-    build-essential          \
-    make                     \
-    automake                 \
-    debootstrap              \
-    qemu-user-static         \
-    qemu                     \
-    binfmt-support           \
-    kernel-package           \
-    u-boot-tools             \
-    sudo                     \
-    kpartx                   \
-    libncurses5-dev          \
-    curl
-```
-
-If the distribution is supported, you can run (as root):
-
-```bash
-make install-deps # as root (i.e. with sudo)
+make install-deps
 ```
 
 to install the dependencies automatically. Be aware that this command will
@@ -186,6 +137,32 @@ make
 
 And boom, done!
 
+
+Using Vagrant Build VM
+======================
+
+It is preferred to build SBXG on Debian to take profit of all the features.
+The most sensible is the use of make-kpkg that can provide Debian packages
+of the kernel. If you don't use Debian, don't worry though, as we provide a
+VM image description with [Vagrant](https://www.vagrantup.com/).
+
+In the top source directory, run:
+
+```bash
+vagrant up --provision --provider virtualbox # The very first time (to install it)
+vagrant up # All the other times, to bring up the VM
+```
+
+to get your Debian VM up and running.
+
+You can then connect to it via:
+
+```bash
+vagrant ssh
+```
+
+SBXG files are available in `/srv/sbxg`. Changes in the VM are reflected on your
+host system (and vice versa).
 
 
 Build Steps

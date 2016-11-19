@@ -1,3 +1,5 @@
+#! /usr/bin/env sh
+#
 # Copyright (c) 2016, Jean Guyomarc'h <jean@guyomarch.bzh>
 #
 # This file is part of SBXG
@@ -15,19 +17,24 @@
 # You should have received a copy of the GNU General Public License
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
+#
+# Hooker is a shell wrapper that logs every action taken by make in a
+# specific log file.
+#
 
-.PHONY: u-boot u-boot-%
+set -e
 
-# Executes $(1) in the u-boot directory with JOBS and CROSS_COMPILE
-# set to the values defined in the configuration
-u-boot-make = $(MAKE) -C $(UBOOT_DIR) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) -j $(CONFIG_JOBS) $(1)
+if [ -z "$MAKE_SHELL" ]; then
+   MAKE_SHELL=/bin/sh
+fi
 
-u-boot: $(DEPS) $(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME)
+set -u
 
-$(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME): board-config-required
-	$(call u-boot-make,$(CONFIG_BOARD)_config)
-	$(call u-boot-make)
+# Log file will be in the current working directory
+LOG_FILE=sbxg.log
 
-# Catch all u-boot targets that were not overriden above
-u-boot-%: board-config-required $(DEPS)
-	$(call u-boot-make,$(patsubst u-boot-%,%,$@))
+# Log the command
+echo "[$(date "+%Y-%m-%d.%H:%M:%S")] $MAKE_SHELL $@" >> "$LOG_FILE"
+
+# Execute the actual shell command - don't quote the $MAKE_SHEL.
+exec $MAKE_SHELL "$@"

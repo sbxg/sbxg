@@ -20,3 +20,10 @@ __pycache__/
 /linux-stable/
 /boards/
 /.board
+
+# Vagrant
+/.vagrant/
+
+# SBXG logs
+sbxg.log
+sbxg_*.log
