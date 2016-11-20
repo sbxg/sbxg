@@ -97,11 +97,11 @@ help:
 	@echo "linux............: Compiles Linux: generates uImage and DTB."
 	@echo "linux-config.....: Copy environment KERNEL_CONFIG as .config."
 	@echo "linux-defconfig..: Pass to Linux a default configuration."
-	@echo "linux-<TARGET>...: Will call <TARGET> in the linux directory. E.g linux-menuconfig."
+	@echo "linux-fwd-<TARGET>: Will call <TARGET> in the linux directory."
 	@echo
 	@echo " -- U-Boot --"
 	@echo "u-boot...........: Compiles U-Boot."
-	@echo "u-boot-<TARGET>..: Will call <TARGET> in the U-Boot directory."
+	@echo "u-boot-fwd-<TARGET>: Will call <TARGET> in the U-Boot directory."
 	@echo
 	@echo "  -- Packaging --"
 	@echo "debian...........: Generated Debian packages of the Kernel."
