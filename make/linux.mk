@@ -30,7 +30,7 @@ endif
 # set to the values defined in the configuration
 # Custom make environment variables are in $(2)
 linux-make = $(MAKE) \
-   EXTRAVERSION=$(call git-hash-get,$(LINUX_DIR)) \
+   EXTRAVERSION=-$(call git-hash-get,$(LINUX_DIR)) \
    DISABLE_PAX_PLUGINS=$(CONFIG_DISABLE_PAX_PLUGINS) \
    $(2) \
    -C $(LINUX_DIR) -j $(CONFIG_JOBS) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) ARCH=arm $(1)
