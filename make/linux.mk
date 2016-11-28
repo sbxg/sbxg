@@ -83,4 +83,4 @@ linux-menuconfig: board-config-required $(DEPS)
 
 # Forward linux targets  by prefixing fwd-
 linux-fwd-%: board-config-required $(DEPS)
-	$(call linux-make,$(patsubst linux-%,%,$@),MAGIC_TARGET=y)
+	$(call linux-make,$(patsubst linux-fwd-%,%,$@),)
