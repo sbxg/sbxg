@@ -68,6 +68,6 @@ if [ -n "$KERNEL_PACKAGES" ]; then
       --jobs "$CONFIG_JOBS" \
       --initrd \
       --arch arm \
-      --cross-compile "$CONFIG_GCC_PREFIX" \
+      --cross-compile "$TOOLCHAIN_PREFIX" \
       $KERNEL_PACKAGES
 fi

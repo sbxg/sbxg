@@ -51,6 +51,7 @@ endif
 -include $(BOARD_CONFIG)
 # Include other components of the build system
 include $(MAKE_DIR)/common.mk
+include $(MAKE_DIR)/toolchain.mk
 include $(MAKE_DIR)/menuconfig.mk
 include $(MAKE_DIR)/linux.mk
 include $(MAKE_DIR)/u-boot.mk
@@ -69,7 +70,7 @@ DEPS := $(MAKEFILE_DEPS) $(CONFIG)
 
 .PHONY: all
 
-ALL_TARGETS := board-config-required $(DEPS) u-boot linux-defconfig linux
+ALL_TARGETS := board-config-required $(DEPS) toolchain u-boot linux-defconfig linux
 ifeq ($(CONFIG_INSTALL_DEBIAN_KERNEL_PACKAGE),y)
    ALL_TARGETS += debian
 endif

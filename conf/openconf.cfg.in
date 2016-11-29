@@ -46,12 +46,56 @@ endmenu
 #==============================================================================#
 
 menu "Toolchain"
-   config GCC_PREFIX
-      string "Toolchain Prefix"
-      default "arm-linux-gnueabihf-"
+   choice
+      prompt "Toolchain Origin"
+
+   config TOOLCHAIN_AUTOMATIC
+      bool "Automatic Download"
+      default y
       help
-         Prefix of the toolchain to be used.
-         Will be exported as GCC_PREFIX.
+         If this option is selected, the toolchain will be downloaded from
+         Linaro's website. The compiler version and eabi are determined by
+         SBXG.
+
+   config TOOLCHAIN_PREFIX_CHOICE
+      bool "Installed Prefix"
+      help
+         If you have a toolchain installed on your system, you may not want
+         SBXG to download one, although this is strongly advised. By saying
+         Y here, you will be able to manually give SBXG the toolchain's
+         prefix.
+
+#  config TOOLCHAIN_URL_CHOICE
+#     bool "Custom URL"
+#     help
+#        If SBXG's toolchain does not suit your needs, you can override the
+#        URL to be downloaded by manually providing an URL to SBXG. Note that
+#        the file downloaded MUST be able to decompressed automatically via tar.
+#        This means that your tar can automatically choose a decompression
+#        algorithm regarding its inputs. If you can do tar -xf <archive>, this
+#        will do fine.
+
+   endchoice
+
+   if TOOLCHAIN_PREFIX_CHOICE
+      config TOOLCHAIN_PREFIX
+         string "Toolchain Prefix"
+         help
+            Fill in here the prefix to your compiler. For instance, if you want
+            to use arm-linux-gnueabihf-gcc, your prefix is arm-linux-gnueabifh-
+            (with the trailing hyphen).
+   endif
+
+#  if TOOLCHAIN_URL_CHOICE
+#     config TOOLCHAIN_URL
+#     string "Toolchain URL"
+#     help
+#        Fill in here the URL of the toolchain to be downloaded. As mentioned in
+#        the help of the Toolchain Origin, the dowloaded archive MUST be
+#        decompressed with tar guessing the decompression algorithm.
+#
+#     # TODO There is more (directory), ...
+#  endif
 
    config JOBS
       int "Parallel Jobs"

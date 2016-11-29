@@ -29,11 +29,17 @@ endif
 # Executes $(1) in the linux directory with JOBS, ARCH and CROSS_COMPILE
 # set to the values defined in the configuration
 # Custom make environment variables are in $(2)
-linux-make = $(MAKE) \
+linux-make = \
+   $(call toolchain-path) \
+   $(MAKE) \
    EXTRAVERSION=-$(call git-hash-get,$(LINUX_DIR)) \
    DISABLE_PAX_PLUGINS=$(CONFIG_DISABLE_PAX_PLUGINS) \
    $(2) \
-   -C $(LINUX_DIR) -j $(CONFIG_JOBS) CROSS_COMPILE=$(CONFIG_GCC_PREFIX) ARCH=arm $(1)
+   -C $(LINUX_DIR) \
+   -j $(CONFIG_JOBS) \
+   CROSS_COMPILE=$(TOOLCHAIN_PREFIX) \
+   ARCH=arm \
+   $(1)
 
 linux: $(DEPS) $(LINUX_IMAGE_TARGET) \
    $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
