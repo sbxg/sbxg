@@ -55,6 +55,7 @@ include $(MAKE_DIR)/toolchain.mk
 include $(MAKE_DIR)/menuconfig.mk
 include $(MAKE_DIR)/linux.mk
 include $(MAKE_DIR)/u-boot.mk
+include $(MAKE_DIR)/busybox.mk
 
 ifeq ($(CONFIG_DEBUG_SBXG),y)
    export MAKE_SHELL := $(SHELL)
