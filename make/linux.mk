@@ -21,9 +21,9 @@
 DTS := $(patsubst %.dtb,%.dts,$(CONFIG_DTB))
 
 ifeq ($(CONFIG_LOADADDR),)
-   LINUX_IMAGE_TARGET := linux-zImage
+   LINUX_IMAGE_TARGET := linux-zimage
 else
-   LINUX_IMAGE_TARGET := linux-uImage
+   LINUX_IMAGE_TARGET := linux-uimage
 endif
 
 # Executes $(1) in the linux directory with JOBS, ARCH and CROSS_COMPILE
@@ -44,9 +44,9 @@ linux-make = \
 linux: $(DEPS) $(LINUX_IMAGE_TARGET) \
    $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
 
-linux-zImage: $(LINUX_DIR)/arch/arm/boot/zImage
+linux-zimage: $(LINUX_DIR)/arch/arm/boot/zImage
 
-linux-uImage: $(LINUX_DIR)/arch/arm/boot/uImage
+linux-uimage: $(LINUX_DIR)/arch/arm/boot/uImage
 
 $(LINUX_DIR)/arch/arm/boot/zImage: board-config-required $(DEPS) $(LINUX_DIR)/.config
 	targets="zImage"; \
@@ -87,6 +87,6 @@ endif # .config nonexistant
 linux-menuconfig: board-config-required $(DEPS)
 	$(call linux-make,menuconfig)
 
-# Forward linux targets  by prefixing fwd-
-linux-fwd-%: board-config-required $(DEPS)
-	$(call linux-make,$(patsubst linux-fwd-%,%,$@),)
+# Forward targets to linux
+linux-%: board-config-required $(DEPS)
+	$(call linux-make,$(patsubst linux-%,%,$@),)

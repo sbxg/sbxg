@@ -62,7 +62,7 @@ else
 endif
 
 ifeq ($(HAS_BOARD_CONFIG),y)
-   clean-targets = u-boot-fwd-$(1) linux-fwd-$(1)
+   clean-targets = u-boot-$(1) linux-$(1)
 else
    clean-targets =
 endif

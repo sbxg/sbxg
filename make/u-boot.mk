@@ -16,7 +16,7 @@
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
 
-.PHONY: u-boot u-boot-fwd-%
+.PHONY: u-boot u-boot-%
 
 # Executes $(1) in the u-boot directory with JOBS and CROSS_COMPILE
 # set to the values defined in the configuration
@@ -35,5 +35,5 @@ $(UBOOT_DIR)/$(CONFIG_UBOOT_BIN_NAME): board-config-required
 	$(call u-boot-make)
 
 # Catch all u-boot targets that were not overriden above
-u-boot-fwd-%: board-config-required $(DEPS)
+u-boot-%: board-config-required $(DEPS)
 	$(call u-boot-make,$(patsubst u-boot-%,%,$@))
