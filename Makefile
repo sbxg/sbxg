@@ -52,6 +52,14 @@ endif
 # Include other components of the build system
 include $(MAKE_DIR)/common.mk
 include $(MAKE_DIR)/toolchain.mk
+
+
+MAKEFILE_DEPS := makefile.vars Makefile
+
+# $(DEPS) allow to rebuild targets when main configuration files or
+# the build system have been alterated.
+DEPS := $(MAKEFILE_DEPS) $(CONFIG) $(TOOLCHAIN_DEPS)
+
 include $(MAKE_DIR)/menuconfig.mk
 include $(MAKE_DIR)/linux.mk
 include $(MAKE_DIR)/u-boot.mk
@@ -62,16 +70,10 @@ ifeq ($(CONFIG_DEBUG_SBXG),y)
    SHELL := $(SCRIPTS_DIR)/hooker.sh
 endif
 
-MAKEFILE_DEPS := makefile.vars Makefile
-
-# $(DEPS) allow to rebuild targets when main configuration files or
-# the build system have been alterated.
-DEPS := $(MAKEFILE_DEPS) $(CONFIG)
-
 
 .PHONY: all
 
-ALL_TARGETS := board-config-required $(DEPS) toolchain u-boot linux-defconfig linux
+ALL_TARGETS := board-config-required $(DEPS) u-boot linux-defconfig linux
 ifeq ($(CONFIG_INSTALL_DEBIAN_KERNEL_PACKAGE),y)
    ALL_TARGETS += debian
 endif

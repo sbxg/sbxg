@@ -36,13 +36,17 @@ else
    TOOLCHAIN_PREFIX := $(CONFIG_TOOLCHAIN_PREFIX_CHOICE)
 endif
 
+TOOLCHAIN_DEPS := $(BUILD_DIR)/$(TC_DIR)/bin/$(TOOLCHAIN_PREFIX)gcc
+
 .PHONY: toolchain
 
-toolchain: $(DEPS)
-	$(Q)$(SHELL) $(SCRIPTS_DIR)/get_toolchain.sh \
+$(TOOLCHAIN_DEPS):
+	$(SHELL) $(SCRIPTS_DIR)/get_toolchain.sh \
 	   $(TC_URL) \
 	   $(BUILD_DIR) \
 	   $(TC_DIR)
+
+toolchain: $(TOOLCHAIN_DEPS)
 
 toolchain-clean: $(DEPS)
 	$(Q)$(RM) -r $(BUILD_DIR)/$(TC_DIR)
