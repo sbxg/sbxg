@@ -56,6 +56,8 @@ toolchain-clean: $(DEPS)
 	$(Q)$(RM) -r $(BUILD_DIR)/$(TC_DIR)
 
 # This macro prepends to the PATH the path of the toolchain
+ifeq ($(CONFIG_TOOLCHAIN_PREFIX_CHOICE),)
 define toolchain-path
-PATH=$(realpath $(TC_PATH)):$(PATH)
+   PATH=$(realpath $(TC_PATH)):$(PATH)
 endef
+endif
