@@ -42,7 +42,7 @@ else
    TOOLCHAIN_DEPS :=
 endif
 
-.PHONY: toolchain
+.PHONY: toolchain toolchain-clean
 
 $(TOOLCHAIN_DEPS):
 	$(SHELL) $(SCRIPTS_DIR)/get_toolchain.sh \
