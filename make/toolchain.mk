@@ -17,7 +17,6 @@
 
 ARCH := $(shell uname --machine)
 
-TC_VERSION := 6.1.1-2016.08
 TC_BASE_URL := https://releases.linaro.org/components/toolchain/binaries
 TC_VERSION := 6.2-2016.11
 TC_EABI := arm-linux-gnueabihf
