@@ -15,46 +15,46 @@
 # You should have received a copy of the GNU General Public License
 # along with SBXG.  If not, see <http://www.gnu.org/licenses/>.
 
-sudo: true
+#sudo: true
 
 branches:
    only:
       - master
       - /^testing\/.*$/
 
-addons:
-   apt:
-      sources:
-         - r-packages-trusty
-      packages:
-         - realpath
-         - git
-         - parted
-         - apt-utils
-         - gcc-arm-linux-gnueabihf
-         - autoconf
-         - build-essential
-         - make
-         - automake
-         - debootstrap
-         - qemu-user-static
-         - qemu
-         - binfmt-support
-         - kernel-package
-         - u-boot-tools
-         - sudo
-         - kpartx
-         - libncurses5-dev
-         - curl
+#addons:
+#   apt:
+#      sources:
+#         - r-packages-trusty
+#      packages:
+#         - realpath
+#         - git
+#         - parted
+#         - apt-utils
+#         - gcc-arm-linux-gnueabihf
+#         - autoconf
+#         - build-essential
+#         - make
+#         - automake
+#         - debootstrap
+#         - qemu-user-static
+#         - qemu
+#         - binfmt-support
+#         - kernel-package
+#         - u-boot-tools
+#         - sudo
+#         - kpartx
+#         - libncurses5-dev
+#         - curl
+#
+#before_script:
+#   - sudo apt-get install kpartx kernel-package parted
+#   - mkdir -p "$HOME/bin"
+#   - curl https://storage.googleapis.com/git-repo-downloads/repo > "$HOME/bin/repo"
+#   - chmod a+x "$HOME/bin/repo"
+#   - export PATH="$HOME/bin:$PATH"
+#   - git config --global user.name "travis"
+#   - git config --global user.email "$(whoami)@$(hostname).ci"
+#   - git config --global color.ui "false"
 
-before_script:
-   - sudo apt-get install kpartx kernel-package parted
-   - mkdir -p "$HOME/bin"
-   - curl https://storage.googleapis.com/git-repo-downloads/repo > "$HOME/bin/repo"
-   - chmod a+x "$HOME/bin/repo"
-   - export PATH="$HOME/bin:$PATH"
-   - git config --global user.name "travis"
-   - git config --global user.email "$(whoami)@$(hostname).ci"
-   - git config --global color.ui "false"
-
-script: travis_wait 30 ./tests/run --no-cleanup --branch "$TRAVIS_BRANCH"
+script: /bin/false
