@@ -77,7 +77,7 @@ menu "Toolchain"
    endchoice
 
    if TOOLCHAIN_PREFIX_CHOICE
-      config TOOLCHAIN_PREFIX
+      config TOOLCHAIN_MANUAL_PREFIX
          string "Toolchain Prefix"
          help
             Fill in here the prefix to your compiler. For instance, if you want
