@@ -21,9 +21,9 @@
 DTS := $(patsubst %.dtb,%.dts,$(CONFIG_DTB))
 
 ifeq ($(CONFIG_LOADADDR),)
-   LINUX_IMAGE_TARGET := linux-zimage
+   LINUX_IMAGE_TARGET := $(LINUX_DIR)/arch/arm/boot/zImage
 else
-   LINUX_IMAGE_TARGET := linux-uimage
+   LINUX_IMAGE_TARGET := $(LINUX_DIR)/arch/arm/boot/uImage
 endif
 
 # Executes $(1) in the linux directory with JOBS, ARCH and CROSS_COMPILE
@@ -34,6 +34,7 @@ linux-make = \
    $(MAKE) \
    EXTRAVERSION=-$(call git-hash-get,$(LINUX_DIR)) \
    DISABLE_PAX_PLUGINS=$(CONFIG_DISABLE_PAX_PLUGINS) \
+   LOADADDR=$(CONFIG_LOADADDR) \
    $(2) \
    -C $(LINUX_DIR) \
    -j $(CONFIG_JOBS) \
@@ -43,10 +44,6 @@ linux-make = \
 
 linux: $(DEPS) $(LINUX_IMAGE_TARGET) \
    $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB)
-
-linux-zimage: $(LINUX_DIR)/arch/arm/boot/zImage
-
-linux-uimage: $(LINUX_DIR)/arch/arm/boot/uImage
 
 $(LINUX_DIR)/arch/arm/boot/zImage: board-config-required $(DEPS) $(LINUX_DIR)/.config
 	targets="zImage"; \
@@ -60,7 +57,7 @@ $(LINUX_DIR)/arch/arm/boot/uImage: board-config-required $(DEPS) $(LINUX_DIR)/.c
 	if grep -q "CONFIG_MODULES=y" $(LINUX_DIR)/.config ; then \
 	 targets="$$targets modules"; \
 	fi; \
-	$(call linux-make,$$targets,LOADADDR=$(CONFIG_LOADADDR))
+	$(call linux-make,$$targets)
 
 $(LINUX_DIR)/arch/arm/boot/dts/$(CONFIG_DTB): board-config-required \
    $(DEPS) $(LINUX_DIR)/arch/arm/boot/dts/$(DTS) $(LINUX_DIR)/.config
