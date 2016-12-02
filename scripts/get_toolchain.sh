@@ -41,6 +41,7 @@ if [ -d "$DESTDIR/$NAME" ]; then
    exit 0 # This is not a failure!
 fi
 
+mkdir -p "$DESTDIR"
 cd "$DESTDIR"
 TMPFILE="$(mktemp "dl.XXXXXXXXX.tmp")"
 
