@@ -187,8 +187,7 @@ update_system_and_custom_packages()
     fi
 
 # updating root_fs
-    sudo bash -c "echo deb http://http.debian.net/debian/ $CONFIG_DEBOOTSTRAP_DISTRIBUTION main contrib non-free > $CONFIG_CHROOT_DIR/etc/apt/sources.list"
-    sudo bash -c "echo deb http://security.debian.org/ $CONFIG_DEBOOTSTRAP_DISTRIBUTION/updates main contrib non-free >> $CONFIG_CHROOT_DIR/etc/apt/sources.list"
+    sudo bash -c "echo deb $CONFIG_DEBOOTSTRAP_MIRROR/ $CONFIG_DEBOOTSTRAP_DISTRIBUTION main contrib non-free > $CONFIG_CHROOT_DIR/etc/apt/sources.list"
     sudo mkdir -p "$CONFIG_CHROOT_DIR"/etc/apt/apt.conf.d
     if [ -f "/$apt_proxy" ]; then
         sudo bash -c "cp /$apt_proxy $CONFIG_CHROOT_DIR/$apt_proxy"
@@ -208,7 +207,9 @@ update_system_and_custom_packages()
 
 # install additionnals packages
 ### Here $PACKAGES MUST be without double quotes or apt-get won't understand the list of packages
-    sudo PATH="$CHROOT_PATH" chroot "$CONFIG_CHROOT_DIR" apt-get install --yes $CONFIG_PACKAGES
+    if [ -n "$CONFIG_PACKAGES" ]; then
+       sudo PATH="$CHROOT_PATH" chroot "$CONFIG_CHROOT_DIR" apt-get install --yes $CONFIG_PACKAGES
+    fi
 
 # removing tmp stuff
     sudo PATH="$CHROOT_PATH" chroot "$CONFIG_CHROOT_DIR" apt-get clean
