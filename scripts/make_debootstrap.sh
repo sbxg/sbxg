@@ -36,6 +36,11 @@ set -u
 # On some systems (e.g. Arch Linux), PATH is unset
 CHROOT_PATH="/bin:/usr/bin:/sbin:/usr/sbin"
 
+clean() {
+   sudo rm -f "$CONFIG_CHROOT_DIR/usr/bin/$CONFIG_QEMU_ARM_STATIC"
+}
+trap clean EXIT
+
 ############
 # FUNCTION #
 ############
