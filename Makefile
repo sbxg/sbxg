@@ -163,10 +163,13 @@ distclean: $(MAKEFILE_DEPS) clean debootstrap-clean
 
 .PHONY: mrproper
 
-mrproper: $(MAKEFILE_DEPS) distclean repo-clean
+mrproper: $(MAKEFILE_DEPS)
 	$(MAKE) $(call clean-targets,$@)
+	$(MAKE) repo-clean
+	$(MAKE) debootstrap-clean
+	$(RM) -r $(BUILD_DIR)
+	$(RM) $(CONFIG)
 	if [ -d .git/ ]; then git clean -dfx; fi
-
 
 .PHONY: init sync repo-clean
 
