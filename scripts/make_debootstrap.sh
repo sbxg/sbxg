@@ -110,7 +110,7 @@ configure_system()
 
         if [ "$create_user" -ne 0 ]; then
            sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR groupadd -f -g $CONFIG_ADMIN_GID $CONFIG_ADMIN_USERNAME"
-           sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd --create-home -u $CONFIG_ADMIN_UID -g $CONFIG_ADMIN_GID -G sudo $CONFIG_ADMIN_USERNAME"
+           sudo PATH="$CHROOT_PATH" bash -c "chroot $CONFIG_CHROOT_DIR useradd -m -u $CONFIG_ADMIN_UID -g $CONFIG_ADMIN_GID -G sudo $CONFIG_ADMIN_USERNAME"
         fi
         sudo PATH="$CHROOT_PATH" bash -c "echo -e $CONFIG_ADMIN_USERNAME:$CONFIG_ADMIN_PASSWORD | chroot $CONFIG_CHROOT_DIR chpasswd"
     fi
