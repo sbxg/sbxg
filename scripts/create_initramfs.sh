@@ -80,7 +80,7 @@ cat <<EOF > etc/motd
           | || | | | | |_| |/    \\
           |_||_|_| |_|\\____|\\_/\\_/
 
-               Busybox Rootfs
+            Busybox Rootfs (SBXG)
 EOF
 
 # Create the initramfs
