@@ -23,7 +23,7 @@ TC_EABI := arm-linux-gnueabihf
 TC_GCC := gcc-linaro
 TC_GCC_VERSION := 6.2.1-2016.11
 TC_DIR := $(TC_GCC)-$(TC_GCC_VERSION)-$(ARCH)_$(TC_EABI)
-TC_PATH := $(BUILD_DIR)/$(TC_DIR)/bin
+TOOLCHAIN_PATH := $(BUILD_DIR)/$(TC_DIR)/bin
 
 TC_URL := $(TC_BASE_URL)/$(TC_VERSION)/$(TC_EABI)/$(TC_DIR).tar.xz
 
@@ -57,6 +57,6 @@ toolchain-clean: $(DEPS)
 # This macro prepends to the PATH the path of the toolchain
 ifeq ($(CONFIG_TOOLCHAIN_PREFIX_CHOICE),)
 define toolchain-path
-   PATH=$(realpath $(TC_PATH)):$(PATH)
+   PATH=$(realpath $(TOOLCHAIN_PATH)):$(PATH)
 endef
 endif

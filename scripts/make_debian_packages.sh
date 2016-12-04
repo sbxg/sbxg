@@ -61,6 +61,7 @@ if [ -n "$KERNEL_PACKAGES" ]; then
    DISABLE_PAX_PLUGINS=y \
    LOADADDR="$CONFIG_LOADADDR" \
    DEB_HOST_ARCH="$CONFIG_ARCH" \
+   PATH="$CONFIG_TOOLCHAIN_PATH:$PATH" \
    make-kpkg --rootcmd fakeroot \
       --revision "${KERNEL_VERSION}+${SHA1_BASE}~${SHA1_KERNEL}" \
       --uimage \
