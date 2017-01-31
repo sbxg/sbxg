@@ -36,9 +36,9 @@ TMP_VAL=$$
 . "$(dirname "$0")"/config
 
 # user defined values
-IMG_SIZE=3700
+IMG_SIZE=700
 CONF_SIZE=50
-PARTITION_SIZE=$(((IMG_SIZE - CONF_SIZE) / 2))
+PARTITION_SIZE=700
 FS_TYPE=ext3
 IMG_NAME="$CONFIG_IMAGES_DIR/$CONFIG_BOARD"-"$CONFIG_DEBOOTSTRAP_DISTRIBUTION"-"$BUILD_SERIAL"-"$IMG_SIZE".img
 EXIT_ERROR=1
@@ -66,8 +66,6 @@ build_image()
 
     /sbin/parted --script "$IMG_NAME" mklabel msdos
     /sbin/parted --script --align optimal "$IMG_NAME" mkpart primary 1 $((PARTITION_SIZE + 1))
-    /sbin/parted --script --align optimal "$IMG_NAME" mkpart primary $((PARTITION_SIZE + 2)) $(((PARTITION_SIZE * 2) + 1))
-    /sbin/parted --script --align optimal "$IMG_NAME" mkpart primary $(((PARTITION_SIZE * 2) + 2)) $IMG_SIZE
 
 # for each  internal partition in the  file, create  one device in the
 # kernel on the loopback (/dev/loopxxxx), so that it is later possible
@@ -110,12 +108,6 @@ build_image()
 
     if [ -b "$LOOP_DEV"1 ] ; then
         sudo /sbin/mkfs."$FS_TYPE" "$LOOP_DEV"1
-    fi
-    if [ -b "$LOOP_DEV"2 ]; then
-        sudo /sbin/mkfs."$FS_TYPE" "$LOOP_DEV"2
-    fi
-    if [ -b "$LOOP_DEV"3 ]; then
-        sudo /sbin/mkfs."$FS_TYPE" "$LOOP_DEV"3
     fi
 
 # free internal loop device ...
