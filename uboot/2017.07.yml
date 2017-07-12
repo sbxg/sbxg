@@ -1,0 +1,7 @@
+u-boot-2017.07:
+  url: ftp://ftp.denx.de/pub/u-boot/u-boot-2017.07.tar.bz2
+  pgp-signature: ftp://ftp.denx.de/pub/u-boot/u-boot-2017.07.tar.bz2.sig
+  pgp-pubkey: 87F9F635D31D7652
+  compression:
+    - tar
+    - bz2

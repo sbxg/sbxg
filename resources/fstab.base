@@ -1,8 +1,0 @@
-# /etc/fstab: static file system information.
-#
-# Author of this file : Sylvain Leroy <sylvain@unmondelibre.fr>
-#
-# <file system> <mount point>  <type>            <options>                   <dump>  <pass>
-/dev/root      /               ext3    noatime,errors=remount-ro                 0       1
-tmpfs          /tmp            tmpfs   rw,nosuid,nodev,exec,auto,nouser,async    0       0
-proc           /proc           proc    rw,suid,dev,exec,auto,nouser,async        0       0

@@ -1,30 +1,5 @@
 *~
 *.sw?
 __pycache__/
-
-/chroot-*/
-/boot.cmd
-/.config
-/.config.old
 /build/
-/images/
-/hooks/
-/makefile.vars.override
-
-# Kernel's Debian packages
-/linux-*.deb
-
-# Repo
-/.repo/
-/u-boot/
-/kernel-configs/
-/linux-stable/
-/boards/
-/.board
-
-# Vagrant
-/.vagrant/
-
-# SBXG logs
-sbxg.log
-sbxg_*.log
+/doc/build/

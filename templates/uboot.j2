@@ -1,0 +1,16 @@
+uboot {
+   name: "Das Universal Bootloader";
+   path: "{{ uboot.path }}";
+
+   fetch {
+      artifact {
+         url: "{{ uboot.url }}";
+         compression: {{ uboot.compressions }};
+
+         {%- if uboot.pgp_signature and uboot.pgp_pubkey %}
+         pgp-signature: "{{ uboot.pgp_signature }}";
+         pgp-pubkey: "{{ uboot.pgp_pubkey }}";
+         {%- endif %}
+      }
+   }
+}

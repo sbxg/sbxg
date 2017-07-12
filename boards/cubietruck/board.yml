@@ -1,0 +1,12 @@
+board:
+  toolchain: armv7-eabihf
+  kernel: linux-4.12.0
+  kernel-config: linux-4.12-sunxi
+  uboot: "2017.07"
+  uboot-config: 2017.07-minimal
+  uboot-script: boot-default.cmd
+  image: default.j2
+  linux_dtb: sun7i-a20-cubietruck.dtb
+  linux_image: zImage
+  uboot_image: u-boot-sunxi-with-spl.bin
+  root: /dev/mmcblk0p2

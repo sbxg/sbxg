@@ -1,0 +1,12 @@
+linux-4.12:
+  url: https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.xz
+  # XXX Needs fix in subcomponent (the kernel signs the TAR!)
+  #pgp-signature: https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.12.tar.sign
+  #pgp-pubkey: 79BE3E4300411886
+  compression:
+    - tar
+    - xz
+  arch: arm
+  targets:
+    - zImage
+    - dtbs

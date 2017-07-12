@@ -1,0 +1,15 @@
+toolchain {
+   name: "{{ toolchain.name }} toolchain";
+   path: "{{ toolchain.path }}";
+
+   fetch {
+      artifact {
+         url: "{{ toolchain.url }}";
+         compression: {{ toolchain.compressions }};
+
+         {%- if toolchain.sha256 %}
+         sha256: "{{ toolchain.sha256 }}";
+         {%- endif %}
+      }
+   }
+}

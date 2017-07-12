@@ -1,0 +1,12 @@
+kernel {
+   name: "{{ kernel.name }}";
+   path: "{{ kernel.path }}";
+
+   fetch {
+      artifact {
+         url: "{{ kernel.url }}";
+         compression: {{ kernel.compressions }};
+      }
+   }
+}
+

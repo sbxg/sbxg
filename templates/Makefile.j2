@@ -1,0 +1,136 @@
+# Copyright (c) 2017 Jean Guyomarc'h
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# This is a generated file.
+
+.PHONY: all
+
+all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %} {%if genimage %}genimage{% endif %}
+
+#==============================================================================#
+#                                Kernel Targets                                #
+#==============================================================================#
+{% if kernel %}
+linux-make-helper = \
+	$(MAKE) \
+	ARCH={{ kernel.arch }} \
+	CROSS_COMPILE={{ toolchain.path }}/{{ toolchain.prefix }} \
+	O={{ kernel.build_dir }} \
+	-C {{ kernel.path }} \
+        $(1)
+
+{% if kernel.type == "linux" %}
+.PHONY: linux-%
+
+linux-%:
+	+$(call linux-make-helper,$(patsubst linux-%,%,$@))
+{% endif %}
+
+.PHONY: kernel
+
+kernel:
+{%- for target in kernel.targets %}
+	@echo "[SBXG/kernel] Building {{ kernel.type }}'s kernel target: {{ target }}"
+	+$(call {{ kernel.type }}-make-helper, {{ target }})
+{%- endfor %}
+
+{% else %}
+# No kernel specified when bootstrapping...
+{% endif %}
+
+
+#==============================================================================#
+#                                U-Boot Targets                                #
+#==============================================================================#
+{% if uboot %}
+
+uboot-make-helper = \
+	$(MAKE) \
+	CROSS_COMPILE={{ toolchain.path }}/{{ toolchain.prefix }} \
+	O={{ uboot.build_dir }} \
+	-C {{ uboot.path }} \
+	$(1)
+
+.PHONY: uboot uboot-%
+
+uboot-%:
+	+$(call uboot-make-helper,$(patsubst uboot-%,%,$@))
+
+uboot:
+	@echo "[SBXG/uboot] Building u-boot"
+	+$(call uboot-make-helper,all)
+
+{% else %}
+# No u-boot specified when bootstrapping...
+{% endif %}
+
+#==============================================================================#
+#                               Genimage Targets                               #
+#==============================================================================#
+{% if genimage %}
+
+.PHONY: genimage
+
+genimage: {{ genimage.build_dir }}/genimage
+	@echo "[SBXG/image] Copying image products"
+	cp "{{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
+	cp "{{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
+	cp "{{ uboot.build_dir }}/{{ board.uboot_image }}" "{{ genimage.input_path }}"
+	@echo "[SBXG/image] Generating boot script"
+	"{{ uboot.build_dir }}/tools/mkimage" -C none -A {{ kernel.arch }} -T script -d "{{ top_build_dir }}/boot.cmd" "{{ genimage.input_path }}/{{ board.boot_script }}"
+
+	MTOOLS_SKIP_CHECK=1 "{{ genimage.build_dir }}/genimage" \
+		--outputpath "{{ genimage.output_path }}" \
+		--inputpath "{{ genimage.input_path }}" \
+		--rootpath "{{ genimage.root_path }}" \
+		--tmppath "{{ genimage.tmp_path }}" \
+		--config "{{ genimage.config }}"
+
+{{ genimage.build_dir }}/genimage:
+	@echo "[SBXG/image] Building genimage"
+	mkdir -p {{ genimage.build_dir }}
+	cd "{{ genimage.path }}" && autoreconf -is
+	cd "{{ genimage.build_dir }}" && "{{ genimage.path }}/configure"
+	+$(MAKE) -C "{{ genimage.build_dir }}"
+
+{% else %}
+# Image generation was not specified when bootstrapping...
+{% endif %}
+
+.PHONY: help
+
+help:
+	@echo "============= SBXG Build Targets ============="
+	@echo
+	@echo "all           build all available targets"
+	{%- if uboot %}
+	@echo "uboot         build the bootloader"
+	@echo "uboot-<cmd>   run the <cmd> target in u-boot"
+	{%- endif %}
+	{%- if kernel %}
+	@echo "kernel        build the kernel"
+	{%- if kernel.type == "linux" %}
+	@echo "linux-<cmd>   run the <cmd> target in linux"
+	{%- endif %}
+	{%- endif %}
+	{%- if genimage %}
+	@echo "genimage      compile and execute genimage"
+	{%- endif %}
+

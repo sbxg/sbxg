@@ -1,0 +1,10 @@
+armv7-eabihf--glibc--bleeding-edge:
+  url: http://toolchains.free-electrons.com/downloads/releases/toolchains/armv7-eabihf--glibc--bleeding-edge-2017.05-toolchains-1-2.tar.bz2
+  sha256: fa4223e8fd7841898b122740da096aa5b496706c1d17378c379afabdffd9f2b3
+  compression:
+    - tar
+    - bz2
+  prefix: bin/arm-buildroot-linux-gnueabihf-
+  targets:
+    - zImage
+    - dtbs
