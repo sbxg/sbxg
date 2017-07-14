@@ -21,6 +21,7 @@ use opaque (private) user configurations.
 ## Supported Boards
 
 - [Cubietruck][3]
+- [Orange Pi Zero][6]
 
 
 
@@ -95,3 +96,4 @@ SBXG is licensed under the **MIT** license. For details, please refer to the
 [3]: https://linux-sunxi.org/Cubietruck
 [4]: https://git.pengutronix.de/cgit/genimage
 [5]: https://github.com/subcomponent/subcomponent
+[6]: http://www.orangepi.org/orangepizero/
