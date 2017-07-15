@@ -6,7 +6,3 @@ linux-4.12:
   compression:
     - tar
     - xz
-  arch: arm
-  targets:
-    - zImage
-    - dtbs

@@ -147,22 +147,15 @@ def db_common(name, path, data):
 def db_toolchain(name, path, data):
     db = db_common(name, path, data)
     db["prefix"] = data["prefix"]
+    db["arch"] = data["arch"]
     return {'toolchain': db}
 
 def db_kernel(name, path, data):
     kernel_type = name.split('-')[0]
     db = db_common(name, path, data)
     db["type"] = kernel_type 
-    db["arch"] = data["arch"]
-    db["targets"] = data["targets"] 
     build_dir = forge_build_dir(path, kernel_type)
     db["build_dir"] = build_dir
-    #db["image"] = os.path.join(
-    #    build_dir, 'arch', db["arch"], 'boot', data["image"]
-    #)
-    #db["dtb"] = os.path.join(
-    #    build_dir, 'arch', db["arch"], 'boot', 'dts', data["dtb"]
-    #)
 
     return {'kernel': db}
 
@@ -357,13 +350,11 @@ def main(argv):
             os.path.join(top_build_dir, 'genimage.cfg')
         )
 
+        # Generate the u-boot script from a template
         template_file(
             os.path.basename(main_db["board"]["uboot-script"]), main_db, j2_env,
             os.path.join(top_build_dir, 'boot.cmd')
         )
-
-
-
 
 
     # Aggregate all the configurations fragments into a valid subcomponent

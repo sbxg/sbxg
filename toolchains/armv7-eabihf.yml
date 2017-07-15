@@ -5,6 +5,4 @@ armv7-eabihf--glibc--bleeding-edge:
     - tar
     - bz2
   prefix: bin/arm-buildroot-linux-gnueabihf-
-  targets:
-    - zImage
-    - dtbs
+  arch: arm

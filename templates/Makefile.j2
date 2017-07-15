@@ -30,7 +30,7 @@ all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %} {%if genimag
 {% if kernel %}
 linux-make-helper = \
 	$(MAKE) \
-	ARCH={{ kernel.arch }} \
+	ARCH={{ toolchain.arch }} \
 	CROSS_COMPILE={{ toolchain.path }}/{{ toolchain.prefix }} \
 	O={{ kernel.build_dir }} \
 	-C {{ kernel.path }} \
@@ -46,10 +46,8 @@ linux-%:
 .PHONY: kernel
 
 kernel:
-{%- for target in kernel.targets %}
-	@echo "[SBXG/kernel] Building {{ kernel.type }}'s kernel target: {{ target }}"
-	+$(call {{ kernel.type }}-make-helper, {{ target }})
-{%- endfor %}
+	@echo "[SBXG/kernel] Building {{ kernel.type }}'s kernel"
+	+$(call {{ kernel.type }}-make-helper, all)
 
 {% else %}
 # No kernel specified when bootstrapping...
@@ -90,11 +88,11 @@ uboot:
 
 genimage: {{ genimage.build_dir }}/genimage
 	@echo "[SBXG/image] Copying image products"
-	cp "{{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
-	cp "{{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
+	cp "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
+	cp "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
 	cp "{{ uboot.build_dir }}/{{ board.uboot_image }}" "{{ genimage.input_path }}"
 	@echo "[SBXG/image] Generating boot script"
-	"{{ uboot.build_dir }}/tools/mkimage" -C none -A {{ kernel.arch }} -T script -d "{{ top_build_dir }}/boot.cmd" "{{ genimage.input_path }}/{{ board.boot_script }}"
+	"{{ uboot.build_dir }}/tools/mkimage" -C none -A {{ toolchain.arch }} -T script -d "{{ top_build_dir }}/boot.cmd" "{{ genimage.input_path }}/{{ board.boot_script }}"
 
 	MTOOLS_SKIP_CHECK=1 "{{ genimage.build_dir }}/genimage" \
 		--outputpath "{{ genimage.output_path }}" \
