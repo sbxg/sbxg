@@ -53,7 +53,7 @@ fatload mmc 0 ${kernel_addr_r} {{ board.linux_image }}
 fdt mknod /chosen module@0
 fdt set /chosen/module@0 compatible "xen,linux-zimage" "xen,multiboot-module"
 fdt set /chosen/module@0 reg <${kernel_addr_r} 0x${filesize}>
-fdt set /chosen/module@0 bootargs "earlyprintk console=hvc0 disp.screen0_output_type=3 root={{ board.root }} rootwait clk_ignore_unused ${extra}"
+fdt set /chosen/module@0 bootargs "earlyprintk console=hvc0 disp.screen0_output_type=3 root={{ board.root }} rootwait ${extra}"
 
 #ext2load mmc 0 ${ramdisk_addr_r} boot/initrd
 

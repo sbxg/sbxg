@@ -1,13 +1,13 @@
 board:
   toolchain: armv7-eabihf
   xen: xen-4.8.0
-  xen-config: xen-4.8-quadcore
+  xen_config: xen-4.8-quadcore
   xen_arch: arm32
   kernel: linux-4.12.0
-  kernel-config: linux-4.12-sunxi-xen-dom0
+  kernel_config: linux-4.12-sunxi-xen-dom0
   uboot: "2017.07"
-  uboot-config: 2017.07-minimal
-  uboot-script: boot-xen.cmd
+  uboot_config: 2017.07-minimal
+  uboot_script: boot-xen.cmd
   image: default.j2
   linux_dtb: sun7i-a20-cubietruck.dtb
   linux_image: zImage

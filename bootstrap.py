@@ -148,8 +148,8 @@ def db_common(name, path, data):
         "path": path,
         "compressions": convert_compressions(data["compression"]),
         "sha256": data.get("sha256"),
-        "pgp_signature": data.get("pgp-signature"),
-        "pgp_pubkey": data.get("pgp-pubkey"),
+        "pgp_signature": data.get("pgp_signature"),
+        "pgp_pubkey": data.get("pgp_pubkey"),
     }
 
 def db_toolchain(name, path, data):
@@ -275,7 +275,7 @@ def main(argv):
             )
         if not args.kernel_config:
             args.kernel_config = os.path.join(
-                top_src_dir, board_dir, "kernel", board_db["kernel-config"]
+                top_src_dir, board_dir, "kernel", board_db["kernel_config"]
             )
         if not args.uboot:
             args.uboot = os.path.join(
@@ -283,15 +283,15 @@ def main(argv):
             )
         if not args.uboot_config:
             args.uboot_config = os.path.join(
-                top_src_dir, board_dir, "uboot", board_db["uboot-config"]
+                top_src_dir, board_dir, "uboot", board_db["uboot_config"]
             )
         if not args.xen and board_db["xen"]:
             args.xen = os.path.join(
                 top_src_dir, "kernels", board_db["xen"] + ".yml"
             )
-        if not args.xen_config and board_db["xen-config"]:
+        if not args.xen_config and board_db["xen_config"]:
             args.xen_config = os.path.join(
-                top_src_dir, board_dir, "kernel", board_db["xen-config"]
+                top_src_dir, board_dir, "kernel", board_db["xen_config"]
             )
         if not args.gen_image:
             args.gen_image = os.path.join(
@@ -299,7 +299,7 @@ def main(argv):
             )
         if not args.uboot_script:
             args.uboot_script = os.path.join(
-                top_src_dir, board_dir, 'uboot', board_db['uboot-script']
+                top_src_dir, board_dir, 'uboot', board_db['uboot_script']
             )
         board_db["uboot_script"] = args.uboot_script
         main_db['board'] = board_db
@@ -384,7 +384,7 @@ def main(argv):
 
         # Generate the u-boot script from a template
         template_file(
-            os.path.basename(main_db["board"]["uboot-script"]), main_db, j2_env,
+            os.path.basename(main_db["board"]["uboot_script"]), main_db, j2_env,
             os.path.join(top_build_dir, 'boot.cmd')
         )
 
