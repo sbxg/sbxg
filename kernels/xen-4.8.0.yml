@@ -1,0 +1,7 @@
+xen-4.8.0:
+  url: https://downloads.xenproject.org/release/xen/4.8.0/xen-4.8.0.tar.gz
+  pgp-signature: https://downloads.xenproject.org/release/xen/4.8.0/xen-4.8.0.tar.gz.sig
+  pgp-pubkey: 83FE14C957E82BD9
+  compression:
+    - tar
+    - gz

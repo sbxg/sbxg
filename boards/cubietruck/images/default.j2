@@ -1,12 +1,15 @@
 image boot.vfat {
    vfat {
       files = {
+         {%- if board.xen %}
+         "{{ board.xen_image }}",
+         {%- endif %}
          "{{ board.linux_image }}",
          "{{ board.linux_dtb }}",
          "{{ board.boot_script }}"
       }
    }
-   size = 5M
+   size = 10M
 }
 
 image sdcard.img {

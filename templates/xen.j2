@@ -1,0 +1,16 @@
+xen {
+   name: "Xen";
+   path: "{{ xen.path }}";
+
+   fetch {
+      artifact {
+         url: "{{ xen.url }}";
+         compression: {{ xen.compressions }};
+
+         {%- if xen.pgp_signature and xen.pgp_pubkey %}
+         pgp-signature: "{{ xen.pgp_signature }}";
+         pgp-pubkey: "{{ xen.pgp_pubkey }}";
+         {%- endif %}
+      }
+   }
+}

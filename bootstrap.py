@@ -65,6 +65,14 @@ def getopts(argv):
         help='Path to a configuration to be fed to u-boot'
     )
     parser.add_argument(
+        '--xen', '-x', type=str,
+        help='Path to the Xen configuration'
+    )
+    parser.add_argument(
+        '--xen-config', '-X', type=str,
+        help='Path to a configuration to be fed to Xen'
+    )
+    parser.add_argument(
         '--board', '-B', type=str,
         help='Name of a built-in SBXG board (default variant will be selected)'
     )
@@ -154,8 +162,7 @@ def db_kernel(name, path, data):
     kernel_type = name.split('-')[0]
     db = db_common(name, path, data)
     db["type"] = kernel_type 
-    build_dir = forge_build_dir(path, kernel_type)
-    db["build_dir"] = build_dir
+    db["build_dir"] = forge_build_dir(path, kernel_type)
 
     return {'kernel': db}
 
@@ -163,6 +170,11 @@ def db_uboot(name, path, data):
     db = db_common(name, path, data)
     db["build_dir"] = forge_build_dir(path, "uboot" + name)
     return {'uboot': db}
+
+def db_xen(name, path, data):
+    db = db_common(name, path, data)
+    db["build_dir"] = forge_build_dir(path, "xen")
+    return {'xen': db}
 
 def template_conf_file(build_dir, template_file, conf_file, j2_env, callback):
     # Load the yaml file into a string and parse it
@@ -212,10 +224,10 @@ def generate_makefile(build_dir, database, j2_env):
     with open(os.path.join(build_dir, 'Makefile'), 'w') as stream:
         stream.write(data)
 
-def init_config(path, build_dir):
-    if not os.path.exists(build_dir):
-        os.makedirs(build_dir)
-    config = os.path.join(build_dir, ".config")
+def init_config(path, dest_dir):
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+    config = os.path.join(dest_dir, ".config")
     shutil.copyfile(path, config)
 
 def main(argv):
@@ -273,6 +285,14 @@ def main(argv):
             args.uboot_config = os.path.join(
                 top_src_dir, board_dir, "uboot", board_db["uboot-config"]
             )
+        if not args.xen and board_db["xen"]:
+            args.xen = os.path.join(
+                top_src_dir, "kernels", board_db["xen"] + ".yml"
+            )
+        if not args.xen_config and board_db["xen-config"]:
+            args.xen_config = os.path.join(
+                top_src_dir, board_dir, "kernel", board_db["xen-config"]
+            )
         if not args.gen_image:
             args.gen_image = os.path.join(
                 top_src_dir, board_dir, 'images', board_db["image"]
@@ -320,12 +340,24 @@ def main(argv):
         main_db.update(db)
         configurations.append(uboot_conf)
 
+    if args.xen:
+        xen_conf, db = template_conf_file(
+            top_build_dir, 'xen.j2',
+            args.xen, j2_env, db_xen
+        )
+        main_db.update(db)
+        configurations.append(xen_conf)
+
 
 
     if args.kernel_config:
         init_config(args.kernel_config, main_db["kernel"]["build_dir"])
     if args.uboot_config:
         init_config(args.uboot_config, main_db["uboot"]["build_dir"])
+    if args.xen_config:
+        init_config(args.xen_config, os.path.join(
+            main_db["xen"]["path"], "xen"
+        ))
 
     # Handle generation of image. Genimage is used to create an image, ready to
     # be flashed, without requiring the use of fancy, complex, priviledged

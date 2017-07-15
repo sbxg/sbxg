@@ -37,17 +37,38 @@ linux-make-helper = \
         $(1)
 
 {% if kernel.type == "linux" %}
-.PHONY: linux-%
+.PHONY: linux linux-%
 
 linux-%:
 	+$(call linux-make-helper,$(patsubst linux-%,%,$@))
+
+linux:
+	@echo "[SBXG/kernel] Building Linux kernel"
+	+$(call linux-make-helper, all)
+{% endif %}
+
+{% if xen %}
+.PHONY: xen
+
+xen-make-helper = \
+	$(MAKE) \
+	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
+	XEN_TARGET_ARCH="{{ board.xen_arch }}" \
+	-C "{{ xen.path }}/xen" \
+	$(1)
+
+xen-%:
+	+$(call xen-make-helper,$(patsubst xen-%,%,$@))
+
+xen:
+	@echo "[SBXG/kernel] Building Xen kernel"
+	+$(call xen-make-helper, xen)
+
 {% endif %}
 
 .PHONY: kernel
 
-kernel:
-	@echo "[SBXG/kernel] Building {{ kernel.type }}'s kernel"
-	+$(call {{ kernel.type }}-make-helper, all)
+kernel: {{ kernel.type }} {% if xen %}xen{% endif %}
 
 {% else %}
 # No kernel specified when bootstrapping...
@@ -91,6 +112,9 @@ genimage: {{ genimage.build_dir }}/genimage
 	cp "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
 	cp "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
 	cp "{{ uboot.build_dir }}/{{ board.uboot_image }}" "{{ genimage.input_path }}"
+	{%- if xen %}
+	cp "{{ xen.path }}/xen/{{ board.xen_image }}" "{{ genimage.input_path }}"
+	{%- endif %}
 	@echo "[SBXG/image] Generating boot script"
 	"{{ uboot.build_dir }}/tools/mkimage" -C none -A {{ toolchain.arch }} -T script -d "{{ top_build_dir }}/boot.cmd" "{{ genimage.input_path }}/{{ board.boot_script }}"
 
