@@ -1,0 +1,31 @@
+type: object
+patternProperties:
+  ^.+$:
+    type: object
+    properties:
+      url:
+        type: string
+      sha256:
+        type: string
+      pgp_signature:
+        type: string
+      pgp_pubkey:
+        type: string
+      compression:
+        type: array
+        items:
+          enum:
+            - tar
+            - xz
+            - bz2
+            - gz
+      prefix:
+        type: string
+      arch:
+        type: string
+
+    required:
+      - url
+      - prefix
+      - arch
+      - compression
