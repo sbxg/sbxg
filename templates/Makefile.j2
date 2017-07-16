@@ -22,7 +22,7 @@
 
 .PHONY: all
 
-all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %} {%if genimage %}genimage{% endif %}
+all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %}
 
 #==============================================================================#
 #                                Kernel Targets                                #
@@ -30,10 +30,10 @@ all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %} {%if genimag
 {% if kernel %}
 linux-make-helper = \
 	$(MAKE) \
-	ARCH={{ toolchain.arch }} \
-	CROSS_COMPILE={{ toolchain.path }}/{{ toolchain.prefix }} \
-	O={{ kernel.build_dir }} \
-	-C {{ kernel.path }} \
+	ARCH="{{ toolchain.arch }}" \
+	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
+	O=$(3) \
+	-C $(2) \
         $(1)
 
 {% if kernel.type == "linux" %}
@@ -44,11 +44,10 @@ linux-%:
 
 linux:
 	@echo "[SBXG/kernel] Building Linux kernel"
-	+$(call linux-make-helper, all)
+	+$(call linux-make-helper,all,"{{ kernel.path }}","{{ kernel.build_dir }}")
 {% endif %}
 
 {% if xen %}
-.PHONY: xen
 
 xen-make-helper = \
 	$(MAKE) \
@@ -57,14 +56,34 @@ xen-make-helper = \
 	-C "{{ xen.path }}/xen" \
 	$(1)
 
+
+.PHONY: xen xen-%
+
 xen-%:
 	+$(call xen-make-helper,$(patsubst xen-%,%,$@))
 
 xen:
 	@echo "[SBXG/kernel] Building Xen kernel"
-	+$(call xen-make-helper, xen)
+	+$(call xen-make-helper,xen)
 
+{% if guests -%}
+.PHONY: guests
+
+{%- for guest in guests %}
+.PHONY: guest-{{ loop.index0 }}-%
+
+guest-{{ loop.index0 }}-%:
+	$(call {{ guest.kernel.type }}-make-helper,$(patsubst guest-{{ loop.index0 }}-%,%,$@),{{ guest.kernel.path }},{{ guest.kernel.build_dir }})
+{% endfor %}
+
+guests:
+	{%- for guest in guests %}
+	@echo "[SBXG/guests] Building guest {{ loop.index0 }}: {{ guest.kernel.name }}"
+	+$(MAKE) guest-{{ loop.index0 }}-zImage
+	{%- endfor %}
 {% endif %}
+
+{% endif %}{# End of xen #}
 
 .PHONY: kernel
 
@@ -104,6 +123,23 @@ uboot:
 #                               Genimage Targets                               #
 #==============================================================================#
 {% if genimage %}
+
+{% if guests %}
+.PHONY: genimage-guests
+
+genimage-guests: {{ genimage.build_dir }}/genimage
+{%- for guest in guests %}
+	@echo "[SBXG/guests] Copying image products of guest {{ loop.index0 }}"
+	"{{ genimage.build_dir }}/genimage" \
+		--outputpath "{{ genimage.output_path }}" \
+		--inputpath "{{ genimage.input_path }}/guest{{ loop.index0 }}" \
+		--rootpath "{{ genimage.root_path }}" \
+		--tmppath "{{ genimage.tmp_path }}" \
+		--config "{{ guest.image }}"
+{% endfor %}
+
+{% endif %}
+
 
 .PHONY: genimage
 

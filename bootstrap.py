@@ -57,6 +57,18 @@ def getopts(argv):
         help='Path to a configuration to be fed to the kernel'
     )
     parser.add_argument(
+        '--guests-kernels', '-g', type=str, nargs='+',
+        help='Path to the guest kernels configurations'
+    )
+    parser.add_argument(
+        '--guests-configs', '-G', type=str, nargs='+',
+        help='Path to a configurations to be fed to the guests kernels'
+    )
+    parser.add_argument(
+        '--guests-images', type=str, nargs='+',
+        help="Paths to xen guests genimage configurations"
+    )
+    parser.add_argument(
         '--uboot', '-u', type=str,
         help='Path to the u-boot configuration'
     )
@@ -81,7 +93,7 @@ def getopts(argv):
         help='Name of a variant configuration for a selected board'
     )
     parser.add_argument(
-        '--gen-image', '-I', type=str,
+        '--gen-image', type=str,
         help="Path to a genimage template configuration"
     )
     parser.add_argument(
@@ -91,6 +103,10 @@ def getopts(argv):
     parser.add_argument(
         '--no-download', '-n', action='store_true',
         help="Don't make subcomponent download the components"
+    )
+    parser.add_argument(
+        '--search-path', '-P', type=str,
+        help='Override the search path for SBXG components'
     )
     return parser.parse_args(argv[1:])
 
@@ -138,10 +154,10 @@ def convert_compressions(compressions):
         converted += '"{}", '.format(compression)
     return converted[:-2]
 
-def forge_build_dir(path, name):
-    return os.path.join(os.path.dirname(path), "build_" + name)
+def forge_build_dir(path, name, suffix):
+    return os.path.join(os.path.dirname(path), "build_" + name + suffix)
 
-def db_common(name, path, data):
+def db_common(name, path, data, suffix):
     return {
         "url": data["url"],
         "name": name,
@@ -150,33 +166,34 @@ def db_common(name, path, data):
         "sha256": data.get("sha256"),
         "pgp_signature": data.get("pgp_signature"),
         "pgp_pubkey": data.get("pgp_pubkey"),
+        "suffix": suffix,
     }
 
-def db_toolchain(name, path, data):
-    db = db_common(name, path, data)
+def db_toolchain(name, path, data, suffix):
+    db = db_common(name, path, data, suffix)
     db["prefix"] = data["prefix"]
     db["arch"] = data["arch"]
     return {'toolchain': db}
 
-def db_kernel(name, path, data):
+def db_kernel(name, path, data, suffix):
     kernel_type = name.split('-')[0]
-    db = db_common(name, path, data)
+    db = db_common(name, path, data, suffix)
     db["type"] = kernel_type 
-    db["build_dir"] = forge_build_dir(path, kernel_type)
+    db["build_dir"] = forge_build_dir(path, kernel_type, suffix)
 
     return {'kernel': db}
 
-def db_uboot(name, path, data):
-    db = db_common(name, path, data)
-    db["build_dir"] = forge_build_dir(path, "uboot" + name)
+def db_uboot(name, path, data, suffix):
+    db = db_common(name, path, data, suffix)
+    db["build_dir"] = forge_build_dir(path, "uboot" + name, suffix)
     return {'uboot': db}
 
-def db_xen(name, path, data):
-    db = db_common(name, path, data)
-    db["build_dir"] = forge_build_dir(path, "xen")
+def db_xen(name, path, data, suffix):
+    db = db_common(name, path, data, suffix)
+    db["build_dir"] = forge_build_dir(path, "xen", suffix)
     return {'xen': db}
 
-def template_conf_file(build_dir, template_file, conf_file, j2_env, callback):
+def template_conf_file(build_dir, template_file, conf_file, j2_env, callback, suffix=""):
     # Load the yaml file into a string and parse it
     with open(conf_file, 'r') as stream:
         db_file = stream.read()
@@ -190,7 +207,7 @@ def template_conf_file(build_dir, template_file, conf_file, j2_env, callback):
     path = os.path.join(build_dir, path)
     name = os.path.splitext(os.path.basename(conf_file))[0]
 
-    database = callback(name, path, data)
+    database = callback(name, path, data, suffix)
 
     template = j2_env.get_template(template_file)
     return template.render(database), database
@@ -242,6 +259,12 @@ def main(argv):
               "exclusive options.")
         sys.exit(1)
 
+    if args.guests_kernels and args.guests_configs:
+        if len(args.guests_kernels) != len(args.guests_configs):
+            print("error: --guests-kernels and --guests-configs must proivde "
+                  "the same number of arguments.")
+            sys.exit(1)
+
     top_src_dir = os.path.dirname(os.path.realpath(__file__))
     top_build_dir = os.getcwd()
 
@@ -250,6 +273,10 @@ def main(argv):
               "distinct from the source directory.")
         sys.exit(1)
 
+    # The default search path is the top source directory of SBXG
+    if not args.search_path:
+        args.search_path = top_src_dir
+
     configurations = []
     main_db = {
         "top_build_dir": top_build_dir,
@@ -257,7 +284,7 @@ def main(argv):
 
     if args.board:
         config = args.board_variant + '.yml' if args.board_variant else 'board.yml'
-        board_dir = os.path.join(top_src_dir, "boards", args.board)
+        board_dir = os.path.join(args.search_path, "boards", args.board)
         filename = os.path.join(board_dir, config)
         assert os.path.exists(filename), "Invalid board name"
         with open(filename, 'r') as stream:
@@ -265,42 +292,64 @@ def main(argv):
         db = yaml.load(board_file)
         board_db = db["board"]
         board_db["boot_script"] = "boot.scr"
+
         if not args.toolchain:
             args.toolchain = os.path.join(
-                top_src_dir, "toolchains", board_db["toolchain"] + ".yml"
+                args.search_path, "toolchains", board_db["toolchain"] + ".yml"
             )
         if not args.kernel:
             args.kernel = os.path.join(
-                top_src_dir, "kernels", board_db["kernel"] + ".yml"
+                args.search_path, "kernels", board_db["kernel"] + ".yml"
             )
         if not args.kernel_config:
             args.kernel_config = os.path.join(
-                top_src_dir, board_dir, "kernel", board_db["kernel_config"]
+                args.search_path, board_dir, "kernel", board_db["kernel_config"]
             )
         if not args.uboot:
             args.uboot = os.path.join(
-                top_src_dir, "uboot", board_db["uboot"] + ".yml"
+                args.search_path, "uboot", board_db["uboot"] + ".yml"
             )
         if not args.uboot_config:
             args.uboot_config = os.path.join(
-                top_src_dir, board_dir, "uboot", board_db["uboot_config"]
+                args.search_path, board_dir, "uboot", board_db["uboot_config"]
             )
         if not args.xen and board_db["xen"]:
             args.xen = os.path.join(
-                top_src_dir, "kernels", board_db["xen"] + ".yml"
+                args.search_path, "kernels", board_db["xen"] + ".yml"
             )
         if not args.xen_config and board_db["xen_config"]:
             args.xen_config = os.path.join(
-                top_src_dir, board_dir, "kernel", board_db["xen_config"]
+                args.search_path, board_dir, "kernel", board_db["xen_config"]
             )
         if not args.gen_image:
             args.gen_image = os.path.join(
-                top_src_dir, board_dir, 'images', board_db["image"]
+                args.search_path, board_dir, 'images', board_db["image"]
             )
         if not args.uboot_script:
             args.uboot_script = os.path.join(
-                top_src_dir, board_dir, 'uboot', board_db['uboot_script']
+                args.search_path, board_dir, 'uboot', board_db['uboot_script']
             )
+        if not args.guests_kernels and 'xen_guests' in board_db:
+            args.guests_kernels = []
+            args.guests_configs = []
+            for guest in  board_db['xen_guests']:
+                args.guests_kernels.append(os.path.join(
+                    args.search_path, 'kernels', guest['kernel']
+                ))
+                args.guests_configs.append(os.path.join(
+                    args.search_path, board_dir, 'kernel', guest['kernel_config']
+                ))
+        if not args.guests_images and 'xen_guests' in board_db:
+            args.guests_images = []
+            for guest in  board_db['xen_guests']:
+                if 'image' in guest:
+                    config_path = os.path.join(
+                        args.search_path, board_dir, 'images', guest['image']
+                    )
+                    args.guests_images.append(config_path)
+                    guest['image'] = config_path
+
+
         board_db["uboot_script"] = args.uboot_script
         main_db['board'] = board_db
 
@@ -314,7 +363,6 @@ def main(argv):
         loader=jinja2.FileSystemLoader(j2_loaders),
         lstrip_blocks=True
     )
-
 
     if args.toolchain:
         toolchain_conf, db = template_conf_file(
@@ -331,6 +379,19 @@ def main(argv):
         )
         main_db.update(db)
         configurations.append(kernel_conf)
+
+    if args.guests_kernels:
+        kernels = []
+        for index, kernel in enumerate(args.guests_kernels):
+            suffix = "_guest{}".format(index)
+            guest_kernel_conf, db = template_conf_file(
+                top_build_dir, 'kernel.j2',
+                args.kernel, j2_env, db_kernel, suffix
+            )
+            kernels.append(db)
+            configurations.append(guest_kernel_conf)
+        main_db.update({'guests': kernels})
+
 
     if args.uboot:
         uboot_conf, db = template_conf_file(
@@ -358,6 +419,9 @@ def main(argv):
         init_config(args.xen_config, os.path.join(
             main_db["xen"]["path"], "xen"
         ))
+    if args.guests_configs:
+        for index, config in enumerate(args.guests_configs):
+            init_config(config, main_db["guests"][index]["kernel"]["build_dir"])
 
     # Handle generation of image. Genimage is used to create an image, ready to
     # be flashed, without requiring the use of fancy, complex, priviledged
@@ -381,6 +445,16 @@ def main(argv):
             os.path.basename(args.gen_image), main_db, j2_env,
             os.path.join(top_build_dir, 'genimage.cfg')
         )
+
+        for index, gen_config in enumerate(args.guests_images):
+            genimage_cfg = os.path.join(
+                top_build_dir, 'genimage_guest{}.cfg'.format(index)
+            )
+            template_file(
+                os.path.basename(gen_config), main_db, j2_env,
+                genimage_cfg     
+            )
+            main_db["guests"][index].update({'image': genimage_cfg})
 
         # Generate the u-boot script from a template
         template_file(
