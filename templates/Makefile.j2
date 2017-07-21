@@ -40,7 +40,7 @@ linux-make-helper = \
 .PHONY: linux linux-%
 
 linux-%:
-	+$(call linux-make-helper,$(patsubst linux-%,%,$@))
+	+$(call linux-make-helper,$(patsubst linux-%,%,$@),"{{ kernel.path }}","{{ kernel.build_dir }}")
 
 linux:
 	@echo "[SBXG/kernel] Building Linux kernel"
@@ -73,7 +73,7 @@ xen:
 .PHONY: guest-{{ loop.index0 }}-%
 
 guest-{{ loop.index0 }}-%:
-	$(call {{ guest.kernel.type }}-make-helper,$(patsubst guest-{{ loop.index0 }}-%,%,$@),{{ guest.kernel.path }},{{ guest.kernel.build_dir }})
+	+$(call {{ guest.kernel.type }}-make-helper,$(patsubst guest-{{ loop.index0 }}-%,%,$@),{{ guest.kernel.path }},{{ guest.kernel.build_dir }})
 {% endfor %}
 
 guests:
