@@ -22,7 +22,7 @@
 
 .PHONY: all
 
-all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %}
+all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %} {% if busybox %}busybox{% endif %}
 
 #==============================================================================#
 #                                Kernel Targets                                #
@@ -120,6 +120,36 @@ uboot:
 {% endif %}
 
 #==============================================================================#
+#                                Busybox Targets                               #
+#==============================================================================#
+{% if busybox %}
+.PHONY: busybox busybox-%
+
+busybox-make-helper = \
+	$(MAKE) \
+	ARCH="{{ toolchain.arch }}" \
+	O="{{ busybox.build_dir }}" \
+	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
+	-C "{{ busybox.path }}" \
+	$(1)
+
+
+busybox-%:
+	+$(call busybox-make-helper,$(patsubst busybox-%,%,$@))
+
+busybox:
+	@echo "[SBXG/busybox] Building busybox"
+	+$(call busybox-make-helper,busybox)
+	+$(call busybox-make-helper,install)
+	@echo "[SBXG/busybox] Packaging busybox"
+	python3 {{ top_src_dir }}/scripts/create-initramfs.py \
+            --output "{{ busybox.build_dir }}/initramfs.cpio" \
+	    "{{ busybox.build_dir }}"/_install
+
+
+{% endif %}
+
+#==============================================================================#
 #                               Genimage Targets                               #
 #==============================================================================#
 {% if genimage %}
@@ -184,10 +214,15 @@ help:
 	{%- endif %}
 	{%- if kernel %}
 	@echo "kernel        build the kernel"
-	{%- if kernel.type == "linux" %}
+	  {%- if kernel.type == "linux" %}
 	@echo "linux-<cmd>   run the <cmd> target in linux"
+	  {%- endif %}
 	{%- endif %}
-	{%- endif %}
+        {%- if busybox %}
+	@echo "busybox       build busybox"
+	@echo "busybox-<cmd> run the <cmd> target in busybox"
+        {%- endif %}
+
 	{%- if genimage %}
 	@echo "genimage      compile and execute genimage"
 	{%- endif %}

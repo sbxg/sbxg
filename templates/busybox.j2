@@ -1,0 +1,16 @@
+busybox {
+   name: "Busybox";
+   path: "{{ busybox.path }}";
+
+   fetch {
+      artifact {
+         url: "{{ busybox.url }}";
+         compression: {{ busybox.compressions }};
+
+         {%- if busybox.pgp_signature and busybox.pgp_pubkey %}
+         pgp-signature: "{{ busybox.pgp_signature }}";
+         pgp-pubkey: "{{ busybox.pgp_pubkey }}";
+         {%- endif %}
+      }
+   }
+}

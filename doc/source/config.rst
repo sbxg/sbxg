@@ -41,6 +41,8 @@ The following file hierarchy is an example that shows:
   │       └── uboot
   │           ├── 2017.07-minimal
   │           └── boot-default.cmd
+  ├── busybox
+  │   └── 1.27.1.yml
   ├── kernels
   │   ├── linux-4.12.0.yml
   │   └── xen-4.9.0.yml
@@ -121,6 +123,22 @@ Only `linux` and `xen` are handled for now.
 .. _subcomponent: https://github.com/subcomponent/subcomponent
 
 
+
+Busybox Configuration
+---------------------
+
+A busybox configuration **must** reside in the `busybox/` directory, and is a
+yaml file that is defined as it follows:
+
+.. code:: yaml
+
+  extraction path of busybox :
+    url: the download url of busybox 
+    compression: a list of compressions
+
+
+It is advised that the name of these configuration files be the version of
+busybox, suffixed by the `yml` extension.
 
 Board Configuration
 -------------------

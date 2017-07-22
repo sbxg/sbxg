@@ -77,6 +77,14 @@ def getopts(argv):
         help='Path to a configuration to be fed to u-boot'
     )
     parser.add_argument(
+        '--busybox', type=str,
+        help='Path to the busybox bootstrap configuration'
+    )
+    parser.add_argument(
+        '--busybox-config', type=str,
+        help='Path to a configuration to be fed to busybox'
+    )
+    parser.add_argument(
         '--xen', '-x', type=str,
         help='Path to the Xen configuration'
     )
@@ -188,6 +196,11 @@ def db_uboot(name, path, data, suffix):
     db["build_dir"] = forge_build_dir(path, "uboot" + name, suffix)
     return {'uboot': db}
 
+def db_busybox(name, path, data, suffix):
+    db = db_common(name, path, data, suffix)
+    db["build_dir"] = forge_build_dir(path, "busybox" + name, suffix)
+    return {'busybox': db}
+
 def db_xen(name, path, data, suffix):
     db = db_common(name, path, data, suffix)
     db["build_dir"] = forge_build_dir(path, "xen", suffix)
@@ -280,6 +293,7 @@ def main(argv):
     configurations = []
     main_db = {
         "top_build_dir": top_build_dir,
+        "top_src_dir": top_src_dir,
     }
 
     if args.board:
@@ -313,7 +327,15 @@ def main(argv):
             args.uboot_config = os.path.join(
                 args.search_path, board_dir, "uboot", board_db["uboot_config"]
             )
-        if not args.xen and board_db["xen"]:
+        if not args.busybox and 'busybox' in board_db:
+            args.busybox = os.path.join(
+                args.search_path, "busybox", board_db["busybox"] + ".yml"
+            )
+        if not args.busybox_config and 'busybox_config' in board_db:
+            args.busybox_config = os.path.join(
+                args.search_path, board_dir, "busybox", board_db["busybox_config"]
+            )
+        if not args.xen and "xen" in board_db:
             args.xen = os.path.join(
                 args.search_path, "kernels", board_db["xen"] + ".yml"
             )
@@ -380,6 +402,14 @@ def main(argv):
         main_db.update(db)
         configurations.append(kernel_conf)
 
+    if args.busybox:
+        busybox_conf, db = template_conf_file(
+            top_build_dir, 'busybox.j2',
+            args.busybox, j2_env, db_busybox
+        )
+        main_db.update(db)
+        configurations.append(busybox_conf)
+
     if args.guests_kernels:
         kernels = []
         for index, kernel in enumerate(args.guests_kernels):
@@ -415,6 +445,8 @@ def main(argv):
         init_config(args.kernel_config, main_db["kernel"]["build_dir"])
     if args.uboot_config:
         init_config(args.uboot_config, main_db["uboot"]["build_dir"])
+    if args.busybox_config:
+        init_config(args.busybox_config, main_db["busybox"]["build_dir"])
     if args.xen_config:
         init_config(args.xen_config, os.path.join(
             main_db["xen"]["path"], "xen"
