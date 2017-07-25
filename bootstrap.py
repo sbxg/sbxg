@@ -186,7 +186,7 @@ def db_toolchain(name, path, data, suffix):
 def db_kernel(name, path, data, suffix):
     kernel_type = name.split('-')[0]
     db = db_common(name, path, data, suffix)
-    db["type"] = kernel_type 
+    db["type"] = kernel_type
     db["build_dir"] = forge_build_dir(path, kernel_type, suffix)
 
     return {'kernel': db}
@@ -214,8 +214,7 @@ def template_conf_file(build_dir, template_file, conf_file, j2_env, callback, su
 
     # The yaml file shall contain one key-value pair. The key shall be the
     # path where the toolchain will reside after extraction.
-    assert len(conf.keys()) == 1
-    path = conf.keys()[0]
+    for path in conf.keys(): pass
     data = conf[path]
     path = os.path.join(build_dir, path)
     name = os.path.splitext(os.path.basename(conf_file))[0]
@@ -339,7 +338,7 @@ def main(argv):
             args.xen = os.path.join(
                 args.search_path, "kernels", board_db["xen"] + ".yml"
             )
-        if not args.xen_config and board_db["xen_config"]:
+        if not args.xen_config and "xen_config" in board_db:
             args.xen_config = os.path.join(
                 args.search_path, board_dir, "kernel", board_db["xen_config"]
             )
@@ -478,15 +477,16 @@ def main(argv):
             os.path.join(top_build_dir, 'genimage.cfg')
         )
 
-        for index, gen_config in enumerate(args.guests_images):
-            genimage_cfg = os.path.join(
-                top_build_dir, 'genimage_guest{}.cfg'.format(index)
-            )
-            template_file(
-                os.path.basename(gen_config), main_db, j2_env,
-                genimage_cfg     
-            )
-            main_db["guests"][index].update({'image': genimage_cfg})
+        if hasattr(args, "guests"):
+            for index, gen_config in enumerate(args.guests_images):
+                genimage_cfg = os.path.join(
+                    top_build_dir, 'genimage_guest{}.cfg'.format(index)
+                )
+                template_file(
+                    os.path.basename(gen_config), main_db, j2_env,
+                    genimage_cfg
+                )
+                main_db["guests"][index].update({'image': genimage_cfg})
 
         # Generate the u-boot script from a template
         template_file(
