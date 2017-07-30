@@ -157,7 +157,7 @@ busybox:
 {% if guests %}
 .PHONY: genimage-guests
 
-genimage-guests: {{ genimage.build_dir }}/genimage
+guests-genimage: {{ genimage.build_dir }}/genimage
 {%- for guest in guests %}
 	@echo "[SBXG/guests] Copying image products of guest {{ loop.index0 }}"
 	"{{ genimage.build_dir }}/genimage" \
@@ -225,5 +225,8 @@ help:
 
 	{%- if genimage %}
 	@echo "genimage      compile and execute genimage"
+          {%- if guests %}
+	@echo "guests-genimage execute genimage for the guests"
+          {%- endif %}
 	{%- endif %}
 
