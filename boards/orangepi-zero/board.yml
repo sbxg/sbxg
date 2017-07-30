@@ -1,10 +1,10 @@
 board:
   toolchain: armv7-eabihf
   kernel: linux-4.12.0
-  kernel-config: linux-4.12-sunxi
+  kernel_config: linux-4.12-sunxi
   uboot: "2017.07"
-  uboot-config: 2017.07-minimal
-  uboot-script: boot-default.cmd
+  uboot_config: 2017.07-minimal
+  uboot_script: boot-default.cmd
   image: default.j2
   linux_dtb: sun8i-h2-plus-orangepi-zero.dtb
   linux_image: zImage
