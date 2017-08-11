@@ -5,7 +5,9 @@ kernel{{ kernel.suffix }} {
    fetch {
       artifact {
          url: "{{ kernel.url }}";
-         compression: {{ kernel.compressions }};
+         compression: {% for compression in  kernel.compressions -%}
+            "{{ compression }}"{% if not loop.last %}, {% endif %}
+            {%- endfor %};
       }
    }
 }

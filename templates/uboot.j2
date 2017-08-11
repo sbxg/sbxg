@@ -5,7 +5,9 @@ uboot {
    fetch {
       artifact {
          url: "{{ uboot.url }}";
-         compression: {{ uboot.compressions }};
+         compression: {% for compression in  uboot.compressions -%}
+            "{{ compression }}"{% if not loop.last %}, {% endif %}
+            {%- endfor %};
 
          {%- if uboot.pgp_signature and uboot.pgp_pubkey %}
          pgp-signature: "{{ uboot.pgp_signature }}";

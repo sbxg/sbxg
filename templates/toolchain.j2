@@ -5,7 +5,9 @@ toolchain {
    fetch {
       artifact {
          url: "{{ toolchain.url }}";
-         compression: {{ toolchain.compressions }};
+         compression: {% for compression in  toolchain.compressions -%}
+            "{{ compression }}"{% if not loop.last %}, {% endif %}
+            {%- endfor %};
 
          {%- if toolchain.sha256 %}
          sha256: "{{ toolchain.sha256 }}";

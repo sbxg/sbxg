@@ -5,7 +5,9 @@ busybox {
    fetch {
       artifact {
          url: "{{ busybox.url }}";
-         compression: {{ busybox.compressions }};
+         compression: {% for compression in  busybox.compressions -%}
+            "{{ compression }}"{% if not loop.last %}, {% endif %}
+            {%- endfor %};
 
          {%- if busybox.pgp_signature and busybox.pgp_pubkey %}
          pgp-signature: "{{ busybox.pgp_signature }}";

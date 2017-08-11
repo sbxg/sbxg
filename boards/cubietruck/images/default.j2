@@ -6,7 +6,7 @@ image boot.vfat {
          {%- endif %}
          "{{ board.linux_image }}",
          "{{ board.linux_dtb }}",
-         "{{ board.boot_script }}"
+         "{{ board.output_boot_script_name }}"
       }
    }
    size = 10M

@@ -4,7 +4,7 @@ board:
   kernel_config: linux-4.12-sunxi
   uboot: "2017.07"
   uboot_config: 2017.07-minimal
-  uboot_script: boot-default.cmd
+  boot_script: boot-sunxi-default.j2
   image: default.j2
   linux_dtb: sun7i-a20-cubietruck.dtb
   linux_image: zImage

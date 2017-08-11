@@ -28,6 +28,8 @@ import subprocess
 import sys
 import yaml
 
+import sbxg
+
 def getopts(argv):
     """
     Parse command-line options and provide a structure that holds the values
@@ -113,8 +115,12 @@ def getopts(argv):
         help="Don't make subcomponent download the components"
     )
     parser.add_argument(
-        '--search-path', '-P', type=str,
-        help='Override the search path for SBXG components'
+        '--board-dir', nargs='+',
+        help='Add a directory to the boards search path'
+    )
+    parser.add_argument(
+        '--lib-dir', '-L', nargs='+',
+        help='Add a directory to the library search path'
     )
     return parser.parse_args(argv[1:])
 
@@ -229,7 +235,7 @@ def build_genimage_db(build_dir):
         'path': os.path.join(build_dir, 'genimage-git'),
         'build_dir': os.path.join(build_dir, 'build_genimage'),
         'output_path': os.path.join(build_dir, 'images'),
-        'input_path': os.path.join(build_dir, '.genimage-in'),
+        'input_path': os.path.join(build_dir, 'genimage-input'),
         'root_path': os.path.join(build_dir, '.genimage-root'),
         'tmp_path': os.path.join(build_dir, '.genimage-tmp'),
         'config': os.path.join(build_dir, 'genimage.cfg'),
@@ -258,6 +264,21 @@ def init_config(path, dest_dir):
         os.makedirs(dest_dir)
     config = os.path.join(dest_dir, ".config")
     shutil.copyfile(path, config)
+
+def get_dir_for_board(search_path, board):
+    for search_dir in search_path:
+        board_dir = os.path.join(search_dir, board)
+        if os.path.isdir(board_dir):
+            return board_dir
+
+def get_toolchain_in_lib(lib_path, toolchain):
+    for search_dir in lib_path:
+        tc_config = os.path.join(
+            search_dir, "sources", "toolchain", toolchain + ".yml"
+        )
+        if os.path.isfile(tc_config):
+            return tc_config
+
 
 def main(argv):
     args = getopts(argv)
@@ -289,6 +310,14 @@ def main(argv):
     if not args.search_path:
         args.search_path = top_src_dir
 
+    # The default board directory search path is boards/
+    if not args.board_dir:
+        args.board_dir = [os.path.join(top_src_dir, "boards")]
+
+    # The default lib directory search path is lib/
+    if not args.lib_dir:
+        args.lib_dir = [os.path.join(top_src_dir, "lib")]
+
     configurations = []
     main_db = {
         "top_build_dir": top_build_dir,
@@ -296,15 +325,33 @@ def main(argv):
     }
 
     if args.board:
-        config = args.board_variant + '.yml' if args.board_variant else 'board.yml'
-        board_dir = os.path.join(args.search_path, "boards", args.board)
-        filename = os.path.join(board_dir, config)
-        assert os.path.exists(filename), "Invalid board name"
-        with open(filename, 'r') as stream:
+        # Find out the directory where the required board may reside. If we
+        # don't find a valid directory, the board just does not exist.
+        board_dir = get_dir_for_board(args.board_dir, args.board)
+        if not search_dir:
+            print("error: Failed to find '{}' within the board search path ()"
+                  .format(args.board, ':'.join(args.board_dir)))
+            sys.exit(1)
+
+        # Select the configuration file for the previously selected board.
+        # It is either 'board.yml' for the default configuration, or another
+        # yaml file if a variant is provided. Fail if the configuration file
+        # does not exist.
+        cfg = args.board_variant + '.yml' if args.board_variant else 'board.yml'
+        config = os.path.join(board_dir, cfg)
+        if not os.path.isfile(config):
+            print("error: File '{}' does not exist.".format(config))
+            sys.exit(1)
+
+        # Source the yaml configuration file
+        with open(config, 'r') as stream:
             board_file = stream.read()
         db = yaml.load(board_file)
         board_db = db["board"]
-        board_db["boot_script"] = "boot.scr"
+
+        # Set the default value for the 'boot_script' parameter.
+        if "boot_script" not in board_db:
+            board_db["boot_script"] = "boot.scr"
 
         if not args.toolchain:
             args.toolchain = os.path.join(

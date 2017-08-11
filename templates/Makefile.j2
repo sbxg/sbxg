@@ -22,12 +22,22 @@
 
 .PHONY: all
 
-all: {% if kernel %}kernel{% endif %} {%if uboot %}uboot{% endif %} {% if busybox %}busybox{% endif %}
+all:
+{%- if kernel %} kernel {%- endif -%}
+{%- if uboot %} uboot {%- endif -%}
+{%- if busybox %} busybox {%- endif -%}
+{%- if xen %} xen {%- endif -%}
+{%- if genimage %} genimage {%- endif -%}
+{%- if guests %} guests guests-genimage {%- endif %}
 
 #==============================================================================#
 #                                Kernel Targets                                #
 #==============================================================================#
 {% if kernel %}
+# Run make from Linux sources.
+# $(1): Target(s) name(s) to be called
+# $(2): Path to the Linux sources
+# $(3): Path to the Linux build directory
 linux-make-helper = \
 	$(MAKE) \
 	ARCH="{{ toolchain.arch }}" \
@@ -44,15 +54,19 @@ linux-%:
 
 linux:
 	@echo "[SBXG/kernel] Building Linux kernel"
+	mkdir -p "{{ kernel.build_dir }}"
+	cp -u "{{ kernel.config }}" "{{ kernel.build_dir }}/.config"
 	+$(call linux-make-helper,all,"{{ kernel.path }}","{{ kernel.build_dir }}")
 {% endif %}
 
 {% if xen %}
 
+# Run make from Xen sources.
+# $(1): Target(s) name(s) to be called
 xen-make-helper = \
 	$(MAKE) \
 	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
-	XEN_TARGET_ARCH="{{ board.xen_arch }}" \
+	XEN_TARGET_ARCH="{{ toolchain.xen_arch }}" \
 	-C "{{ xen.path }}/xen" \
 	$(1)
 
@@ -62,9 +76,21 @@ xen-make-helper = \
 xen-%:
 	+$(call xen-make-helper,$(patsubst xen-%,%,$@))
 
-xen:
-	@echo "[SBXG/kernel] Building Xen kernel"
-	+$(call xen-make-helper,xen)
+"{{ xen.path }}/xen/Makefile":
+	@echo "[SBXG/xen] Configuring Xen hypervisor"
+	PATH="{{ toolchain.path }}/{{ toolchain.prefix | dirname }}:$$PATH" \
+	cd "{{ xen.path }}" \
+		&& \
+	./configure \
+		--disable-docs \
+		--disable-tools \
+		--enable-xen \
+		--host="{{ toolchain.host }}"
+
+xen: "{{ xen.path }}/xen/Makefile"
+	@echo "[SBXG/xen] Building Xen hypervisor"
+	cp -u "{{ xen.config }}" "{{ xen.path }}/.config"
+	+$(call xen-make-helper,)
 
 {% if guests -%}
 .PHONY: guests
@@ -78,7 +104,9 @@ guest-{{ loop.index0 }}-%:
 
 guests:
 	{%- for guest in guests %}
-	@echo "[SBXG/guests] Building guest {{ loop.index0 }}: {{ guest.kernel.name }}"
+	@echo "[SBXG/guests] Building guest #{{ loop.index0 }} ({{ guest.kernel.type }})"
+	mkdir -p "{{ guest.kernel.build_dir }}"
+	cp -u "{{ guest.kernel.config }}" "{{ guest.kernel.build_dir }}/.config"
 	+$(MAKE) guest-{{ loop.index0 }}-zImage
 	{%- endfor %}
 {% endif %}
@@ -87,7 +115,7 @@ guests:
 
 .PHONY: kernel
 
-kernel: {{ kernel.type }} {% if xen %}xen{% endif %}
+kernel: {{ kernel.type }}
 
 {% else %}
 # No kernel specified when bootstrapping...
@@ -98,7 +126,8 @@ kernel: {{ kernel.type }} {% if xen %}xen{% endif %}
 #                                U-Boot Targets                                #
 #==============================================================================#
 {% if uboot %}
-
+# Run make from U-Boot sources.
+# $(1): Target(s) name(s) to be called
 uboot-make-helper = \
 	$(MAKE) \
 	CROSS_COMPILE={{ toolchain.path }}/{{ toolchain.prefix }} \
@@ -113,6 +142,8 @@ uboot-%:
 
 uboot:
 	@echo "[SBXG/uboot] Building u-boot"
+	mkdir -p "{{ uboot.build_dir }}"
+	cp -u "{{ uboot.config }}" "{{ uboot.build_dir }}/.config"
 	+$(call uboot-make-helper,all)
 
 {% else %}
@@ -142,11 +173,12 @@ busybox:
 	+$(call busybox-make-helper,busybox)
 	+$(call busybox-make-helper,install)
 	@echo "[SBXG/busybox] Packaging busybox"
-	python3 {{ top_src_dir }}/scripts/create-initramfs.py \
+	python3 {{ top_source_dir }}/scripts/create-initramfs.py \
             --output "{{ busybox.build_dir }}/initramfs.cpio" \
 	    "{{ busybox.build_dir }}"/_install
 
-
+{% else %}
+# No busybox specified when bootstrapping...
 {% endif %}
 
 #==============================================================================#
@@ -160,12 +192,13 @@ busybox:
 guests-genimage: {{ genimage.build_dir }}/genimage
 {%- for guest in guests %}
 	@echo "[SBXG/guests] Copying image products of guest {{ loop.index0 }}"
+	cp -u "{{ guest.kernel.build_dir }}/arch/{{ guest.toolchain.arch }}/boot/{{ guest.linux_image }}" "{{ genimage.input_path }}/guest{{ loop.index0 }}"
 	"{{ genimage.build_dir }}/genimage" \
 		--outputpath "{{ genimage.output_path }}" \
 		--inputpath "{{ genimage.input_path }}/guest{{ loop.index0 }}" \
 		--rootpath "{{ genimage.root_path }}" \
 		--tmppath "{{ genimage.tmp_path }}" \
-		--config "{{ guest.image }}"
+		--config "{{ guest.genimage_config }}"
 {% endfor %}
 
 {% endif %}
@@ -175,15 +208,19 @@ guests-genimage: {{ genimage.build_dir }}/genimage
 
 genimage: {{ genimage.build_dir }}/genimage
 	@echo "[SBXG/image] Copying image products"
-	cp "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
-	cp "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
-	cp "{{ uboot.build_dir }}/{{ board.uboot_image }}" "{{ genimage.input_path }}"
+	cp -u "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
+	cp -u "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
+	cp -u "{{ uboot.build_dir }}/{{ board.uboot_image }}" "{{ genimage.input_path }}"
 	{%- if xen %}
-	cp "{{ xen.path }}/xen/{{ board.xen_image }}" "{{ genimage.input_path }}"
+	cp -u "{{ xen.path }}/xen/{{ board.xen_image }}" "{{ genimage.input_path }}"
 	{%- endif %}
-	@echo "[SBXG/image] Generating boot script"
-	"{{ uboot.build_dir }}/tools/mkimage" -C none -A {{ toolchain.arch }} -T script -d "{{ top_build_dir }}/boot.cmd" "{{ genimage.input_path }}/{{ board.boot_script }}"
-
+	@echo "[SBXG/image] Generating boot script ({{ board.output_boot_script_name }})"
+	"{{ uboot.build_dir }}/tools/mkimage" \
+		-C none \
+		-A {{ toolchain.arch }} \
+		-T script \
+		-d "{{ top_build_dir }}/{{ board.templated_boot_script_name }}" \
+		"{{ genimage.input_path }}/{{ board.output_boot_script_name }}"
 	MTOOLS_SKIP_CHECK=1 "{{ genimage.build_dir }}/genimage" \
 		--outputpath "{{ genimage.output_path }}" \
 		--inputpath "{{ genimage.input_path }}" \
@@ -208,25 +245,27 @@ help:
 	@echo "============= SBXG Build Targets ============="
 	@echo
 	@echo "all           build all available targets"
-	{%- if uboot %}
+{%- if uboot %}
 	@echo "uboot         build the bootloader"
-	@echo "uboot-<cmd>   run the <cmd> target in u-boot"
-	{%- endif %}
-	{%- if kernel %}
+	@echo "uboot-<cmd>   run the <cmd> target in U-Boot"
+{%- endif %}
+{%- if kernel %}
 	@echo "kernel        build the kernel"
-	  {%- if kernel.type == "linux" %}
-	@echo "linux-<cmd>   run the <cmd> target in linux"
-	  {%- endif %}
-	{%- endif %}
-        {%- if busybox %}
+   {%- if kernel.type == "linux" %}
+	@echo "linux-<cmd>   run the <cmd> target in Linux"
+   {%- endif %}
+{%- endif %}
+{%- if busybox %}
 	@echo "busybox       build busybox"
 	@echo "busybox-<cmd> run the <cmd> target in busybox"
-        {%- endif %}
-
-	{%- if genimage %}
+{%- endif %}
+{%- if genimage %}
 	@echo "genimage      compile and execute genimage"
-          {%- if guests %}
+   {%- if guests %}
 	@echo "guests-genimage execute genimage for the guests"
-          {%- endif %}
-	{%- endif %}
-
+   {%- endif %}
+{%- endif %}
+{%- if xen %}
+	@echo "xen           build the xen hypervisor"
+	@echo "xen-<cmd>     run the <cmd> target in Xen"
+{%- endif %}

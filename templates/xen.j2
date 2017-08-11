@@ -5,7 +5,9 @@ xen {
    fetch {
       artifact {
          url: "{{ xen.url }}";
-         compression: {{ xen.compressions }};
+         compression: {% for compression in  xen.compressions -%}
+            "{{ compression }}"{% if not loop.last %}, {% endif %}
+            {%- endfor %};
 
          {%- if xen.pgp_signature and xen.pgp_pubkey %}
          pgp-signature: "{{ xen.pgp_signature }}";
