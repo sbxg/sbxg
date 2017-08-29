@@ -29,7 +29,8 @@ use opaque (private) user configurations.
 
 SBXG relies on third-party tools to fulfill its duty:
 - `git`, to retrieve [genimage][4]'s sources,
-- `python` (2.7 or 3.5),
+- `python` (at least 3.4),
+- the python packages `jinja` and `pyaml`,
 - `make`,
 - `mkfs` (ext3, vfat),
 - `build-essential` tools (to compile the kernel and u-boot),
@@ -39,6 +40,13 @@ SBXG relies on third-party tools to fulfill its duty:
   a packaged cargo crate, and therefore can be installed from cargo
   (`cargo install subcomponent`).
  
+To make installation of these dependencies easier, scripts are available in the
+`utils/` directory. Select the one that matches your distribution, and run it
+as a normal user (no sudo). Python and rust packages will be locally installed,
+while packages will ask for the admin password.
+
+You may be asked to run by yourself additional commands, that cannot be safely
+executed by these scripts, such as changing your environment variables.
 
 
 ## Usage
