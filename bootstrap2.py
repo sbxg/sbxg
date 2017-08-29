@@ -107,6 +107,8 @@ def getopts(argv):
     args = parser.parse_args(argv[1:])
 
     # If --board-variant is used, --board must have been specified
+    if args.board and not args.toolchain:
+        raise E.SbxgError("--board requires the use of --toolchain")
     if args.board_variant and not args.board:
         raise E.SbxgError("--board-variant cannot be used without --board")
     if args.kernel and args.board:
@@ -167,6 +169,20 @@ def main(argv):
     # The main database that will hold our configuration
     database = sbxg.model.Database(top_src_dir, top_build_dir)
 
+    if args.toolchain:
+        args.toolchain = sbxg.utils.get_toolchain(
+            args.lib_dir, args.toolchain
+        )
+        local_toolchain = False
+        if os.path.basename(args.toolchain) == "local.yml":
+            local_toolchain = True
+
+        toolchain = sbxg.model.Toolchain(args.toolchain, local_toolchain)
+        toolchain.load()
+        database.set_toolchain(toolchain)
+        if not local_toolchain:
+            components.append('toolchain')
+
     if args.board:
         # Select the configuration file for the previously selected board. It
         # is either 'board.yml' for the default configuration, or another yaml
@@ -175,23 +191,23 @@ def main(argv):
         config, board_dir = sbxg.utils.get_board_config(
             args.board_dir,
             args.board,
-            args.board_variant + '.yml' if args.board_variant else 'board.yml'
+            args.board_variant if args.board_variant else 'board'
         )
-        board = sbxg.model.Board(config)
+        board = sbxg.model.Board(config, toolchain)
         board.load(args.lib_dir, board_dir)
         database.set_board(board)
-        components = ['kernel', 'uboot', 'genimage', 'toolchain']
+        components.extend(['kernel', 'uboot', 'genimage'])
         template_dirs.append(os.path.join(board_dir, 'images'))
         if board.xen:
             components.append('xen')
 
-    if args.toolchain:
-        toolchain = sbxg.model.Toolchain(args.toolchain)
-        toolchain.load()
-        database.set_toolchain(toolchain)
-        components.append('toolchain')
-
     if args.kernel:
+        args.kernel[0] = sbxg.utils.get_kernel_source(
+            args.lib_dir, args.kernel[0]
+        )
+        args.kernel[1] = sbxg.utils.get_kernel_config(
+            args.lib_dir, args.kernel[1]
+        )
         kernel_source = sbxg.model.Kernel(args.kernel[0])
         kernel_source.load()
         kernel_config = args.kernel[1]
@@ -199,6 +215,12 @@ def main(argv):
         components.append('kernel')
 
     if args.uboot:
+        args.uboot[0] = sbxg.util.get_uboot_source(
+            args.lib_dir, args.uboot[0]
+        )
+        args.uboot[1] = sbxg.util.get_uboot_config(
+            args.lib_dir, args.uboot[1]
+        )
         uboot_source = sbxg.model.Uboot(args.uboot[0])
         uboot_source.load()
         uboot_config = args.uboot[1]
@@ -206,6 +228,12 @@ def main(argv):
         components.append('uboot')
 
     if args.xen:
+        args.xen[0] = sbxg.util.get_xen_source(
+            args.lib_dir, args.xen[0]
+        )
+        args.xen[1] = sbxg.util.get_xen_config(
+            args.lib_dir, args.xen[1]
+        )
         xen_source = sbxg.model.Xen(args.xen[0])
         xen_source.load()
         xen_config = args.xen[1]

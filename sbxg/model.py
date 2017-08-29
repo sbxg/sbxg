@@ -24,6 +24,7 @@ import os
 import yaml
 
 from . import error as E
+from . import utils
 
 
 class Model(object):
@@ -182,10 +183,10 @@ class Board(Model):
     def namespace(self):
         return self._namespace
 
-    def __init__(self, config_file):
+    def __init__(self, config_file, toolchain):
         self._config_file = config_file
         self._namespace = "::"
-        self.toolchain = None
+        self.toolchain = toolchain 
         self.kernel = None
         self.kernel_config = None
         self.uboot = None
@@ -202,6 +203,8 @@ class Board(Model):
         self.xen_config = None
         self.xen_image = None
         self.xen_guests = None
+        self.arch = None
+        self.xen_arch = None
 
     def load(self, lib_dirs, board_dir):
         config = self._yaml_load()
@@ -213,7 +216,16 @@ class Board(Model):
         db = config["board"]
         self._namespace += "board::"
 
-        self.toolchain = self.get_toolchain_source(db, "toolchain", lib_dirs)
+        # Grab the architecture of the board
+        self.arch = self.get_mandatory(db, "arch")
+
+        # We can easily check if the provided toolchain is suitable to compile
+        # for the board or not. If we use a local toolchain, we will determine
+        # the current architecture and then compare it to the board's one.
+        expected_arch = utils.get_arch() if self.toolchain.local else self.toolchain.arch
+        if self.arch != expected_arch:
+            raise E.InvalidToolchain(self.arch, expected_arch)
+
         self.kernel = self.get_kernel_source(db, "kernel", lib_dirs)
         self.kernel_config = self.get_kernel_config(db, "kernel_config", lib_dirs)
         self.uboot = self.get_uboot_source(db, "uboot", lib_dirs)
@@ -228,6 +240,7 @@ class Board(Model):
             self.output_boot_script_name = db["output_boot_script_name"]
         if "xen" in db:
             self.xen = self.get_xen_source(db, "xen", lib_dirs)
+            self.xen_arch = self.get_mandatory(db, "xen_arch")
             self.xen_config = self.get_xen_config(db, "xen_config", lib_dirs)
             self.xen_image = self.get_mandatory(db, "xen_image")
         if "xen_guests" in db:
@@ -249,9 +262,10 @@ class Source(Model):
         # nesting.
         return "::"
 
-    def __init__(self, in_file):
+    def __init__(self, in_file, must_fetch=True):
         self._config_file = in_file
         self._subconfig = None
+        self._must_fetch = must_fetch
         self.path = None
         self.url = None
         self.compression = None
@@ -260,10 +274,15 @@ class Source(Model):
         self.sha256 = None
         self.suffix = ""
         self.build_dir = None
+        self.toolchain = None
+
+    def set_toolchain(self, toolchain):
+        self.toolchain = toolchain
 
     def load(self):
         config = self._yaml_load()
-        self.url = self.get_mandatory(config, "url")
+        if self._must_fetch:
+            self.url = self.get_mandatory(config, "url")
         self.path = os.path.abspath(
             self.get_mandatory(config, "path")
         )
@@ -298,6 +317,10 @@ class Kernel(Source):
         super().__init__(in_file)
         self.type = None
         self.suffix = suffix
+        self.arch = None
+
+    def set_arch(self, arch):
+        self.arch = arch
 
     def _known_types(self):
         """
@@ -320,16 +343,20 @@ class Uboot(Source):
     pass
 
 class Toolchain(Source):
-    def __init__(self, config_file):
-        super().__init__(config_file)
+    def __init__(self, config_file, local=False):
+        must_fetch = False if local else True
+        super().__init__(config_file, must_fetch)
         self.prefix = None
+        self.local = local
         self.arch = None
+        self.xen_arch = None
 
     def load(self):
         config = super().load()
         self.prefix = self.get_mandatory(config, "prefix")
-        self.arch = self.get_mandatory(config, "arch")
-        self.xen_arch = self.get_mandatory(config, "xen_arch")
+        if not self.local:
+            self.arch = self.get_mandatory(config, "arch")
+            self.xen_arch = self.get_mandatory(config, "xen_arch")
         # Auto-detect the HOST (in the autotools terminology) The host is the
         # cross-compilation target. It shall not end with a dash (that is
         # brought by the prefix
@@ -368,10 +395,18 @@ class Database(collections.MutableMapping):
     def set_kernel(self, kernel, kernel_config):
         self.kernel = kernel
         self.kernel.config = kernel_config
+        if self.toolchain.local:
+            self.kernel.set_arch(utils.get_arch())
+        else:
+            self.kernel.toolchain = self.toolchain
+            self.kernel.set_arch(self.toolchain.arch)
+
 
     def set_uboot(self, uboot, uboot_config):
         self.uboot = uboot
         self.uboot.config = uboot_config
+        if not self.toolchain.local:
+            self.uboot.toolchain = self.toolchain
 
     def set_toolchain(self, toolchain):
         self.toolchain = toolchain
@@ -380,6 +415,8 @@ class Database(collections.MutableMapping):
         self.xen = xen
         self.xen.config = xen_config
         self.xen.host = os.path.basename(self.toolchain.prefix)
+        if not self.toolchain.local:
+            self.xen.toolchain = self.toolchain
 
     def set_board(self, board):
         self.board = board

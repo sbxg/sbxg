@@ -27,6 +27,15 @@ class SbxgError(Exception):
     """
     pass
 
+class InvalidToolchain(SbxgError):
+    def __init__(self, expected_arch, toolchain_arch):
+        self.expected_arch = expected_arch
+        self.toolchain_arch = toolchain_arch
+
+    def __str__(self):
+        return "Invalid toolchain architecture '{}'. '{}' was expected".format(
+            self.toolchain_arch, self.expected_arch
+        )
 
 class MissingRequiredData(SbxgError):
     def __init__(self, in_file, prop):

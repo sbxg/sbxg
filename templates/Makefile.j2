@@ -40,8 +40,10 @@ all:
 # $(3): Path to the Linux build directory
 linux-make-helper = \
 	$(MAKE) \
-	ARCH="{{ toolchain.arch }}" \
-	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
+{%- if kernel.toolchain %}
+	ARCH="{{ kernel.toolchain.arch }}" \
+	CROSS_COMPILE="{{ kernel.toolchain.path }}/{{ kernel.toolchain.prefix }}" \
+{%- endif %}
 	O=$(3) \
 	-C $(2) \
         $(1)
@@ -65,8 +67,10 @@ linux:
 # $(1): Target(s) name(s) to be called
 xen-make-helper = \
 	$(MAKE) \
-	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
-	XEN_TARGET_ARCH="{{ toolchain.xen_arch }}" \
+{%- if xen.toolchain %}
+	CROSS_COMPILE="{{ xen.toolchain.path }}/{{ xen.toolchain.prefix }}" \
+	XEN_TARGET_ARCH="{{ xen.toolchain.xen_arch }}" \
+{%- endif %}
 	-C "{{ xen.path }}/xen" \
 	$(1)
 
@@ -78,14 +82,18 @@ xen-%:
 
 "{{ xen.path }}/xen/Makefile":
 	@echo "[SBXG/xen] Configuring Xen hypervisor"
-	PATH="{{ toolchain.path }}/{{ toolchain.prefix | dirname }}:$$PATH" \
+{%- if xen.toolchain %}
+	PATH="{{ xen.toolchain.path }}/{{ xen.toolchain.prefix | dirname }}:$$PATH" \
+{%- endif %}
 	cd "{{ xen.path }}" \
 		&& \
 	./configure \
+{%- if xen.toolchain %}
+		--host="{{ toolchain.host }}" \
+{%- endif %}
 		--disable-docs \
 		--disable-tools \
-		--enable-xen \
-		--host="{{ toolchain.host }}"
+		--enable-xen
 
 xen: "{{ xen.path }}/xen/Makefile"
 	@echo "[SBXG/xen] Building Xen hypervisor"
@@ -130,7 +138,9 @@ kernel: {{ kernel.type }}
 # $(1): Target(s) name(s) to be called
 uboot-make-helper = \
 	$(MAKE) \
-	CROSS_COMPILE={{ toolchain.path }}/{{ toolchain.prefix }} \
+{%- if uboot.toolchain %}
+	CROSS_COMPILE={{ uboot.toolchain.path }}/{{ uboot.toolchain.prefix }} \
+{%- endif %}
 	O={{ uboot.build_dir }} \
 	-C {{ uboot.path }} \
 	$(1)
@@ -158,9 +168,11 @@ uboot:
 
 busybox-make-helper = \
 	$(MAKE) \
-	ARCH="{{ toolchain.arch }}" \
+{%- if busybox.toolchain %}
+	ARCH="{{ busybox.toolchain.arch }}" \
+	CROSS_COMPILE="{{ busybox.toolchain.path }}/{{ busybox.toolchain.prefix }}" \
+{%- endif %}
 	O="{{ busybox.build_dir }}" \
-	CROSS_COMPILE="{{ toolchain.path }}/{{ toolchain.prefix }}" \
 	-C "{{ busybox.path }}" \
 	$(1)
 
@@ -208,8 +220,8 @@ guests-genimage: {{ genimage.build_dir }}/genimage
 
 genimage: {{ genimage.build_dir }}/genimage
 	@echo "[SBXG/image] Copying image products"
-	cp -u "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
-	cp -u "{{ kernel.build_dir }}/arch/{{ toolchain.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
+	cp -u "{{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}" "{{ genimage.input_path }}"
+	cp -u "{{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}" "{{ genimage.input_path }}"
 	cp -u "{{ uboot.build_dir }}/{{ board.uboot_image }}" "{{ genimage.input_path }}"
 	{%- if xen %}
 	cp -u "{{ xen.path }}/xen/{{ board.xen_image }}" "{{ genimage.input_path }}"
@@ -217,7 +229,7 @@ genimage: {{ genimage.build_dir }}/genimage
 	@echo "[SBXG/image] Generating boot script ({{ board.output_boot_script_name }})"
 	"{{ uboot.build_dir }}/tools/mkimage" \
 		-C none \
-		-A {{ toolchain.arch }} \
+		-A {{ kernel.arch }} \
 		-T script \
 		-d "{{ top_build_dir }}/{{ board.templated_boot_script_name }}" \
 		"{{ genimage.input_path }}/{{ board.output_boot_script_name }}"

@@ -1,5 +1,5 @@
 board:
-  toolchain: armv7-eabihf
+  arch: arm
   kernel: linux-4.12.0
   kernel_config: linux-4.12-sunxi
   uboot: "2017.07"

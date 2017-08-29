@@ -1,5 +1,6 @@
 board:
-  toolchain: armv7-eabihf
+  arch: arm
+  xen_arch: arm32
   xen: "4.8.0"
   xen_config: 4.8-sunxi
   kernel: linux-4.12.0
@@ -19,4 +20,3 @@ board:
       kernel_config: linux-4.12-xen-domu
       linux_image: zImage
       image: xen_guest.j2
-      #toolchain: armv7-eabihf [DEFAULT: parent]

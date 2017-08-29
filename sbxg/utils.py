@@ -19,11 +19,64 @@
 # THE SOFTWARE.
 
 import os
+import subprocess
+
 
 def get_board_config(search_dirs, board, filename):
+    filename = filename + '.yml'
     board_cfg = os.path.join(board, filename)
     for search_dir in search_dirs:
         config_file = os.path.join(search_dir, board_cfg)
         if os.path.isfile(config_file):
             return config_file, os.path.join(search_dir, board)
     raise FileNotFoundError(board_cfg)
+
+def _get_lib_config(lib_dirs, kind, component, filename):
+    for lib_dir in lib_dirs:
+        config = os.path.join(lib_dir, kind, component, filename)
+        if os.path.isfile(config):
+            return config
+    raise FileNotFoundError(filename)
+
+def get_toolchain(lib_dirs, toolchain):
+    return _get_lib_config(lib_dirs, "sources", "toolchain", toolchain + '.yml')
+
+def get_kernel_source(lib_dirs, kernel):
+    return _get_lib_config(lib_dirs, "sources", "kernel", kernel + '.yml')
+
+def get_kernel_config(lib_dirs, kernel):
+    return _get_lib_config(lib_dirs, "configs", "kernel", kernel + '.yml')
+
+def get_uboot_source(lib_dirs, uboot):
+    return _get_lib_config(lib_dirs, "sources", "uboot", uboot + '.yml')
+
+def get_uboot_config(lib_dirs, uboot):
+    return _get_lib_config(lib_dirs, "configs", "uboot", uboot + '.yml')
+
+def get_xen_source(lib_dirs, xen):
+    return _get_lib_config(lib_dirs, "sources", "xen", xen, + '.yml')
+
+def get_xen_config(lib_dirs, uboot):
+    return _get_lib_config(lib_dirs, "configs", "xen", xen, + '.yml')
+
+def get_arch():
+    """
+    Returns the arch as it is determined by Linux. What is below is the rewritting
+    of the SUBARCH variable assignment in Linux' top-level Makefile.
+    """
+    return subprocess.check_output(
+        "uname -m | sed"
+        " -e s/i.86/x86/"
+        " -e s/x86_64/x86/"
+        " -e s/sun4u/sparc64/"
+        " -e s/arm.*/arm/"
+        " -e s/sa110/arm/"
+        " -e s/s390x/s390/"
+        " -e s/parisc64/parisc/"
+        " -e s/ppc.*/powerpc/"
+        " -e s/mips.*/mips/"
+        " -e s/sh[234].*/sh/"
+        " -e s/aarch64.*/arm64/",
+        shell=True,
+        universal_newlines=True
+    ).rstrip()
