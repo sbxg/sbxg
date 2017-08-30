@@ -22,8 +22,10 @@ pip3 install --user -r "$THIS_DIR/requirements.txt"
 # Installing rust (not packaged)
 curl https://sh.rustup.rs -sSf | sh
 
-# Installing subcomponent
-cargo install subcomponent
+# Installing subcomponent  and   use --force option    if component is
+# already installed, otherwise :  error: binary `subcomponent` already
+# exists in destination as part of `subcomponent v0.1.0`
+$HOME/.cargo/bin/cargo install subcomponent  --force  
 
 set +x
 echo
