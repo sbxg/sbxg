@@ -75,34 +75,37 @@ def test_quick_cubietruck_bootstrap(variant, toolchain):
 ])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_kernel_only(source, config, toolchain):
+    build_dir = tempfile.TemporaryDirectory()
     subprocess.check_call([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--kernel", source, config,
         "--toolchain", toolchain,
         "--no-download",
-    ])
+    ], cwd=build_dir.name)
 
 @pytest.mark.parametrize("source", ["2017.07"])
 @pytest.mark.parametrize("config", ["2017.07-minimal"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_uboot_only(source, config, toolchain):
+    build_dir = tempfile.TemporaryDirectory()
     subprocess.check_call([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--uboot", source, config,
         "--toolchain", toolchain,
         "--no-download",
-    ])
+    ], cwd=build_dir.name)
 
 @pytest.mark.parametrize("source", ["4.8.0"])
 @pytest.mark.parametrize("config", ["4.8-sunxi"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_xen_only(source, config, toolchain):
+    build_dir = tempfile.TemporaryDirectory()
     subprocess.check_call([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--xen", source, config,
         "--toolchain", toolchain,
         "--no-download",
-    ])
+    ], cwd=build_dir.name)

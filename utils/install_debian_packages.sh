@@ -12,6 +12,7 @@ sudo apt install \
    build-essential \
    git \
    make \
+   curl \
    autoconf \
    autotools-dev \
    python3-pip

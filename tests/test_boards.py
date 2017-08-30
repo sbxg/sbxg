@@ -39,7 +39,7 @@ def test_cubietruck(variant, toolchain):
     ], cwd=build_dir.name)
     subprocess.check_call([
         "make", "-j2", "-s"
-    ])
+    ], cwd=build_dir.name)
 
 
 @pytest.mark.parametrize("variant", ["board"])
@@ -55,4 +55,4 @@ def test_orangepi_zero(variant, toolchain):
     ], cwd=build_dir.name)
     subprocess.check_call([
         "make", "-j2", "-s"
-    ])
+    ], cwd=build_dir.name)

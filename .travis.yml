@@ -12,7 +12,10 @@ addons:
       - make
       - build-essential
       - autoconf
+      - autotools-dev
 
-install: "pip install jinja2 pyyaml jsonschema"
+install: "pip install jinja2 pyyaml"
+
+before_script: curl https://sh.rustup.rs -sSf | sh -s -- -y && "$HOME/.cargo/bin/cargo" install subcomponent
 
 script: env PATH="$HOME/.cargo/bin:$PATH" pytest
