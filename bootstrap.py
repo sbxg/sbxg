@@ -48,6 +48,13 @@ ANSI_STYLE = {
     'underline': '\033[4m',
 }
 
+def error(message):
+    print("{}error:{} {}".format(
+        ANSI_STYLE['fail'],
+        ANSI_STYLE['endc'],
+        message,
+    ), file=sys.stderr)
+
 
 def getopts(argv):
     parser = argparse.ArgumentParser(description='SBXG Boostrapper')
@@ -152,7 +159,7 @@ def main(argv):
 
     # I forbid you to use the source directory as the build directory!
     if os.path.normpath(top_src_dir) == os.path.normpath(top_build_dir):
-        print("error: Run bootstrap.py from a build directory that is "
+        error("Run bootstrap.py from a build directory that is "
               "distinct from the source directory.")
         sys.exit(1)
 
@@ -301,13 +308,6 @@ def main(argv):
         "Makefile.j2", os.path.join(top_build_dir, "Makefile")
     )
 
-
-def error(message):
-    print("{}error:{} {}".format(
-        ANSI_STYLE['fail'],
-        ANSI_STYLE['endc'],
-        message,
-    ), file=sys.stderr)
 
 # Run the main entry point. We will also catch all the exceptions to
 # pretty-format the reason of failure.
