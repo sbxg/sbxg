@@ -122,7 +122,7 @@ def getopts(argv):
         raise E.SbxgError("--kernel and --board cannot be used together")
     if args.xen and args.board:
         raise E.SbxgError("--xen and --board cannot be used together")
-    if args.uboot and args.boards:
+    if args.uboot and args.board:
         raise E.SbxgError("--uboot and --board cannot be used together")
     if args.kernel and not args.toolchain:
         raise E.SbxgError("--kernel requires the use of --toolchain")
@@ -226,10 +226,10 @@ def main(argv):
         components.append('kernel')
 
     if args.uboot:
-        args.uboot[0] = sbxg.util.get_uboot_source(
+        args.uboot[0] = sbxg.utils.get_uboot_source(
             args.lib_dir, args.uboot[0]
         )
-        args.uboot[1] = sbxg.util.get_uboot_config(
+        args.uboot[1] = sbxg.utils.get_uboot_config(
             args.lib_dir, args.uboot[1]
         )
         uboot_source = sbxg.model.Uboot(args.uboot[0])
@@ -239,10 +239,10 @@ def main(argv):
         components.append('uboot')
 
     if args.xen:
-        args.xen[0] = sbxg.util.get_xen_source(
+        args.xen[0] = sbxg.utils.get_xen_source(
             args.lib_dir, args.xen[0]
         )
-        args.xen[1] = sbxg.util.get_xen_config(
+        args.xen[1] = sbxg.utils.get_xen_config(
             args.lib_dir, args.xen[1]
         )
         xen_source = sbxg.model.Xen(args.xen[0])

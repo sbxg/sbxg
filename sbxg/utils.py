@@ -45,19 +45,19 @@ def get_kernel_source(lib_dirs, kernel):
     return _get_lib_config(lib_dirs, "sources", "kernel", kernel + '.yml')
 
 def get_kernel_config(lib_dirs, kernel):
-    return _get_lib_config(lib_dirs, "configs", "kernel", kernel + '.yml')
+    return _get_lib_config(lib_dirs, "configs", "kernel", kernel)
 
 def get_uboot_source(lib_dirs, uboot):
     return _get_lib_config(lib_dirs, "sources", "uboot", uboot + '.yml')
 
 def get_uboot_config(lib_dirs, uboot):
-    return _get_lib_config(lib_dirs, "configs", "uboot", uboot + '.yml')
+    return _get_lib_config(lib_dirs, "configs", "uboot", uboot)
 
 def get_xen_source(lib_dirs, xen):
-    return _get_lib_config(lib_dirs, "sources", "xen", xen, + '.yml')
+    return _get_lib_config(lib_dirs, "sources", "xen", xen + '.yml')
 
-def get_xen_config(lib_dirs, uboot):
-    return _get_lib_config(lib_dirs, "configs", "xen", xen, + '.yml')
+def get_xen_config(lib_dirs, xen):
+    return _get_lib_config(lib_dirs, "configs", "xen", xen)
 
 def get_arch():
     """
