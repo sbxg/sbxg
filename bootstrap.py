@@ -21,13 +21,9 @@
 # THE SOFTWARE.
 
 import argparse
-import jinja2
 import os
-import shutil
-import subprocess
 import sys
 import traceback
-import yaml
 
 import sbxg
 from sbxg import error as E
@@ -144,7 +140,7 @@ def main(argv):
     # If we required no colors to be printed out, unset the ANSI codes that
     # were provided.
     if args.no_color:
-        for key in ANSI_STYLE.keys():
+        for key in ANSI_STYLE:
             ANSI_STYLE[key] = ''
 
 
@@ -300,7 +296,7 @@ def main(argv):
             for guest in database.guests:
                 templater.template_file(
                     os.path.basename(guest.image),
-                    os.path.join(top_build_dir,  guest.genimage_config)
+                    os.path.join(top_build_dir, guest.genimage_config)
                 )
 
     # Generate the makefile, which will control the build system
