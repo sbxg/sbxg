@@ -28,7 +28,7 @@ from . import utils
 
 
 class Model(object):
-    def __getitem__ (self, attr):
+    def __getitem__(self, attr):
         return getattr(self, attr)
 
     @abc.abstractproperty
@@ -62,7 +62,7 @@ class Model(object):
         attr = self.check_mandatory(element, obj)
         if not os.path.isfile(attr):
             raise E.InvalidFileData(self.config_file(),
-                                    self.namespace() + key,
+                                    self.namespace() + element,
                                     attr)
 
     def check_optional_list(self, element, obj=None):
@@ -166,7 +166,7 @@ class Guest(Model):
     def load(self, lib_dirs, board_dir, config):
         if "toolchain" in config:
             self.toolchain = self.get_toolchain_source(
-                config["toolchain"], lib_dirs
+                config, "toolchain", lib_dirs
             )
         suffix = "_guest_{}".format(self.guest_id)
         self.kernel = self.get_kernel_source(config, "kernel", lib_dirs, suffix)
