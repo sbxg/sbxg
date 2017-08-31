@@ -31,7 +31,7 @@ def test_bootstrap_in_source_dir():
     Running the bootstrap script from the source directory should fail.
     """
     with pytest.raises(subprocess.CalledProcessError):
-        subprocess.check_call([
+        subprocess.run([
             sys.executable, "bootstrap.py",
             "--board", "cubietruck", "--toolchain", "local"
         ], cwd=TOP_SRC_DIR)
@@ -41,7 +41,7 @@ def test_no_toolchain_for_board():
     Running the bootstrap script from the source directory should fail,
     """
     with pytest.raises(subprocess.CalledProcessError):
-        subprocess.check_call([
+        subprocess.run([
             sys.executable, "bootstrap.py",
             "--board", "cubietruck", "--toolchain", "local"
         ], cwd=TOP_SRC_DIR)
@@ -65,7 +65,7 @@ def test_quick_cubietruck_bootstrap(variant, toolchain):
         cmd.extend(['--board-variant', variant])
 
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.check_call(cmd, cwd=build_dir.name)
+    subprocess.run(cmd, cwd=build_dir.name)
 
 
 
@@ -76,7 +76,7 @@ def test_quick_cubietruck_bootstrap(variant, toolchain):
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_kernel_only(source, config, toolchain):
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.check_call([
+    subprocess.run([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--kernel", source, config,
@@ -89,7 +89,7 @@ def test_bootstrap_kernel_only(source, config, toolchain):
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_uboot_only(source, config, toolchain):
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.check_call([
+    subprocess.run([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--uboot", source, config,
@@ -102,7 +102,7 @@ def test_bootstrap_uboot_only(source, config, toolchain):
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_xen_only(source, config, toolchain):
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.check_call([
+    subprocess.run([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--xen", source, config,
