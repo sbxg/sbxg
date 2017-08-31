@@ -138,6 +138,9 @@ kernel: {{ kernel.type }}
 # $(1): Target(s) name(s) to be called
 uboot-make-helper = \
 	$(MAKE) \
+{%- if kernel and kernel.type == "linux" %}
+        DTC="{{ kernel.build_dir }}/scripts/dtc/dtc" \
+{%- endif %}
 {%- if uboot.toolchain %}
 	CROSS_COMPILE={{ uboot.toolchain.path }}/{{ uboot.toolchain.prefix }} \
 {%- endif %}
