@@ -23,6 +23,15 @@ use opaque (private) user configurations.
 - [Cubietruck][3]
 - [Orange Pi Zero][6]
 
+To see more of the supported components, run the `bootstrap.py` script with the
+`--show-library` option. This will display the exact list of the supported
+boards, sources and configurations. You can add the `--no-color` if you find the
+output too flashy or if you want to manipulate the output:
+
+```bash
+./bootstrap.py --show-library
+./bootstrap.py --show-library --no-color
+```
 
 
 ## Pre-requisites

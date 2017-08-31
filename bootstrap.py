@@ -52,6 +52,72 @@ def error(message):
     ), file=sys.stderr)
 
 
+def show_library(board_dirs, lib_dirs):
+    """
+    Dump the board and lib path's contents.
+    """
+
+    # First, go through the board directories to see the boards that
+    # are available.
+    print("List of available boards (with variants):")
+    for board_dir in board_dirs:
+        # Boards are directories that reside directly with a board dir
+        boards = os.listdir(board_dir)
+        for board in boards:
+            print("  - {}{}{}".format(
+                ANSI_STYLE['okblue'], board,  ANSI_STYLE['endc']
+            ), end='')
+            # Search with the board directory for variants. Variants are
+            # .yml files, and exclude board.yml.
+            file_list = os.listdir(os.path.join(board_dir, board))
+            variants = []
+            for variant in file_list:
+                if variant.endswith(".yml") and variant != "board.yml":
+                    variants.append(os.path.splitext(variant)[0])
+            if len(variants) > 0:
+                print(' (', end='')
+                for variant in variants:
+                    print(" {}{}{}".format(ANSI_STYLE['okgreen'], variant,
+                                           ANSI_STYLE['endc']), end='')
+                print(' )')
+            else:
+                print("")
+
+    # Then, grab the list of sources, for each lib dir in the lib path.
+    # We will search in the sources directory with these paths.
+    print("\nList of sources:")
+    for lib_dir in lib_dirs:
+        for root, _, files in os.walk(os.path.join(lib_dir, "sources")):
+            for item in files:
+                # We search for .yml files only
+                if item.endswith('.yml'):
+                    item_type = os.path.basename(root)
+                    item = os.path.splitext(item)[0]
+                    print("  - {}{}{}: {}{}{}".format(
+                        ANSI_STYLE['okblue'], item_type, ANSI_STYLE['endc'],
+                        ANSI_STYLE['okgreen'], item, ANSI_STYLE['endc'],
+                    ))
+
+    # And finally, do the same for configurations.
+    print("\nList of configurations:")
+    for lib_dir in lib_dirs:
+        for root, _, files in os.walk(os.path.join(lib_dir, "configs")):
+            for item in files:
+                # We search for .yml files only
+                if os.path.isfile(os.path.join(root, item)):
+                    item_type = os.path.basename(root)
+                    # Remove the "s" to "bootscripts" for pretty print
+                    if item_type == "bootscripts":
+                        item_type = "bootscript"
+                    # Remove the .j2 extensions
+                    if item.endswith(".j2"):
+                        item = os.path.splitext(item)[0]
+                    print("  - {}{}{}: {}{}{}".format(
+                        ANSI_STYLE['okblue'], item_type, ANSI_STYLE['endc'],
+                        ANSI_STYLE['okgreen'], item, ANSI_STYLE['endc'],
+                    ))
+
+
 def getopts(argv):
     parser = argparse.ArgumentParser(description='SBXG Boostrapper')
     parser.add_argument(
@@ -107,6 +173,10 @@ def getopts(argv):
         help="""Add a directory to the library search path. When this argument
         is not specified, the lib/ directory of SBXG will be used"""
     )
+    parser.add_argument(
+        '--show-library', action='store_true',
+        help="Prints in stdout the library of available components and exits"
+    )
     args = parser.parse_args(argv[1:])
 
     # If --board-variant is used, --board must have been specified
@@ -127,7 +197,8 @@ def getopts(argv):
     if args.xen and not args.toolchain:
         raise E.SbxgError("--xen requires the use of --toolchain")
 
-    if not args.board and not args.kernel and not args.uboot and not args.xen:
+    if not args.board and not args.kernel and not args.uboot and not args.xen \
+            and not args.show_library:
         raise E.SbxgError("At least one of the following option is expected: "
                           "--board, --kernel, --uboot, --xen")
 
@@ -143,11 +214,23 @@ def main(argv):
         for key in ANSI_STYLE:
             ANSI_STYLE[key] = ''
 
-
     # The top source directory is where this script resides, whereas the build
     # directory is where this script was called from.
     top_src_dir = os.path.dirname(os.path.realpath(__file__))
     top_build_dir = os.getcwd()
+
+    # The default board directory search path is boards/
+    if not args.board_dir:
+        args.board_dir = [os.path.join(top_src_dir, "boards")]
+
+    # The default lib directory search path is lib/
+    if not args.lib_dir:
+        args.lib_dir = [os.path.join(top_src_dir, "lib")]
+
+    # Dump the library, and exit with success
+    if args.show_library:
+        show_library(args.board_dir, args.lib_dir)
+        sys.exit(0)
 
     # Initialize the templates directory to the one contained within SBXG
     template_dirs = [os.path.join(top_src_dir, "templates")]
@@ -158,14 +241,6 @@ def main(argv):
         error("Run bootstrap.py from a build directory that is "
               "distinct from the source directory.")
         sys.exit(1)
-
-    # The default board directory search path is boards/
-    if not args.board_dir:
-        args.board_dir = [os.path.join(top_src_dir, "boards")]
-
-    # The default lib directory search path is lib/
-    if not args.lib_dir:
-        args.lib_dir = [os.path.join(top_src_dir, "lib")]
 
     # The lib dirs provide a template path. We must add them!
     for lib_dir in args.lib_dir:
