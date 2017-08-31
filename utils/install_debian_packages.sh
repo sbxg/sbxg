@@ -15,6 +15,8 @@ sudo apt install \
    curl \
    autoconf \
    autotools-dev \
+   swig \
+   python-dev \
    python3-pip
 
 # Installing the python packages
