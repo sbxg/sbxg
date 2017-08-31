@@ -38,7 +38,7 @@ def test_cubietruck(variant, toolchain):
         "--toolchain", toolchain,
     ], cwd=build_dir.name)
     subprocess.check_call([
-        "make", "-j2", "-s"
+        "make", "-j2"
     ], cwd=build_dir.name)
 
 
@@ -54,5 +54,5 @@ def test_orangepi_zero(variant, toolchain):
         "--toolchain", toolchain,
     ], cwd=build_dir.name)
     subprocess.check_call([
-        "make", "-j2", "-s"
+        "make", "-j2"
     ], cwd=build_dir.name)
