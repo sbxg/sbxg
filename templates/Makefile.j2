@@ -51,6 +51,9 @@ linux-make-helper = \
 {% if kernel.type == "linux" %}
 .PHONY: linux linux-%
 
+{{ kernel.build_dir }}/scripts/dtc/dtc:
+	+$(call linux-make-helper,dtbs,"{{ kernel.path }}","{{ kernel.build_dir }}")
+
 linux-%:
 	+$(call linux-make-helper,$(patsubst linux-%,%,$@),"{{ kernel.path }}","{{ kernel.build_dir }}")
 
@@ -153,7 +156,7 @@ uboot-make-helper = \
 uboot-%:
 	+$(call uboot-make-helper,$(patsubst uboot-%,%,$@))
 
-uboot:
+uboot: {% if kernel and kernel.type == "linux" %}{{ kernel.build_dir }}/scripts/dtc/dtc{%- endif %}
 	@echo "[SBXG/uboot] Building u-boot"
 	mkdir -p "{{ uboot.build_dir }}"
 	cp -u "{{ uboot.config }}" "{{ uboot.build_dir }}/.config"
