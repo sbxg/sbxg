@@ -3,7 +3,7 @@ image boot.vfat {
       files = {
          "{{ board.linux_image }}",
          "{{ board.linux_dtb }}",
-         "{{ board.boot_script }}"
+         "{{ board.output_boot_script_name }}"
       }
    }
    size = 5M
