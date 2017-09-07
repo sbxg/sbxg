@@ -22,6 +22,21 @@ import os
 import subprocess
 
 
+# This is derivated from https://stackoverflow.com/a/287944
+# I don't want to use a module just for color, as this is an extra dependency
+# that adds more failure paths. SBXG will only run on Linux anyway, as we are
+# compiling U-Boot and Linux. We can still stop echoing colors on demand.
+ANSI_STYLE = {
+    'header': '\033[95m',
+    'okblue': '\033[94m',
+    'okgreen': '\033[92m',
+    'warning': '\033[93m',
+    'fail': '\033[91m',
+    'endc': '\033[0m',
+    'bold': '\033[1m',
+    'underline': '\033[4m',
+}
+
 def get_board_config(search_dirs, board, filename):
     filename = filename + '.yml'
     board_cfg = os.path.join(board, filename)
