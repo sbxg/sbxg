@@ -13,6 +13,7 @@ addons:
       - build-essential
       - autoconf
       - autotools-dev
+      - libconfuse-dev
 
 install: "pip install jinja2 pyyaml"
 

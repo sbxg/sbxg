@@ -17,6 +17,7 @@ sudo apt install \
    autotools-dev \
    swig \
    python-dev \
+   libconfuse-dev \
    python3-pip
 
 # Installing the python packages

@@ -54,15 +54,14 @@ linux-make-helper = \
 KERNEL_IMAGE := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}
 KERNEL_DTB := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}
 
-{{ kernel.build_dir }}/scripts/dtc/dtc:
-	+$(call linux-make-helper,dtbs,"{{ kernel.path }}","{{ kernel.build_dir }}")
+{{ kernel.build_dir }}/scripts/dtc/dtc: $(KERNEL_IMAGE)
 
 linux-%:
 	+$(call linux-make-helper,$(patsubst linux-%,%,$@),"{{ kernel.path }}","{{ kernel.build_dir }}")
 
-linux: $(KERNEL_DTB) $(KERNEL_IMAGE)
+linux: $(KERNEL_IMAGE)
 
-$(KERNEL_DTB) $(KERNEL_IMAGE):
+$(KERNEL_IMAGE):
 	@echo "[SBXG/kernel] Building Linux kernel"
 	mkdir -p "{{ kernel.build_dir }}"
 	cp -u "{{ kernel.config }}" "{{ kernel.build_dir }}/.config"
@@ -169,7 +168,7 @@ uboot-%:
 
 uboot: {% if kernel and kernel.type == "linux" %}{{ kernel.build_dir }}/scripts/dtc/dtc{%- endif %} $(UBOOT_IMAGE)
 
-$(UBOOT_IMAGE):
+$(UBOOT_IMAGE): {%- if kernel and kernel.type == "linux" %}{{ kernel.build_dir }}/scripts/dtc/dtc{% endif %}
 	@echo "[SBXG/uboot] Building u-boot"
 	mkdir -p "{{ uboot.build_dir }}"
 	cp -u "{{ uboot.config }}" "{{ uboot.build_dir }}/.config"
@@ -236,7 +235,7 @@ guests-genimage: {{ genimage.build_dir }}/genimage
 
 .PHONY: genimage
 
-genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(KERNEL_DTB) $(UBOOT_IMAGE) {% if xen %}$(XEN_IMAGE)%{% endif  %}
+genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if xen %}$(XEN_IMAGE){% endif  %}
 	@echo "[SBXG/image] Copying image products"
 	cp -u "$(KERNEL_IMAGE)" "{{ genimage.input_path }}"
 	cp -u "$(KERNEL_DTB)" "{{ genimage.input_path }}"

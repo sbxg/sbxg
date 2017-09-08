@@ -12,6 +12,7 @@ sudo emerge --ask \
     dev-vcs/git \
     sys-devel/autoconf \
     sys-devel/automake \
+    dev-libs/confuse
 
 
 # Installing the python packages
