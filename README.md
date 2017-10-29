@@ -54,6 +54,12 @@ To make installation of these dependencies easier, scripts are available in the
 as a normal user (no sudo). Python and rust packages will be locally installed,
 while packages will ask for the admin password.
 
+For instance, if you are running Debian, run the following command:
+
+```bash
+./utils/install_debian_packages.sh
+```
+
 You may be asked to run by yourself additional commands, that cannot be safely
 executed by these scripts, such as changing your environment variables.
 
