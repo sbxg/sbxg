@@ -213,8 +213,8 @@ def main(argv):
 
     # I forbid you to use the source directory as the build directory!
     if os.path.normpath(top_src_dir) == os.path.normpath(top_build_dir):
-        error("Run bootstrap.py from a build directory that is "
-              "distinct from the source directory.")
+        raise E.SbxgError("Run bootstrap.py from a build directory that is "
+                        "distinct from the source directory.")
         sys.exit(1)
 
     # The lib dirs provide a template path. We must add them!
