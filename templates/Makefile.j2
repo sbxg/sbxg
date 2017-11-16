@@ -57,7 +57,8 @@ linux-make-helper = \
 KERNEL_IMAGE := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}
 KERNEL_DTB := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}
 
-{{ kernel.build_dir }}/scripts/dtc/dtc: $(KERNEL_IMAGE)
+{{ kernel.build_dir }}/scripts/dtc/dtc:
+	+$(call linux-make-helper,$@,"{{ kernel.path }}","{{ kernel.build_dir }}")
 
 linux-%:
 	+$(call linux-make-helper,$(patsubst linux-%,%,$@),"{{ kernel.path }}","{{ kernel.build_dir }}")
