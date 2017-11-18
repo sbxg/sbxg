@@ -36,42 +36,46 @@ all:
 #                                Kernel Targets                                #
 #==============================================================================#
 {% if kernel %}
+
+KERNEL_BUILD_DIR := {{ kernel.build_dir }}
+KERNEL_IMAGE := $(KERNEL_BUILD_DIR)/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}
+{% if board.linux_dtb %}
+KERNEL_DTB := $(KERNEL_BUILD_DIR)/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}
+{%- endif %}
+DTC := {{ kernel.build_dir }}/scripts/dtc/dtc
+
 # Run make from Linux sources.
 # $(1): Target(s) name(s) to be called
-# $(2): Path to the Linux sources
-# $(3): Path to the Linux build directory
 linux-make-helper = \
 	$(MAKE) \
 {%- if kernel.toolchain %}
 	ARCH="{{ kernel.toolchain.arch }}" \
 	CROSS_COMPILE="{{ kernel.toolchain.path }}/{{ kernel.toolchain.prefix }}" \
 {%- endif %}
-	O=$(3) \
-	-C $(2) \
+	O=$(KERNEL_BUILD_DIR) \
+	-C "{{ kernel.path }}" \
         $(1)
 
 {% if kernel.type == "linux" %}
 .PHONY: linux linux-%
 
-KERNEL_IMAGE := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}
-{% if board.linux_dtb %}
-KERNEL_DTB := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}
-{%- endif %}
-DTC := {{ kernel.build_dir }}/scripts/dtc/dtc
+$(KERNEL_BUILD_DIR):
+	@echo "[SBXG/kernel] Setting-up kernel with '{{ kernel.config }}'"
+	mkdir -p $@
+	cp -u "{{ kernel.config }}" "$(KERNEL_BUILD_DIR)/.config"
 
-$(DTC):
-	+$(call linux-make-helper,$@,"{{ kernel.path }}","{{ kernel.build_dir }}")
+$(DTC): $(KERNEL_BUILD_DIR)
+	@echo "[SBXG/kernel] Compiling the Device Tree Compiler"
+	+$(call linux-make-helper,scripts/dtc/dtc)
 
-linux-%:
-	+$(call linux-make-helper,$(patsubst linux-%,%,$@),"{{ kernel.path }}","{{ kernel.build_dir }}")
+linux-%: $(KERNEL_BUILD_DIR)
+	+$(call linux-make-helper,$(patsubst linux-%,%,$@))
 
 linux: $(KERNEL_IMAGE)
 
-$(KERNEL_IMAGE): $(DTC)
+$(KERNEL_IMAGE): $(KERNEL_BUILD_DIR) $(DTC)
 	@echo "[SBXG/kernel] Building Linux kernel"
-	mkdir -p "{{ kernel.build_dir }}"
-	cp -u "{{ kernel.config }}" "{{ kernel.build_dir }}/.config"
-	+$(call linux-make-helper,all,"{{ kernel.path }}","{{ kernel.build_dir }}")
+	+$(call linux-make-helper,all)
 {% endif %}
 
 {% if xen %}
@@ -143,8 +147,8 @@ uboot-make-helper = \
 {%- if uboot.toolchain %}
 	CROSS_COMPILE={{ uboot.toolchain.path }}/{{ uboot.toolchain.prefix }} \
 {%- endif %}
-	O={{ uboot.build_dir }} \
-	-C {{ uboot.path }} \
+	O="{{ uboot.build_dir }}" \
+	-C "{{ uboot.path }}" \
 	$(1)
 
 .PHONY: uboot uboot-%
