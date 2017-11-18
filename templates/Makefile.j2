@@ -54,7 +54,9 @@ linux-make-helper = \
 .PHONY: linux linux-%
 
 KERNEL_IMAGE := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}
+{% if board.linux_dtb %}
 KERNEL_DTB := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}
+{%- endif %}
 
 {{ kernel.build_dir }}/scripts/dtc/dtc:
 	+$(call linux-make-helper,$@,"{{ kernel.path }}","{{ kernel.build_dir }}")
@@ -206,11 +208,16 @@ busybox:
 genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if xen %}$(XEN_IMAGE){% endif  %}
 	@echo "[SBXG/image] Copying image products"
 	cp -u "$(KERNEL_IMAGE)" "{{ genimage.input_path }}"
+      {%- if board.kernel_dtb %}
 	cp -u "$(KERNEL_DTB)" "{{ genimage.input_path }}"
+      {%- endif %}
+      {%- if board.uboot %}
 	cp -u "$(UBOOT_IMAGE)" "{{ genimage.input_path }}"
-	{%- if xen %}
+      {%- endif %}
+      {%- if xen %}
 	cp -u "$(XEN_IMAGE)" "{{ genimage.input_path }}"
-	{%- endif %}
+      {%- endif %}
+      {%- if board.uboot %}{## Generate the boot script if u-boot is provided ##}
 	@echo "[SBXG/image] Generating boot script ({{ board.output_boot_script_name }})"
 	"{{ uboot.build_dir }}/tools/mkimage" \
 		-C none \
@@ -218,6 +225,7 @@ genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if
 		-T script \
 		-d "{{ top_build_dir }}/{{ board.templated_boot_script_name }}" \
 		"{{ genimage.input_path }}/{{ board.output_boot_script_name }}"
+      {%- endif %}
 	MTOOLS_SKIP_CHECK=1 "{{ genimage.build_dir }}/genimage" \
 		--outputpath "{{ genimage.output_path }}" \
 		--inputpath "{{ genimage.input_path }}" \
