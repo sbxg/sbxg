@@ -22,52 +22,21 @@ import os
 import pytest
 import subprocess
 import sys
-import tempfile
-
-TOP_SRC_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 @pytest.mark.parametrize("variant", ["xen", "board"])
-@pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_cubietruck(variant, toolchain):
-    build_dir = tempfile.TemporaryDirectory()
-
-    subprocess.check_call([
-        sys.executable,
-        os.path.join(TOP_SRC_DIR, "bootstrap.py"),
-        "--board", "cubietruck", "--board-variant", variant,
-        "--toolchain", toolchain,
-    ], cwd=build_dir.name)
-    subprocess.check_call([
-        "make", "-j2"
-    ], cwd=build_dir.name)
+def test_cubietruck(env, variant):
+    """Build the cubietruck board with several variants"""
+    env.bootstrap_board("cubietruck", "armv7-eabihf", variant)
+    env.run_make("-j2")
 
 @pytest.mark.parametrize("variant", ["vexpress-v7"])
-@pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_virtual(variant, toolchain):
-    build_dir = tempfile.TemporaryDirectory()
-
-    subprocess.check_call([
-        sys.executable,
-        os.path.join(TOP_SRC_DIR, "bootstrap.py"),
-        "--board", "virtual", "--board-variant", variant,
-        "--toolchain", toolchain,
-    ], cwd=build_dir.name)
-    subprocess.check_call([
-        "make"
-    ], cwd=build_dir.name)
-
+def test_virtual(env, variant):
+    """Build the virtual board with several variants"""
+    env.bootstrap_board("virtual", "armv7-eabihf", variant)
+    env.run_make()
 
 @pytest.mark.parametrize("variant", ["board"])
-@pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_orangepi_zero(variant, toolchain):
-    build_dir = tempfile.TemporaryDirectory()
-
-    subprocess.check_call([
-        sys.executable,
-        os.path.join(TOP_SRC_DIR, "bootstrap.py"),
-        "--board", "orangepi-zero", "--board-variant", variant,
-        "--toolchain", toolchain,
-    ], cwd=build_dir.name)
-    subprocess.check_call([
-        "make", "-j2"
-    ], cwd=build_dir.name)
+def test_orangepi_zero(env, variant):
+    """Build the orange-pi board with several variants"""
+    env.bootstrap_board("orangepi-zero", "armv7-eabihf", variant)
+    env.run_make("-j2")
