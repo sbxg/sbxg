@@ -1,0 +1,8 @@
+board:
+  vm: true
+  arch: arm
+  kernel: linux-4.12.0
+  kernel_config: linux-4.12-xen-domu
+  linux_image: zImage
+  image: guest.j2
+  rootfs: automatic

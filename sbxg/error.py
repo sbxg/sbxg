@@ -70,6 +70,14 @@ class InvalidKernelType(SbxgError):
             self.found_type, self.config_file, ' '.join(self.expected_types)
         )
 
+class InvalidVMParameters(SbxgError):
+    def __init__(self, param):
+        self._param = param
+
+    def __str__(self):
+        return "Parameter '{}' is forbidden when 'vm' is set to 'true'".format(
+            self._param)
+
 class SbxgTypeError(SbxgError):
     @abc.abstractproperty
     def typename(self):
@@ -91,3 +99,7 @@ class NotAList(SbxgTypeError):
 class NotAString(SbxgTypeError):
     def typename(self):
         return "string"
+
+class NotABoolean(SbxgTypeError):
+    def typename(self):
+        return "boolean"

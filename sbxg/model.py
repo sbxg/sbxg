@@ -144,6 +144,17 @@ class Model(object):
                                 self.namespace() + key,
                                 search)
 
+    def get_rootfs(self, db):
+        attr = self.get_mandatory(db, "rootfs")
+        return "rootfs.ext3" if attr == "automatic" else attr
+
+    def get_boolean(self, db, key):
+        attr = self.get_mandatory(db, key)
+        if type(attr) is not bool:
+            raise E.NotABoolean(self.config_file(),
+                                self.namespace() + key)
+        return attr
+
     @abc.abstractmethod
     def load(self, lib_dirs, board_dir, **kwargs):
         """
@@ -151,30 +162,6 @@ class Model(object):
         Returns: the parse configuration
         """
         pass
-
-class Guest(Model):
-    def __init__(self, config_file, parent_toolchain, guest_id):
-        self._config_file = config_file
-        self.toolchain = parent_toolchain
-        self.guest_id = guest_id
-        self.kernel = None
-        self.linux_image = None
-        self.image = None
-        self.genimage_config = "genimage_guest{}.cfg".format(self.guest_id)
-        super().__init__()
-
-    def load(self, lib_dirs, board_dir, config):
-        if "toolchain" in config:
-            self.toolchain = self.get_toolchain_source(
-                config, "toolchain", lib_dirs
-            )
-        suffix = "_guest_{}".format(self.guest_id)
-        self.kernel = self.get_kernel_source(config, "kernel", lib_dirs, suffix)
-        self.kernel.config = self.get_kernel_config(config, "kernel_config", lib_dirs)
-        self.linux_image = self.get_mandatory(config, "linux_image")
-        self.image = self.get_genimage_config(config, "image", board_dir)
-        return config
-
 
 class Board(Model):
     def config_file(self):
@@ -186,7 +173,7 @@ class Board(Model):
     def __init__(self, config_file, toolchain):
         self._config_file = config_file
         self._namespace = "::"
-        self.toolchain = toolchain 
+        self.toolchain = toolchain
         self.kernel = None
         self.kernel_config = None
         self.uboot = None
@@ -202,9 +189,21 @@ class Board(Model):
         self.xen = None
         self.xen_config = None
         self.xen_image = None
-        self.xen_guests = None
         self.arch = None
         self.xen_arch = None
+        self.rootfs = None
+        self.vm = False
+
+    def _check_vm_parameters(self, db):
+        no_vm = (
+            "uboot", "uboot_config", "boot_script",
+            "linux_dtb", "uboot_image", "root", "output_boot_script_name",
+            "xen", "xen_arch", "xen_config", "xen_image"
+        )
+        if self.vm:
+            for attr in no_vm:
+                if attr in db:
+                    raise E.InvalidVMParameters(attr)
 
     def load(self, lib_dirs, board_dir):
         config = self._yaml_load()
@@ -226,14 +225,26 @@ class Board(Model):
         if self.arch != expected_arch:
             raise E.InvalidToolchain(self.arch, expected_arch)
 
+        if "vm" in db:
+            self.vm = self.get_boolean(db, "vm")
+
+        self.image = self.get_genimage_config(db, "image", board_dir)
+        self.linux_image = self.get_mandatory(db, "linux_image")
         self.kernel = self.get_kernel_source(db, "kernel", lib_dirs)
         self.kernel_config = self.get_kernel_config(db, "kernel_config", lib_dirs)
+        self.rootfs = self.get_rootfs(db)
+
+        self._check_vm_parameters(db)
+
+        # At this point, if we are parsing a VM board, don't go further as the
+        # rest of this method parses VM-exclusive parameters.
+        if self.vm:
+            return config
+
         self.uboot = self.get_uboot_source(db, "uboot", lib_dirs)
         self.uboot_config = self.get_uboot_config(db, "uboot_config", lib_dirs)
         self.boot_script = os.path.basename(self.get_bootscript(db, "boot_script", lib_dirs))
-        self.image = self.get_genimage_config(db, "image", board_dir)
         self.linux_dtb = self.get_mandatory(db, "linux_dtb")
-        self.linux_image = self.get_mandatory(db, "linux_image")
         self.uboot_image = self.get_mandatory(db, "uboot_image")
         self.root = self.get_mandatory(db, "root")
         if "output_boot_script_name" in db:
@@ -243,12 +254,6 @@ class Board(Model):
             self.xen_arch = self.get_mandatory(db, "xen_arch")
             self.xen_config = self.get_xen_config(db, "xen_config", lib_dirs)
             self.xen_image = self.get_mandatory(db, "xen_image")
-        if "xen_guests" in db:
-            self.xen_guests = []
-            for guest_id, xen_guest in enumerate(db["xen_guests"]):
-                guest = Guest(self._config_file, self.toolchain, guest_id)
-                guest.load(lib_dirs, board_dir, xen_guest)
-                self.xen_guests.append(guest)
         return config
 
 
@@ -423,10 +428,10 @@ class Database(collections.MutableMapping):
         self.set_toolchain(board.toolchain)
         self.use_genimage()
         self.set_kernel(board.kernel, board.kernel_config)
-        self.set_uboot(board.uboot, board.uboot_config)
+        if not board.vm:
+            self.set_uboot(board.uboot, board.uboot_config)
         if board.xen:
             self.set_xen(board.xen, board.xen_config)
-        self.guests = board.xen_guests
 
     def __getitem__(self, attr):
         return getattr(self, attr)

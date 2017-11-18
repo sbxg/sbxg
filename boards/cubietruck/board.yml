@@ -10,3 +10,4 @@ board:
   linux_image: zImage
   uboot_image: u-boot-sunxi-with-spl.bin
   root: /dev/mmcblk0p2
+  rootfs: automatic

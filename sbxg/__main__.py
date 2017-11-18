@@ -20,6 +20,7 @@
 
 import argparse
 import os
+import shutil
 import sys
 
 import sbxg
@@ -91,6 +92,12 @@ def show_library(board_dirs, lib_dirs):
                         ANSI_STYLE['okblue'], item_type, ANSI_STYLE['endc'],
                         ANSI_STYLE['okgreen'], item, ANSI_STYLE['endc'],
                     ))
+
+def install_rootfs(rootfs, dest):
+    if os.path.isfile(rootfs):
+        shutil.copy(rootfs, dest)
+    else:
+        raise E.SbxgError("Rootfs file '{}' does not exist".format(rootfs))
 
 
 def getopts(argv):
@@ -253,7 +260,10 @@ def main(argv):
         board = sbxg.model.Board(config, toolchain)
         board.load(args.lib_dir, board_dir)
         database.set_board(board)
-        components.extend(['kernel', 'uboot', 'genimage'])
+        # Copy the rootfs to the input path of genimage
+        components.extend(['kernel', 'genimage'])
+        if not board.vm:
+            components.append('uboot')
         template_dirs.append(os.path.join(board_dir, 'images'))
         if board.xen:
             components.append('xen')
@@ -314,12 +324,9 @@ def main(argv):
             gen_dir = database.genimage[key]
             if not os.path.exists(gen_dir):
                 os.makedirs(gen_dir)
-        if database.guests:
-            for guest in database.guests:
-                input_dir = os.path.join(database.genimage['input_path'],
-                                         "guest{}".format(guest.guest_id))
-                if not os.path.exists(input_dir):
-                    os.makedirs(input_dir)
+        genimage_in = database.genimage['input_path']
+        if database.board:
+            install_rootfs(database.board.rootfs, genimage_in)
 
     if database.board:
         # Generate the boot script from a template, if one was specified. This
@@ -330,24 +337,14 @@ def main(argv):
             top_build_dir,
             database.board.templated_boot_script_name
         )
-        templater.template_file(
-            database.board.boot_script,
-            boot_cmd
-        )
+        if not database.board.vm:
+            templater.template_file(database.board.boot_script, boot_cmd)
 
         # And finally generate the genimage configuration
         templater.template_file(
             os.path.basename(database.board.image),
             database.genimage['config']
         )
-
-        # Generate genimage configurations for each registered guest
-        if database.guests:
-            for guest in database.guests:
-                templater.template_file(
-                    os.path.basename(guest.image),
-                    os.path.join(top_build_dir, guest.genimage_config)
-                )
 
     # Generate the makefile, which will control the build system
     templater.template_file(

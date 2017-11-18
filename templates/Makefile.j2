@@ -30,8 +30,7 @@ all:
 {%- if uboot %} uboot {%- endif -%}
 {%- if busybox %} busybox {%- endif -%}
 {%- if xen %} xen {%- endif -%}
-{%- if genimage %} genimage {%- endif -%}
-{%- if guests %} guests guests-genimage {%- endif %}
+{%- if genimage %} genimage {%- endif %}
 
 #==============================================================================#
 #                                Kernel Targets                                #
@@ -115,24 +114,6 @@ $(XEN_IMAGE):
 	cp -u "{{ xen.config }}" "{{ xen.path }}/.config"
 	+$(call xen-make-helper,)
 
-{% if guests -%}
-.PHONY: guests
-
-{%- for guest in guests %}
-.PHONY: guest-{{ loop.index0 }}-%
-
-guest-{{ loop.index0 }}-%:
-	+$(call {{ guest.kernel.type }}-make-helper,$(patsubst guest-{{ loop.index0 }}-%,%,$@),{{ guest.kernel.path }},{{ guest.kernel.build_dir }})
-{% endfor %}
-
-guests:
-	{%- for guest in guests %}
-	@echo "[SBXG/guests] Building guest #{{ loop.index0 }} ({{ guest.kernel.type }})"
-	mkdir -p "{{ guest.kernel.build_dir }}"
-	cp -u "{{ guest.kernel.config }}" "{{ guest.kernel.build_dir }}/.config"
-	+$(MAKE) guest-{{ loop.index0 }}-zImage
-	{%- endfor %}
-{% endif %}
 
 {% endif %}{# End of xen #}
 
@@ -220,23 +201,6 @@ busybox:
 #==============================================================================#
 {% if genimage %}
 
-{% if guests %}
-.PHONY: genimage-guests
-
-guests-genimage: {{ genimage.build_dir }}/genimage
-{%- for guest in guests %}
-	@echo "[SBXG/guests] Copying image products of guest {{ loop.index0 }}"
-	cp -u "{{ guest.kernel.build_dir }}/arch/{{ guest.toolchain.arch }}/boot/{{ guest.linux_image }}" "{{ genimage.input_path }}/guest{{ loop.index0 }}"
-	"{{ genimage.build_dir }}/genimage" \
-		--outputpath "{{ genimage.output_path }}" \
-		--inputpath "{{ genimage.input_path }}/guest{{ loop.index0 }}" \
-		--rootpath "{{ genimage.root_path }}" \
-		--tmppath "{{ genimage.tmp_path }}" \
-		--config "{{ guest.genimage_config }}"
-{% endfor %}
-
-{% endif %}
-
 .PHONY: genimage
 
 genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if xen %}$(XEN_IMAGE){% endif  %}
@@ -294,9 +258,6 @@ help:
 {%- endif %}
 {%- if genimage %}
 	@echo "genimage      compile and execute genimage"
-   {%- if guests %}
-	@echo "guests-genimage execute genimage for the guests"
-   {%- endif %}
 {%- endif %}
 {%- if xen %}
 	@echo "xen           build the xen hypervisor"

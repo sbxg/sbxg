@@ -41,6 +41,21 @@ def test_cubietruck(variant, toolchain):
         "make", "-j2"
     ], cwd=build_dir.name)
 
+@pytest.mark.parametrize("variant", ["vexpress-v7"])
+@pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
+def test_virtual(variant, toolchain):
+    build_dir = tempfile.TemporaryDirectory()
+
+    subprocess.check_call([
+        sys.executable,
+        os.path.join(TOP_SRC_DIR, "bootstrap.py"),
+        "--board", "virtual", "--board-variant", variant,
+        "--toolchain", toolchain,
+    ], cwd=build_dir.name)
+    subprocess.check_call([
+        "make"
+    ], cwd=build_dir.name)
+
 
 @pytest.mark.parametrize("variant", ["board"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])

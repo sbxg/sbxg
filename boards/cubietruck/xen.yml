@@ -14,9 +14,4 @@ board:
   uboot_image: u-boot-sunxi-with-spl.bin
   xen_image: xen
   root: /dev/mmcblk0p2
-
-  xen_guests:
-    - kernel: linux-4.12.0
-      kernel_config: linux-4.12-xen-domu
-      linux_image: zImage
-      image: xen_guest.j2
+  rootfs: automatic
