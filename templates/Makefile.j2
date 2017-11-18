@@ -57,8 +57,9 @@ KERNEL_IMAGE := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/{{ board.linu
 {% if board.linux_dtb %}
 KERNEL_DTB := {{ kernel.build_dir }}/arch/{{ kernel.arch }}/boot/dts/{{ board.linux_dtb }}
 {%- endif %}
+DTC := {{ kernel.build_dir }}/scripts/dtc/dtc
 
-{{ kernel.build_dir }}/scripts/dtc/dtc:
+$(DTC):
 	+$(call linux-make-helper,$@,"{{ kernel.path }}","{{ kernel.build_dir }}")
 
 linux-%:
@@ -66,7 +67,7 @@ linux-%:
 
 linux: $(KERNEL_IMAGE)
 
-$(KERNEL_IMAGE):
+$(KERNEL_IMAGE): $(DTC)
 	@echo "[SBXG/kernel] Building Linux kernel"
 	mkdir -p "{{ kernel.build_dir }}"
 	cp -u "{{ kernel.config }}" "{{ kernel.build_dir }}/.config"
@@ -137,7 +138,7 @@ kernel: {{ kernel.type }}
 uboot-make-helper = \
 	$(MAKE) \
 {%- if kernel and kernel.type == "linux" %}
-        DTC="{{ kernel.build_dir }}/scripts/dtc/dtc" \
+        DTC="$(DTC)" \
 {%- endif %}
 {%- if uboot.toolchain %}
 	CROSS_COMPILE={{ uboot.toolchain.path }}/{{ uboot.toolchain.prefix }} \
@@ -153,9 +154,9 @@ UBOOT_IMAGE := {{ uboot.build_dir }}/{{ board.uboot_image }}
 uboot-%:
 	+$(call uboot-make-helper,$(patsubst uboot-%,%,$@))
 
-uboot: {% if kernel and kernel.type == "linux" %}{{ kernel.build_dir }}/scripts/dtc/dtc{%- endif %} $(UBOOT_IMAGE)
+uboot: $(DTC) $(UBOOT_IMAGE)
 
-$(UBOOT_IMAGE): {%- if kernel and kernel.type == "linux" %}{{ kernel.build_dir }}/scripts/dtc/dtc{% endif %}
+$(UBOOT_IMAGE): $(DTC)
 	@echo "[SBXG/uboot] Building u-boot"
 	mkdir -p "{{ uboot.build_dir }}"
 	cp -u "{{ uboot.config }}" "{{ uboot.build_dir }}/.config"
