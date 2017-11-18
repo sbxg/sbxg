@@ -61,6 +61,6 @@ def env():
         "dd", "if=/dev/zero", "of={}".format(testenv.rootfs),
         "bs=1M", "count=1"])
     subprocess.check_call(["sync"])
-    subprocess.check_call(["mkfs.ext3", testenv.rootfs])
+    subprocess.check_call(["mkfs.ext3", "-F", testenv.rootfs])
 
     return testenv
