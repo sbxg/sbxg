@@ -1,9 +1,5 @@
 sudo: false
 
-language: python
-python:
-  - "3.5"
-
 addons:
   apt:
     packages:
@@ -14,9 +10,14 @@ addons:
       - autoconf
       - autotools-dev
       - libconfuse-dev
+      - swig
+      - python-dev
+      - python3-pip
+      - python3-pytest
+      - mtools
 
-install: "pip install jinja2 pyyaml"
+install: "pip3 install --user -r utils/requirements.txt"
 
 before_script: curl https://sh.rustup.rs -sSf | sh -s -- -y && "$HOME/.cargo/bin/cargo" install subcomponent
 
-script: env PATH="$HOME/.cargo/bin:$PATH" pytest -vs
+script: env PATH="$HOME/.cargo/bin:$PATH" python3 -m pytest -vs --maxfail=1
