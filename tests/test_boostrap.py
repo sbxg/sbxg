@@ -26,22 +26,22 @@ import tempfile
 
 TOP_SRC_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-def test_bootstrap_in_source_dir():
+def test_bootstrap_in_source_dir(env):
     """
     Running the bootstrap script from the source directory should fail.
     """
     with pytest.raises(subprocess.CalledProcessError):
-        subprocess.run([
+        subprocess.check_call([
             sys.executable, "bootstrap.py",
             "--board", "cubietruck", "--toolchain", "local"
         ], cwd=TOP_SRC_DIR)
 
-def test_no_toolchain_for_board():
+def test_no_toolchain_for_board(env):
     """
     Running the bootstrap script from the source directory should fail,
     """
     with pytest.raises(subprocess.CalledProcessError):
-        subprocess.run([
+        subprocess.check_call([
             sys.executable, "bootstrap.py",
             "--board", "cubietruck", "--toolchain", "local"
         ], cwd=TOP_SRC_DIR)
@@ -49,7 +49,7 @@ def test_no_toolchain_for_board():
 
 @pytest.mark.parametrize("variant", [None, "xen", "board"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_quick_cubietruck_bootstrap(variant, toolchain):
+def test_quick_cubietruck_bootstrap(env, variant, toolchain):
     """
     This test runs a bootstrap for the different cubietruck variants.
     It uses the available toolchains. Nothing is downloaded.
@@ -63,9 +63,7 @@ def test_quick_cubietruck_bootstrap(variant, toolchain):
     ]
     if variant is not None:
         cmd.extend(['--board-variant', variant])
-
-    build_dir = tempfile.TemporaryDirectory()
-    subprocess.run(cmd, cwd=build_dir.name)
+    subprocess.check_call(cmd, cwd=env.build_dir)
 
 
 
@@ -74,9 +72,9 @@ def test_quick_cubietruck_bootstrap(variant, toolchain):
     "linux-4.12-sunxi", "linux-4.12-sunxi-xen-dom0", "linux-4.12-xen-domu"
 ])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_bootstrap_kernel_only(source, config, toolchain):
+def test_bootstrap_kernel_only(env, source, config, toolchain):
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.run([
+    subprocess.check_call([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--kernel", source, config,
@@ -87,9 +85,9 @@ def test_bootstrap_kernel_only(source, config, toolchain):
 @pytest.mark.parametrize("source", ["2017.07"])
 @pytest.mark.parametrize("config", ["2017.07-minimal"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_bootstrap_uboot_only(source, config, toolchain):
+def test_bootstrap_uboot_only(env, source, config, toolchain):
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.run([
+    subprocess.check_call([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--uboot", source, config,
@@ -100,9 +98,9 @@ def test_bootstrap_uboot_only(source, config, toolchain):
 @pytest.mark.parametrize("source", ["4.8.0"])
 @pytest.mark.parametrize("config", ["4.8-sunxi"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
-def test_bootstrap_xen_only(source, config, toolchain):
+def test_bootstrap_xen_only(env, source, config, toolchain):
     build_dir = tempfile.TemporaryDirectory()
-    subprocess.run([
+    subprocess.check_call([
         sys.executable,
         os.path.join(TOP_SRC_DIR, "bootstrap.py"),
         "--xen", source, config,
