@@ -25,7 +25,7 @@ set -u
 
 HERE=$(dirname "$0")
 XEN_SUPPORT=no
-OUTPUT_FILE="board_rootfs.ext3"
+OUTPUT_FILE="rootfs.ext3"
 ROOTFS_SIZE=512
 
 while getopts "xo:s:" opt; do
@@ -61,7 +61,7 @@ chroot "$output_dir" dpkg --configure -a
 
 # If the rootfs requires Xen, install the xen tools.
 if [ "x$XEN_SUPPORT" = "xyes" ]; then
-   chroot "$output_dir" apt install -y xen-tools
+   chroot "$output_dir" apt install -y --allow-unauthenticated xen-tools
 fi
 
 # Remove the native qemu-arm-static to leave a clean rootfs
