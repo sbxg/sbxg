@@ -27,8 +27,9 @@ HERE=$(dirname "$0")
 XEN_SUPPORT=no
 OUTPUT_FILE="rootfs.ext3"
 ROOTFS_SIZE=512
+HOOK=
 
-while getopts "xo:s:" opt; do
+while getopts "xo:s:h:" opt; do
    case $opt in
       x)
          XEN_SUPPORT=yes
@@ -38,6 +39,9 @@ while getopts "xo:s:" opt; do
          ;;
       s)
          ROOTFS_SIZE="$OPTARG"
+         ;;
+      h)
+         HOOK="$OPTARG"
          ;;
    esac
 done
@@ -59,9 +63,17 @@ cp $(which qemu-arm-static) "$output_dir/usr/bin"
 chroot "$output_dir" /debootstrap/debootstrap --second-stage
 chroot "$output_dir" dpkg --configure -a
 
+# "root" will have a password "root", so we can easily log in the first time!
+echo "root:root" | chroot "$output_dir" chpasswd
+
 # If the rootfs requires Xen, install the xen tools.
 if [ "x$XEN_SUPPORT" = "xyes" ]; then
    chroot "$output_dir" apt install -y --allow-unauthenticated xen-tools
+fi
+
+# Execute a custom configuration hook
+if test -n "$HOOK"; then
+   "$HOOK" "$output_dir"
 fi
 
 # Remove the native qemu-arm-static to leave a clean rootfs
