@@ -1,12 +1,7 @@
-image boot.vfat {
-   vfat {
-      files = {
-         "{{ board.linux_image }}",
-         "{{ board.linux_dtb }}",
-         "{{ board.output_boot_script_name }}"
-      }
-   }
-   size = 5M
+image boot.ext2 {
+   ext2 {}
+   size = 10M
+   mountpoint = "/"
 }
 
 image sdcard.img {
@@ -23,11 +18,11 @@ image sdcard.img {
    partition boot {
       partition-type = 0xC
       bootable = "true"
-      image = "boot.vfat"
+      image = "boot.ext2"
    }
 
    partition rootfs {
       partition-type = 0x83
-      image = "rootfs.ext3"
+      image = "{{ board.rootfs }}"
    }
 }

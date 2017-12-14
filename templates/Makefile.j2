@@ -212,15 +212,15 @@ busybox:
 
 genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if xen %}$(XEN_IMAGE){% endif  %}
 	@echo "[SBXG/image] Copying image products"
-	cp -u "$(KERNEL_IMAGE)" "{{ genimage.input_path }}"
+	cp -u "$(KERNEL_IMAGE)" "{{ genimage.root_path }}"
       {%- if board.linux_dtb %}
-	cp -u "$(KERNEL_DTB)" "{{ genimage.input_path }}"
+	cp -u "$(KERNEL_DTB)" "{{ genimage.root_path }}"
       {%- endif %}
       {%- if board.uboot %}
 	cp -u "$(UBOOT_IMAGE)" "{{ genimage.input_path }}"
       {%- endif %}
       {%- if xen %}
-	cp -u "$(XEN_IMAGE)" "{{ genimage.input_path }}"
+	cp -u "$(XEN_IMAGE)" "{{ genimage.root_path }}"
       {%- endif %}
       {%- if board.uboot %}{## Generate the boot script if u-boot is provided ##}
 	@echo "[SBXG/image] Generating boot script ({{ board.output_boot_script_name }})"
@@ -229,7 +229,7 @@ genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if
 		-A {{ kernel.arch }} \
 		-T script \
 		-d "{{ top_build_dir }}/{{ board.templated_boot_script_name }}" \
-		"{{ genimage.input_path }}/{{ board.output_boot_script_name }}"
+		"{{ genimage.root_path }}/{{ board.output_boot_script_name }}"
       {%- endif %}
 	MTOOLS_SKIP_CHECK=1 "{{ genimage.build_dir }}/genimage" \
 		--outputpath "{{ genimage.output_path }}" \
