@@ -173,6 +173,7 @@ class Board(Model):
     def __init__(self, config_file, toolchain):
         self._config_file = config_file
         self._namespace = "::"
+        self.kernel_bootargs = ""
         self.toolchain = toolchain
         self.kernel = None
         self.kernel_config = None
@@ -182,6 +183,7 @@ class Board(Model):
         self.image = None
         self.linux_dtb = None
         self.linux_image = None
+        self.linux_bootargs = ""
         self.uboot_image = None
         self.root = None
         self.templated_boot_script_name = "boot.cmd"
@@ -197,8 +199,9 @@ class Board(Model):
     def _check_vm_parameters(self, db):
         no_vm = (
             "uboot", "uboot_config", "boot_script",
+            "kernel_bootargs", "linux_bootargs",
             "linux_dtb", "uboot_image", "root", "output_boot_script_name",
-            "xen", "xen_arch", "xen_config", "xen_image"
+            "xen", "xen_arch", "xen_config", "xen_image",
         )
         if self.vm:
             for attr in no_vm:
@@ -230,8 +233,10 @@ class Board(Model):
 
         self.image = self.get_genimage_config(db, "image", board_dir)
         self.linux_image = self.get_mandatory(db, "linux_image")
+        self.linux_bootargs = db.get("linux_bootargs", "")
         self.kernel = self.get_kernel_source(db, "kernel", lib_dirs)
         self.kernel_config = self.get_kernel_config(db, "kernel_config", lib_dirs)
+        self.kernel_bootargs = db.get("kernel_bootargs", "")
         self.rootfs = self.get_rootfs(db)
 
         self._check_vm_parameters(db)
