@@ -1,9 +1,8 @@
 # Top of RAM:         0xc0000000
 # Xen relocate addr   0xbfe00000 # 2M
 setenv kernel_addr_r  0xbf600000 # 8M
-setenv ramdisk_addr_r 0xbc200000 # 100M # FIXME
-setenv fdt_addr       0xbc000000 # 2M
-setenv xen_addr_r     0xbbe00000 # 2M
+setenv fdt_addr       0xbf400000 # 2M
+setenv xen_addr_r     0xbf200000 # 2M
 setenv fdt_high       0xffffffff # Load fdt in place instead of relocating
 
 fatload mmc 0 ${xen_addr_r} {{ board.xen_image }}
