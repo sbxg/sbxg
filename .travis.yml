@@ -15,6 +15,7 @@ addons:
       - python3-pip
       - python3-pytest
       - mtools
+      - genext2fs
 
 install: "pip3 install --user -r utils/requirements.txt"
 
