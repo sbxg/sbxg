@@ -95,7 +95,7 @@ def test_bootstrap_uboot_only(env, source, config, toolchain):
         "--no-download",
     ], cwd=build_dir.name)
 
-@pytest.mark.parametrize("source", ["4.8.0"])
+@pytest.mark.parametrize("source", ["4.8.2"])
 @pytest.mark.parametrize("config", ["4.8-sunxi"])
 @pytest.mark.parametrize("toolchain", ["armv7-eabihf"])
 def test_bootstrap_xen_only(env, source, config, toolchain):

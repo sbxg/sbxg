@@ -1,8 +1,0 @@
-url: https://downloads.xenproject.org/release/xen/4.8.0/xen-4.8.0.tar.gz
-# FIXME subcomponent fails here
-#pgp_signature: https://downloads.xenproject.org/release/xen/4.8.0/xen-4.8.0.tar.gz.sig
-#pgp_pubkey: 83FE14C957E82BD9
-compressions:
-  - tar
-  - gz
-path: xen-4.8.0
