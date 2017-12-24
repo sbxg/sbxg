@@ -5,11 +5,11 @@ setenv fdt_addr       0xbf400000 # 2M
 setenv xen_addr_r     0xbf200000 # 2M
 setenv fdt_high       0xffffffff # Load fdt in place instead of relocating
 
-fatload mmc 0 ${xen_addr_r} {{ board.xen_image }}
+ext2load mmc 0 ${xen_addr_r} {{ board.xen_image }}
 
 setenv bootargs "console=dtuart dtuart=/soc@01c00000/serial@01c28000 dom0_mem=128M flask=disabled guest_loglvl=all loglvl=all iommu=debug {{ board.kernel_bootargs }}"
 
-fatload mmc 0 ${fdt_addr} {{ board.linux_dtb }}
+ext2load mmc 0 ${fdt_addr} {{ board.linux_dtb }}
 fdt addr ${fdt_addr} 0x40000
 fdt resize
 fdt chosen
@@ -17,7 +17,7 @@ fdt chosen
 fdt set /chosen \#address-cells <1>
 fdt set /chosen \#size-cells <1>
 
-fatload mmc 0 ${kernel_addr_r} {{ board.linux_image }}
+ext2load mmc 0 ${kernel_addr_r} {{ board.linux_image }}
 
 fdt mknod /chosen module@0
 fdt set /chosen/module@0 compatible "xen,linux-zimage" "xen,multiboot-module"
