@@ -1,32 +1,50 @@
 # SBXG
 
-SBXG is a build system that generates bootable images for embedded devices.
-The images generation is highly customizable, but is mainly composed of:
+SBXG is a specialized build system generator that allows the generation of
+bootable images for embedded devices, or the compliation of individual
+components of those images. The images generation is highly customizable, annd
+is mainly composed of:
 - a bootloader: [U-Boot][1],
-- a kernel: [Linux][2],
+- a kernel: [Linux][2], [Xen][13],
 - and a foreign root file system.
 
 ## Model
 
-The bootloader and the kernel are built from source, with a configuration file
-enforced by version. This allows SBXG users to rely on the sources and their
-own (or pre-packaged) configurations, instead of a black box downloaded from
-untrusted sources.
+All the components (but the foreign root file system) are built from source,
+using versioned configuration files (i.e. Linux/U-Boot/Xen/Busybox Kconfig
+products).  This allows SBXG users to rely on the sources and their own (or
+pre-packaged) configurations, instead of a black box downloaded from untrusted
+sources.
 
 SBXG provides default configurations for some boards, toolchains, kernels and
 u-boot, to demonstrate its capabilities, but one of its goal is to be able to
-use opaque (private) user configurations.
+use opaque (private) user configurations, that may not be included in the open
+source version of SBXG.
 
 
-## Supported Boards
+## Supported Components
 
-- [Cubietruck][3]
-- [Orange Pi Zero][6]
+The following list shows the built-in components shipped with SBXG, to
+demonstrate its capabilities. It is trivial to add more.
+
+- Embedded Boards:
+  - [Cubietruck][3]
+  - [Orange Pi Zero][6]
+- Kernels:
+  - [Linux][2]
+  - [Xen][13]
+- Bootloaders:
+  - [U-Boot][1]
+- Initramfs:
+  - [Busybox][11]
+- Toolchains:
+  - [Arm-v7 eabihf][12]
+
 
 To see more of the supported components, run the `bootstrap.py` script with the
 `--show-library` option. This will display the exact list of the supported
 boards, sources and configurations. You can add the `--no-color` if you find the
-output too flashy or if you want to manipulate the output:
+output too flashy or if you want to manipulate the output by another program:
 
 ```bash
 ./bootstrap.py --show-library
@@ -48,16 +66,16 @@ SBXG relies on third-party tools to fulfill its duty:
 - [subcomponent][5], which is a rust tool to download the components. It is
   a packaged cargo crate, and therefore can be installed from cargo
   (`cargo install subcomponent`).
- 
-To make installation of these dependencies easier, scripts are available in the
-`utils/` directory. Select the one that matches your distribution, and run it
-as a normal user (no sudo). Python and rust packages will be locally installed,
-while packages will ask for the admin password.
 
-For instance, if you are running Debian, run the following command:
+To make installation of these dependencies easier, scripts are made available
+in the `utils/` directory. Select the one that matches your distribution, and
+run it as a normal user (no sudo). Python and rust packages will be locally
+installed, while packages will ask for the admin password.
+
 
 ```bash
-./utils/install_debian_packages.sh
+./utils/install_debian_packages.sh # For Debian/Ubuntu/...
+./utils/install_gentoo_packages.sh # For Gentoo
 ```
 
 You may be asked to run by yourself additional commands, that cannot be safely
@@ -77,9 +95,21 @@ sources, from which you can bootstrap SBXG:
 mkdir -p build && cd build
 ```
 
+If you don't have a rootfs ready to be flashed, and if you happen to have the
+`debootstrap` command available on your system, SBXG provides a small script
+that will create a minimal Debian stable rootfs just for you. From the build
+directory you just created, run:
 
-Once you have created the build directory and make it your current working directory,
-you can bootstrap SBXG by calling `bootstrap.py`:
+```bash
+sudo ../scripts/create-debootstrap.sh
+```
+
+This will take some time (and requires privileges), as debootstrap takes some
+time to retrieve and configure the minimal Debian rootfs. Note that you will
+need to have `qemu-system` and `qemu-user-static` installed.
+
+
+Once you are done, you can bootstrap SBXG by calling `bootstrap.py`:
 
 ```bash
 ../bootstrap.py --board cubietruck
@@ -128,3 +158,7 @@ SBXG is licensed under the **MIT** license. For details, please refer to the
 [5]: https://github.com/subcomponent/subcomponent
 [6]: http://www.orangepi.org/orangepizero/
 [7]: http://www.sphinx-doc.org/en/stable/
+[10]: https://www.denx.de/wiki/U-Boot/WebHome
+[11]: https://busybox.net/
+[12]: http://toolchains.free-electrons.com/
+[13]: https://www.xenproject.org/
