@@ -1,5 +1,5 @@
-url: http://toolchains.free-electrons.com/downloads/releases/toolchains/armv7-eabihf--glibc--bleeding-edge-2017.05-toolchains-1-2.tar.bz2
-sha256: fa4223e8fd7841898b122740da096aa5b496706c1d17378c379afabdffd9f2b3
+url: https://toolchains.free-electrons.com/downloads/releases/toolchains/armv7-eabihf/tarballs/armv7-eabihf--glibc--bleeding-edge-2017.11-1.tar.bz2
+sha256: d10a130991996eb4084088506d1e137ab17846c4dd0de081d35918e028725a48
 compressions:
   - tar
   - bz2
