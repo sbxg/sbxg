@@ -12,6 +12,5 @@ board:
   linux_dtb: sun7i-a20-cubietruck.dtb
   linux_image: zImage
   uboot_image: u-boot-sunxi-with-spl.bin
-  xen_image: xen
   root: /dev/mmcblk0p2
   rootfs: automatic

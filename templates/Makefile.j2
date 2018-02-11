@@ -97,7 +97,7 @@ xen-make-helper = \
 xen-%:
 	+$(call xen-make-helper,$(patsubst xen-%,%,$@))
 
-XEN_IMAGE := {{ xen.path }}/xen/{{ board.xen_image }}
+XEN_IMAGE := {{ xen.path }}/xen/xen
 
 "{{ xen.path }}/xen/Makefile":
 	@echo "[SBXG/xen] Configuring Xen hypervisor"
