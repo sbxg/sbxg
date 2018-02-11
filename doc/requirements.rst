@@ -2,16 +2,16 @@ SBXG Requirements
 =================
 
 **Python**
-  SBXG relies on third-party tools to fulfull its duty. Its core is
-  orchestrated with Python_. Python 2.7 will do, but it is advised to use
-  Python 3.4 or later.
+  SBXG relies on third-party tools to fulfull its duty. Its core is written
+  with Python_. Python 2.7 will do, but it is advised to use Python 3.4 or
+  later.
 
 **Make**
   SBXG bootstraps its build system, by generating a Makefile. Therefore,
-  ``make`` is a strong requirement for SBXG.
+  ``make`` (only GNU make is tested) is a strong requirement for SBXG.
 
 **Subcomponent**
-  Subcomponent_ is used to fetch the components that SBXG depends on.  It is
+  Subcomponent_ is used to fetch the components that SBXG depends on. It is
   packaged as a cargo crate, and therefore can be installed directly from
   cargo.
 
@@ -32,8 +32,8 @@ Packages Installation
 
 SBXG provides per GNU/Linux distribution scripts to install the necessary packages.
 They are contained within the ``utils/`` directory, in the top source directory.
+Run the script associated to your distribution.
 
 
 .. _Python: https://www.python.org/
-.. _genimage: https://git.pengutronix.de/cgit/genimage
 .. _Subcomponent: https://github.com/subcomponent/subcomponent
