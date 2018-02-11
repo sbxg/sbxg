@@ -32,10 +32,10 @@ all:
 {%- if xen %} xen {%- endif -%}
 {%- if genimage %} genimage {%- endif %}
 
+{% if kernel %}
 #==============================================================================#
 #                                Kernel Targets                                #
 #==============================================================================#
-{% if kernel %}
 
 KERNEL_BUILD_DIR := {{ kernel.build_dir }}
 KERNEL_IMAGE := $(KERNEL_BUILD_DIR)/arch/{{ kernel.arch }}/boot/{{ board.linux_image }}
@@ -78,7 +78,15 @@ $(KERNEL_IMAGE): $(KERNEL_BUILD_DIR) $(DTC)
 	+$(call linux-make-helper,all)
 {% endif %}
 
+.PHONY: kernel
+
+kernel: {{ kernel.type }}
+{% endif %}{## End of Kernel ##}
+
 {% if xen %}
+#==============================================================================#
+#                                  Xen Targets                                 #
+#==============================================================================#
 
 # Run make from Xen sources.
 # $(1): Target(s) name(s) to be called
@@ -121,22 +129,14 @@ $(XEN_IMAGE):
 	cp -u "{{ xen.config }}" "{{ xen.path }}/.config"
 	+$(call xen-make-helper,)
 
-
 {% endif %}{# End of xen #}
 
-.PHONY: kernel
 
-kernel: {{ kernel.type }}
-
-{% else %}
-# No kernel specified when bootstrapping...
-{% endif %}
-
-
+{% if uboot %}
 #==============================================================================#
 #                                U-Boot Targets                                #
 #==============================================================================#
-{% if uboot %}
+
 # Run make from U-Boot sources.
 # $(1): Target(s) name(s) to be called
 uboot-make-helper = \
@@ -165,15 +165,12 @@ $(UBOOT_IMAGE): $(DTC)
 	mkdir -p "{{ uboot.build_dir }}"
 	cp -u "{{ uboot.config }}" "{{ uboot.build_dir }}/.config"
 	+$(call uboot-make-helper,all)
-
-{% else %}
-# No u-boot specified when bootstrapping...
 {% endif %}
 
+{% if busybox %}
 #==============================================================================#
 #                                Busybox Targets                               #
 #==============================================================================#
-{% if busybox %}
 .PHONY: busybox busybox-%
 
 busybox-make-helper = \
@@ -199,14 +196,12 @@ busybox:
             --output "{{ busybox.build_dir }}/initramfs.cpio" \
 	    "{{ busybox.build_dir }}"/_install
 
-{% else %}
-# No busybox specified when bootstrapping...
 {% endif %}
 
+{% if genimage %}
 #==============================================================================#
 #                               Genimage Targets                               #
 #==============================================================================#
-{% if genimage %}
 
 .PHONY: genimage
 
@@ -245,8 +240,6 @@ genimage: {{ genimage.build_dir }}/genimage $(KERNEL_IMAGE) $(UBOOT_IMAGE) {% if
 	cd "{{ genimage.build_dir }}" && "{{ genimage.path }}/configure"
 	+$(MAKE) -C "{{ genimage.build_dir }}"
 
-{% else %}
-# Image generation was not specified when bootstrapping...
 {% endif %}
 
 .PHONY: help
