@@ -190,7 +190,6 @@ class Board(Model):
         self.output_boot_script_name = "boot.scr"
         self.xen = None
         self.xen_config = None
-        self.xen_image = None
         self.arch = None
         self.xen_arch = None
         self.rootfs = None
@@ -201,7 +200,7 @@ class Board(Model):
             "uboot", "uboot_config", "boot_script",
             "kernel_bootargs", "linux_bootargs",
             "linux_dtb", "uboot_image", "root", "output_boot_script_name",
-            "xen", "xen_arch", "xen_config", "xen_image",
+            "xen", "xen_arch", "xen_config",
         )
         if self.vm:
             for attr in no_vm:
@@ -258,7 +257,6 @@ class Board(Model):
             self.xen = self.get_xen_source(db, "xen", lib_dirs)
             self.xen_arch = self.get_mandatory(db, "xen_arch")
             self.xen_config = self.get_xen_config(db, "xen_config", lib_dirs)
-            self.xen_image = self.get_mandatory(db, "xen_image")
         return config
 
 
