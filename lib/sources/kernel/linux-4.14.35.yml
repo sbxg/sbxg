@@ -1,0 +1,5 @@
+url: https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.14.35.tar.xz
+compressions:
+  - tar
+  - xz
+path: linux-4.14.35
