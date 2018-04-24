@@ -332,10 +332,10 @@ class Kernel(Source):
 
     def _known_types(self):
         """
-        We only support Linux and Xen as kernel for now. Others may flawlessly
-        work fine, but they have not be tested.
+        We only support Linux as kernel for now. Others may flawlessly work
+        fine, but they have not be tested.
         """
-        return ['linux', 'xen']
+        return ['linux']
 
     def load(self):
         super().load()
