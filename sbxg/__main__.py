@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Jean Guyomarc'h
+# Copyright (c) 2017, 2019 Jean Guyomarc'h
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@ import argparse
 import os
 import shutil
 import sys
+from pathlib import Path
 
 import sbxg
 from sbxg.utils import ANSI_STYLE
@@ -74,6 +75,18 @@ def show_library(board_dirs, lib_dirs):
                         ANSI_STYLE['okgreen'], item, ANSI_STYLE['endc'],
                     ))
 
+    print("\nList of toolchans:")
+    for lib_dir in lib_dirs:
+        for root, _, files in os.walk(os.path.join(lib_dir, "toolchains")):
+            for item in files:
+                # We search for .yml files only
+                if item.endswith('.yml'):
+                    item_type = os.path.basename(root)
+                    item = os.path.splitext(item)[0]
+                    print("  - {}{}{}".format(
+                        ANSI_STYLE['okgreen'], item, ANSI_STYLE['endc'],
+                    ))
+
     # And finally, do the same for configurations.
     print("\nList of configurations:")
     for lib_dir in lib_dirs:
@@ -99,257 +112,202 @@ def install_rootfs(rootfs, dest):
     else:
         raise E.SbxgError("Rootfs file '{}' does not exist".format(rootfs))
 
+class Help:
+    CHDIR = 'Go to the specified directory before doing anything'
+    KERNEL_SOURCE = "Name of the kernel source file"
+    KERNEL_CONFIG = "Name of the kernel configuration file"
+    XEN_SOURCE = "Name of the Xen source file"
+    XEN_CONFIG = "Name of the Xen configuration file"
+    UBOOT_SOURCE = "Name of the U-Boot source file"
+    UBOOT_CONFIG = "Name of the U-Boot configuration file"
+    TOOLCHAIN = "specify a toolchain to be used outside of the board execution"
+    COLOR = "Turn on or off the console output"
+    SHOW_LIB = "Prints in stdout the library of available components and exits"
+    LIB_DIR = """Add a directory to the library search path. When this argument
+        is not specified, the lib/ directory of SBXG will be used"""
 
 def getopts(argv):
     parser = argparse.ArgumentParser(description='SBXG Boostrapper')
-    parser.add_argument(
-        '--subcomponent', type=str, default='subcomponent',
-        help='Provide the path to the subcomponent program'
-    )
-    parser.add_argument(
-        '--no-download', '-n', action='store_true',
-        help="Don't make subcomponent download the components"
-    )
-    parser.add_argument(
-        '--no-color', action='store_true',
-        help='Disable colored output when this option is specified'
-    )
-    parser.add_argument(
-        '--kernel', nargs=2, metavar='FILE',
-        help="""specifying this option makes SBXG to only build a kernel.
-        Xen does not fall under this category.
-        A toolchain must be specified"""
-    )
-    parser.add_argument(
-        '--xen', nargs=2, metavar='FILE',
-        help="""specifying this option makes SBXG to only build a Xen kernel.
-        A toolchain must be specified"""
-    )
-    parser.add_argument(
-        '--uboot', nargs=2, metavar='FILE',
-        help="""specifying this option makes SBXG to only build U-Boot.
-        A toolchain must be specified"""
-    )
-    parser.add_argument(
-        '--toolchain', type=str, metavar='TOOLCHAIN',
-        help="""specify a toolchain to be used outside of the board execution.
-        This option must be specified when building a component on demand."""
-    )
-    parser.add_argument(
-        '--board', '-B', type=str,
-        help="""Name of an SBXG board that reside within a directory specified
-         by the --board-dir arguments"""
-    )
-    parser.add_argument(
-        '--board-variant', '-b', type=str,
-        help="""Name of a variant configuration for a selected board. If none
-        is provided, a default configuration will be used"""
-    )
-    parser.add_argument(
-        '--board-dir', nargs='+',
-        help="""Add a directory to the boards search path. When this argument
-        is not specified, the boards/ directory of SBXG will be used"""
-    )
-    parser.add_argument(
-        '--lib-dir', '-L', nargs='+',
-        help="""Add a directory to the library search path. When this argument
-        is not specified, the lib/ directory of SBXG will be used"""
-    )
-    parser.add_argument(
-        '--show-library', action='store_true',
-        help="Prints in stdout the library of available components and exits"
-    )
+
+    parser.add_argument("--directory", "-C", metavar='DIR', help=Help.CHDIR)
+    parser.add_argument("--color", choices=["yes", "no", "auto"],
+                        default="auto", help=Help.COLOR)
+    parser.add_argument('--kernel-source', '-K', metavar='KERNEL_SOURCE',
+                        help=Help.KERNEL_SOURCE)
+    parser.add_argument('--kernel-config', '-k', metavar='KERNEL_CONFIG',
+                        help=Help.KERNEL_CONFIG)
+    parser.add_argument('--xen-source', '-X', metavar='XEN_SOURCE',
+                        help=Help.XEN_SOURCE)
+    parser.add_argument('--xen-config', '-x', metavar='XEN_CONFIG',
+                        help=Help.XEN_CONFIG)
+    parser.add_argument('--uboot-source', '-U', metavar='UBOOT_SOURCE',
+                        help=Help.UBOOT_SOURCE)
+    parser.add_argument('--uboot-config', '-u', metavar='UBOOT_CONFIG',
+                        help=Help.UBOOT_CONFIG)
+    parser.add_argument('--toolchain',  '-t', metavar='TOOLCHAIN',
+                        default='local', help=Help.TOOLCHAIN)
+    parser.add_argument('--lib-dir', '-L', nargs='+', metavar="LIB_DIR",
+                        help=Help.LIB_DIR)
+    parser.add_argument('--show-library', action='store_true',
+                        help=Help.SHOW_LIB)
     args = parser.parse_args(argv[1:])
+
+    def _component_args_check(opt_cfg, opt_source):
+        # Source Config
+        #    0     0      OK
+        #    0     1      FAIL
+        #    1     0      FAIL
+        #    1     1      OK
+        src = getattr(args, opt_source.replace('-', '_'))
+        cfg = getattr(args, opt_cfg.replace('-', '_'))
+        if bool(src) != bool(cfg):
+            raise E.SbxgError(f"Options --{opt_cfg} and "
+                              f"--{opt_source} must be used together")
+
+    for component in ('kernel', 'uboot', 'xen'):
+        _component_args_check(f"{component}-source", f"{component}-config")
 
     # If we required no colors to be printed out, unset the ANSI codes that
     # were provided.
-    if args.no_color:
-        for key in ANSI_STYLE:
-            ANSI_STYLE[key] = ''
+    #if args.no_color:
+    #    for key in ANSI_STYLE:
+    #        ANSI_STYLE[key] = ''
 
     # If --board-variant is used, --board must have been specified
-    if args.board and not args.toolchain:
-        raise E.SbxgError("--board requires the use of --toolchain")
-    if args.board_variant and not args.board:
-        raise E.SbxgError("--board-variant cannot be used without --board")
-    if args.kernel and args.board:
-        raise E.SbxgError("--kernel and --board cannot be used together")
-    if args.xen and args.board:
-        raise E.SbxgError("--xen and --board cannot be used together")
-    if args.uboot and args.board:
-        raise E.SbxgError("--uboot and --board cannot be used together")
-    if args.kernel and not args.toolchain:
-        raise E.SbxgError("--kernel requires the use of --toolchain")
-    if args.uboot and not args.toolchain:
-        raise E.SbxgError("--uboot requires the use of --toolchain")
-    if args.xen and not args.toolchain:
-        raise E.SbxgError("--xen requires the use of --toolchain")
+    #if args.board_variant and not args.board:
+    #    raise E.SbxgError("--board-variant cannot be used without --board")
+    #if args.kernel and args.board:
+    #    raise E.SbxgError("--kernel and --board cannot be used together")
+    #if args.xen and args.board:
+    #    raise E.SbxgError("--xen and --board cannot be used together")
+    #if args.uboot and args.board:
+    #    raise E.SbxgError("--uboot and --board cannot be used together")
 
-    if not args.board and not args.kernel and not args.uboot and not args.xen \
-            and not args.show_library:
-        raise E.SbxgError("At least one of the following option is expected: "
-                          "--board, --kernel, --uboot, --xen")
+    #if not args.board and not args.kernel and not args.uboot and not args.xen \
+    #        and not args.show_library:
+    #    raise E.SbxgError("At least one of the following option is expected: "
+    #                      "--board, --kernel, --uboot, --xen")
 
     return args
 
 
 def main(argv):
     args = getopts(argv)
+    if args.directory:
+        os.chdir(args.directory)
 
     # The top source directory is where this script resides, whereas the build
     # directory is where this script was called from.
-    top_src_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    top_build_dir = os.getcwd()
+    top_src_dir = Path(__file__).resolve().parent.parent
+    top_build_dir = Path.cwd().resolve()
 
-    # The default board directory search path is boards/
-    if not args.board_dir:
-        args.board_dir = [os.path.join(top_src_dir, "boards")]
+    ## The default board directory search path is boards/
+    #if not args.board_dir:
+    #    args.board_dir = [top_src_dir / "boards"]
 
     # The default lib directory search path is lib/
     if not args.lib_dir:
-        args.lib_dir = [os.path.join(top_src_dir, "lib")]
+        args.lib_dir = [top_src_dir / "lib"]
 
     # Dump the library, and exit with success
     if args.show_library:
-        show_library(args.board_dir, args.lib_dir)
+        #show_library(args.board_dir, args.lib_dir)
+        show_library([], args.lib_dir)
         sys.exit(0)
 
     # Initialize the templates directory to the one contained within SBXG
-    template_dirs = [os.path.join(top_src_dir, "templates")]
+    template_dirs = [top_src_dir / "templates"]
     components = []
 
     # I forbid you to use the source directory as the build directory!
-    if os.path.normpath(top_src_dir) == os.path.normpath(top_build_dir):
+    if top_src_dir == top_build_dir:
         raise E.SbxgError("Run bootstrap.py from a build directory that is "
                         "distinct from the source directory.")
         sys.exit(1)
 
     # The lib dirs provide a template path. We must add them!
     for lib_dir in args.lib_dir:
-        bootscript_path = os.path.join(lib_dir, "configs", "bootscripts")
-        if os.path.exists(bootscript_path):
+        bootscript_path = Path(lib_dir) / "configs" / "bootscripts"
+        if bootscript_path.exists():
             template_dirs.append(bootscript_path)
 
     # The main database that will hold our configuration
     database = sbxg.model.Database(top_src_dir, top_build_dir)
 
-    if args.toolchain:
-        args.toolchain = sbxg.utils.get_toolchain(
-            args.lib_dir, args.toolchain
-        )
-        local_toolchain = False
-        if os.path.basename(args.toolchain) == "local.yml":
-            local_toolchain = True
+    toolchain = sbxg.utils.get_toolchain(args.lib_dir, args.toolchain)
+    database.set_toolchain(toolchain)
 
-        toolchain = sbxg.model.Toolchain(args.toolchain, local_toolchain)
-        toolchain.load()
-        database.set_toolchain(toolchain)
-        if not local_toolchain:
-            components.append('toolchain')
+    #if args.board:
+    #    # Select the configuration file for the previously selected board. It
+    #    # is either 'board.yml' for the default configuration, or another yaml
+    #    # file if a variant is provided. Fail if the configuration file does
+    #    # not exist.
+    #    config, board_dir = sbxg.utils.get_board_config(
+    #        args.board_dir,
+    #        args.board,
+    #        args.board_variant if args.board_variant else 'board'
+    #    )
+    #    board = sbxg.model.Board(config, toolchain)
+    #    board.load(args.lib_dir, board_dir)
+    #    database.set_board(board)
+    #    # Copy the rootfs to the input path of genimage
+    #    components.extend(['kernel', 'genimage'])
+    #    if not board.vm:
+    #        components.append('uboot')
+    #    template_dirs.append(board_dir / 'images')
+    #    if board.xen:
+    #        components.append('xen')
 
-    if args.board:
-        # Select the configuration file for the previously selected board. It
-        # is either 'board.yml' for the default configuration, or another yaml
-        # file if a variant is provided. Fail if the configuration file does
-        # not exist.
-        config, board_dir = sbxg.utils.get_board_config(
-            args.board_dir,
-            args.board,
-            args.board_variant if args.board_variant else 'board'
-        )
-        board = sbxg.model.Board(config, toolchain)
-        board.load(args.lib_dir, board_dir)
-        database.set_board(board)
-        # Copy the rootfs to the input path of genimage
-        components.extend(['kernel', 'genimage'])
-        if not board.vm:
-            components.append('uboot')
-        template_dirs.append(os.path.join(board_dir, 'images'))
-        if board.xen:
-            components.append('xen')
+    if args.kernel_source:
+        source = sbxg.utils.get_kernel_source(args.lib_dir, args.kernel_source)
+        config = sbxg.utils.get_kernel_config(args.lib_dir, args.kernel_config)
+        database.set_kernel(source, config)
 
-    if args.kernel:
-        args.kernel[0] = sbxg.utils.get_kernel_source(
-            args.lib_dir, args.kernel[0]
-        )
-        args.kernel[1] = sbxg.utils.get_kernel_config(
-            args.lib_dir, args.kernel[1]
-        )
-        kernel_source = sbxg.model.Kernel(args.kernel[0])
-        kernel_source.load()
-        kernel_config = args.kernel[1]
-        database.set_kernel(kernel_source, kernel_config)
-        components.append('kernel')
+    if args.uboot_source:
+        source = sbxg.utils.get_uboot_source(args.lib_dir, args.uboot_source)
+        config = sbxg.utils.get_uboot_config(args.lib_dir, args.uboot_config)
+        database.set_uboot(source, config)
 
-    if args.uboot:
-        args.uboot[0] = sbxg.utils.get_uboot_source(
-            args.lib_dir, args.uboot[0]
-        )
-        args.uboot[1] = sbxg.utils.get_uboot_config(
-            args.lib_dir, args.uboot[1]
-        )
-        uboot_source = sbxg.model.Uboot(args.uboot[0])
-        uboot_source.load()
-        uboot_config = args.uboot[1]
-        database.set_uboot(uboot_source, uboot_config)
-        components.append('uboot')
+    if args.xen_source:
+        source = sbxg.utils.get_xen_source(args.lib_dir, args.xen_source)
+        config = sbxg.utils.get_xen_config(args.lib_dir, args.xen_config)
+        database.set_xen(source, config)
 
-    if args.xen:
-        args.xen[0] = sbxg.utils.get_xen_source(
-            args.lib_dir, args.xen[0]
-        )
-        args.xen[1] = sbxg.utils.get_xen_config(
-            args.lib_dir, args.xen[1]
-        )
-        xen_source = sbxg.model.Xen(args.xen[0])
-        xen_source.load()
-        xen_config = args.xen[1]
-        database.set_xen(xen_source, xen_config)
-        components.append('xen')
 
     # Now that we are done collecting the data from the configurations, and we
     # have fed our data model, initialize the templating engine.
-    templater = sbxg.template.Templater(database, template_dirs)
+    templater = sbxg.template.Templater(database.context(), template_dirs)
+    print(database.context())
 
-    # Fetch the required components
-    subcomponent = sbxg.subcomponent.Subcomponent(templater, args.subcomponent)
-    subcomponent.add_components(components)
-    subcomponent.call(top_build_dir, no_download=args.no_download)
+    ## If we are to use genimage, create right now the directories that genimage
+    ## will need.
+    #if database.genimage:
+    #    keys = ['build_dir', 'output_path', 'input_path', 'root_path', 'tmp_path']
+    #    for key in keys:
+    #        gen_dir = database.genimage[key]
+    #        if not gen_dir.exists():
+    #            os.makedirs(gen_dir)
+    #    genimage_in = database.genimage['input_path']
+    #    if database.board:
+    #        install_rootfs(database.board.rootfs, genimage_in)
 
-    # If we are to use genimage, create right now the directories that genimage
-    # will need.
-    if database.genimage:
-        keys = ['build_dir', 'output_path', 'input_path', 'root_path', 'tmp_path']
-        for key in keys:
-            gen_dir = database.genimage[key]
-            if not os.path.exists(gen_dir):
-                os.makedirs(gen_dir)
-        genimage_in = database.genimage['input_path']
-        if database.board:
-            install_rootfs(database.board.rootfs, genimage_in)
+    #if database.board:
+    #    # Generate the boot script from a template, if one was specified. This
+    #    # generated bootscript will just be a templated file. When dealing with
+    #    # U-Boot bootscript, the generated makefile will create the final
+    #    # boot script with tools like mkimage.
+    #    boot_cmd = top_build_dir / database.board.templated_boot_script_name
+    #    if not database.board.vm:
+    #        templater.template_file(database.board.boot_script, boot_cmd)
 
-    if database.board:
-        # Generate the boot script from a template, if one was specified. This
-        # generated bootscript will just be a templated file. When dealing with
-        # U-Boot bootscript, the generated makefile will create the final
-        # boot script with tools like mkimage.
-        boot_cmd = os.path.join(
-            top_build_dir,
-            database.board.templated_boot_script_name
-        )
-        if not database.board.vm:
-            templater.template_file(database.board.boot_script, boot_cmd)
-
-        # And finally generate the genimage configuration
-        templater.template_file(
-            os.path.basename(database.board.image),
-            database.genimage['config']
-        )
+    #    # And finally generate the genimage configuration
+    #    templater.template_file(
+    #        os.path.basename(database.board.image),
+    #        database.genimage['config']
+    #    )
 
     # Generate the makefile, which will control the build system
-    templater.template_file(
-        "Makefile.j2", os.path.join(top_build_dir, "Makefile")
-    )
+    templater.template_file("Makefile.j2", top_build_dir / "Makefile")
 
 if __name__ == "__main__":
     main(sys.argv)

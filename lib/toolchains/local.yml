@@ -1,0 +1,5 @@
+# This file is a bit of a hack around how toolchains are used by SBXG.
+# We configure an empty prefix so we can call gcc without its cross-compile
+# prefix.
+path: ""
+prefix: ""

@@ -1,5 +1,2 @@
 url: https://downloads.xenproject.org/release/xen/4.8.3/xen-4.8.3.tar.gz
-compressions:
-  - tar
-  - gz
 path: xen-4.8.3

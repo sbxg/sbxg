@@ -1,9 +1,0 @@
-url: https://toolchains.free-electrons.com/downloads/releases/toolchains/armv7-eabihf/tarballs/armv7-eabihf--glibc--bleeding-edge-2017.11-1.tar.bz2
-sha256: d10a130991996eb4084088506d1e137ab17846c4dd0de081d35918e028725a48
-compressions:
-  - tar
-  - bz2
-path: armv7-eabihf--glibc--bleeding-edge
-prefix: bin/arm-buildroot-linux-gnueabihf-
-arch: arm
-xen_arch: arm32

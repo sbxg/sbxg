@@ -63,9 +63,6 @@ SBXG relies on third-party tools to fulfill its duty:
 - `build-essential` tools (to compile the kernel and u-boot),
 - autotools programs (such as autoreconf, autoconf, ...) needed to compile
   genimage.
-- [subcomponent][5], which is a rust tool to download the components. It is
-  a packaged cargo crate, and therefore can be installed from cargo
-  (`cargo install subcomponent`).
 
 To make installation of these dependencies easier, scripts are made available
 in the `utils/` directory. Select the one that matches your distribution, and
@@ -124,8 +121,7 @@ build directory. You should not directly manipulate them, but nothing prevents
 you from doing it. Be aware that running `bootstrap.py` again will re-write the
 files, and modifications will be lost! You also should refrain yourself from
 modifying the downloaded sources (especially the sources of genimage, which
-come from a git repository), as `subcomponent` will complain if the sources
-are not what it expects.
+come from a git repository).
 
 You can run `make help` to see the available targets. When you are ready, just
 run `make` or `make all` to generate your image. You may want to use the `-j`
@@ -155,7 +151,6 @@ SBXG is licensed under the **MIT** license. For details, please refer to the
 [2]: https://www.kernel.org/
 [3]: https://linux-sunxi.org/Cubietruck
 [4]: https://git.pengutronix.de/cgit/genimage
-[5]: https://github.com/subcomponent/subcomponent
 [6]: http://www.orangepi.org/orangepizero/
 [7]: http://www.sphinx-doc.org/en/stable/
 [10]: https://www.denx.de/wiki/U-Boot/WebHome

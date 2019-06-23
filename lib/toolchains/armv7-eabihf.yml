@@ -1,0 +1,5 @@
+url: https://toolchains.bootlin.com/downloads/releases/toolchains/armv7-eabihf/tarballs/armv7-eabihf--glibc--stable-2018.02-2.tar.bz2
+path: armv7-eabihf--glibc--stable-2018.02-2
+prefix: bin/arm-buildroot-linux-gnueabihf-
+arch: arm
+xen_arch: arm32

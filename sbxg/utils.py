@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Jean Guyomarc'h
+# Copyright (c) 2017, 2019 Jean Guyomarc'h
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,10 @@
 
 import os
 import subprocess
+from pathlib import Path
+from urllib.parse import urlparse
+
+from . import error as E
 
 
 # This is derivated from https://stackoverflow.com/a/287944
@@ -46,33 +50,33 @@ def get_board_config(search_dirs, board, filename):
             return config_file, os.path.join(search_dir, board)
     raise FileNotFoundError(board_cfg)
 
-def _get_lib_config(lib_dirs, kind, component, filename):
+def _get_lib_config(lib_dirs, config_file):
     for lib_dir in lib_dirs:
-        config = os.path.join(lib_dir, kind, component, filename)
-        if os.path.isfile(config):
+        config = lib_dir / config_file
+        if config.is_file():
             return config
-    raise FileNotFoundError(filename)
+    raise E.SbxgError(f"Failed to find file {config_file} in library")
 
 def get_toolchain(lib_dirs, toolchain):
-    return _get_lib_config(lib_dirs, "sources", "toolchain", toolchain + '.yml')
+    return _get_lib_config(lib_dirs, Path("toolchains", toolchain + '.yml'))
 
 def get_kernel_source(lib_dirs, kernel):
-    return _get_lib_config(lib_dirs, "sources", "kernel", kernel + '.yml')
+    return _get_lib_config(lib_dirs, Path("sources", "kernel", kernel + '.yml'))
 
 def get_kernel_config(lib_dirs, kernel):
-    return _get_lib_config(lib_dirs, "configs", "kernel", kernel)
+    return _get_lib_config(lib_dirs, Path("configs", "kernel", kernel))
 
 def get_uboot_source(lib_dirs, uboot):
-    return _get_lib_config(lib_dirs, "sources", "uboot", uboot + '.yml')
+    return _get_lib_config(lib_dirs, Path("sources", "uboot", uboot + '.yml'))
 
 def get_uboot_config(lib_dirs, uboot):
-    return _get_lib_config(lib_dirs, "configs", "uboot", uboot)
+    return _get_lib_config(lib_dirs, Path("configs", "uboot", uboot))
 
 def get_xen_source(lib_dirs, xen):
-    return _get_lib_config(lib_dirs, "sources", "xen", xen + '.yml')
+    return _get_lib_config(lib_dirs, Path("sources", "xen", xen + '.yml'))
 
 def get_xen_config(lib_dirs, xen):
-    return _get_lib_config(lib_dirs, "configs", "xen", xen)
+    return _get_lib_config(lib_dirs, Path("configs", "xen", xen))
 
 def get_arch():
     """
@@ -95,3 +99,24 @@ def get_arch():
         shell=True,
         universal_newlines=True
     ).rstrip()
+
+
+def fetch(url, dl_dir, expected_path):
+    """Downloads and extract a (compressed) tarball at a given URL into a
+    specified directory
+
+    Args:
+        url (str): URL to the file to be downloaded
+        dl_dir: Path to the directory in which the file to be downloaded
+            shall be placed and extracted to.
+    """
+    curl_cmd = ["curl", "-sS", url]
+    subprocess.check_call(curl_cmd, cwd=dl_dir)
+
+    url_path = Path(urlparse(url).path)
+    basename = url_path.name
+    tar_cmd = ["tar", "-xf", basename]
+    subprocess.check_call(tar_cmd, cwd=dl_dir)
+
+    if not Path(dl_dir, expected_path).exists():
+        raise E.InvalidComponentPath(url, expected_path)

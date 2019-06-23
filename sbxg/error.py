@@ -27,6 +27,16 @@ class SbxgError(Exception):
     """
     pass
 
+class InvalidComponentPath(SbxgError):
+    def __init__(self, expected_path, url):
+        self.url = url
+        self.expected_path = expected_path
+
+    def __str__(self):
+        return f"Component at URL {self.url} was declared to be extracted " \
+               f"to path {self.expected_path}, but this path does not exists " \
+               f"after extraction"
+
 class InvalidToolchain(SbxgError):
     def __init__(self, expected_arch, toolchain_arch):
         self.expected_arch = expected_arch

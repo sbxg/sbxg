@@ -10,13 +10,12 @@ SBXG Requirements
   SBXG bootstraps its build system, by generating a Makefile. Therefore,
   ``make`` (only GNU make is tested) is a strong requirement for SBXG.
 
-**Subcomponent**
-  Subcomponent_ is used to fetch the components that SBXG depends on. It is
-  packaged as a cargo crate, and therefore can be installed directly from
-  cargo.
-
 **mkfs (ext3, vfat)**
   To generate an image, mkfs (ext3 and vfat) will be required.
+
+**curl and tar**
+  To download compressed tarballs from the internet, and extract them. This is
+  typically used to retrieve the toolchain and components to be built.
 
 **autotools**
   SBXG will build from sources a package that uses the autotools. As such, the
@@ -36,4 +35,3 @@ Run the script associated to your distribution.
 
 
 .. _Python: https://www.python.org/
-.. _Subcomponent: https://github.com/subcomponent/subcomponent

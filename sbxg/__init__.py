@@ -20,7 +20,6 @@
 
 from . import error
 from . import model
-from . import subcomponent
 from . import template
 from . import utils
 from . import __main__ as runner
