@@ -29,6 +29,8 @@ class Templater(object):
             lstrip_blocks=True,
             undefined=jinja2.StrictUndefined
         )
+        self.j2_env.filters['basename'] = os.path.basename
+        self.j2_env.filters['dirname'] = os.path.dirname
 
     def template_file(self, filename, output_file=None):
         template = self.j2_env.get_template(filename)

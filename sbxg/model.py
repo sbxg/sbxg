@@ -36,6 +36,10 @@ TOOLCHAIN_SCHEMA = {
         'type': 'string',
         'required': True,
     },
+    'host': {
+        'type': 'string',
+        'required': False,
+    },
     'arch': {
         'type': 'string',
         'required': False,
