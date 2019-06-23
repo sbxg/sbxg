@@ -86,7 +86,7 @@ linux-make-helper = \
 	-C "{{ kernel.path }}" \
         $(1)
 
-.PHONY: kernel
+.PHONY: kernel kernel-%
 
 $(KERNEL_CONFIG): {{ kernel.config }} $(KERNEL_DL_STAMP)
 	@echo "[SBXG/kernel] Setting-up kernel with '$<'"
@@ -118,6 +118,11 @@ $(KERNEL_DL_STAMP): {{ top_build_dir }}/{{ kernel.archive }}
 # U-Boot Targets
 ###############################################################################
 
+UBOOT_BUILD_DIR := {{ top_build_dir }}/build_{{ uboot.path }}
+UBOOT_CONFIG := $(UBOOT_BUILD_DIR)/.config
+UBOOT_DIR := {{ top_build_dir }}/{{ uboot.path }}
+UBOOT_DL_STAMP := {{ top_build_dir }}/.{{ uboot.path }}.stamp
+
 # Run make from U-Boot sources.
 # $(1): Target(s) name(s) to be called
 uboot-make-helper = \
@@ -128,24 +133,29 @@ uboot-make-helper = \
 {%- if toolchain.arch %}
 	CROSS_COMPILE=$(TOOLCHAIN) \
 {%- endif %}
-	O="{{ uboot.build_dir }}" \
+	O="$(UBOOT_BUILD_DIR)" \
 	-C "{{ uboot.path }}" \
 	$(1)
 
 .PHONY: uboot uboot-%
 
-UBOOT_IMAGE := {{ uboot.build_dir }}/{{ board.uboot_image }}
+$(UBOOT_CONFIG): {{ uboot.config }} $(UBOOT_DL_STAMP)
+	@echo "[SBXG/u-boot] Setting-up u-boot with '$<'"
+	$(Q)mkdir -p $(UBOOT_BUILD_DIR)
+	$(Q)cp -u $< $@
 
-uboot-%:
+uboot-%: $(DTC) $(UBOOT_CONFIG) $(TOOLCHAIN_DL_STAMP)
 	+$(call uboot-make-helper,$(patsubst uboot-%,%,$@))
 
-uboot: $(DTC) $(UBOOT_IMAGE)
-
-$(UBOOT_IMAGE): $(DTC)
-	@echo "[SBXG/uboot] Building u-boot"
-	mkdir -p "{{ uboot.build_dir }}"
-	cp -u "{{ uboot.config }}" "{{ uboot.build_dir }}/.config"
+uboot: $(DTC) $(UBOOT_CONFIG) $(TOOLCHAIN_DL_STAMP)
 	+$(call uboot-make-helper,all)
+
+{{ top_build_dir }}/{{ uboot.archive }}:
+	curl $(CURL_OPTS) -O "{{ uboot.url }}"
+
+$(UBOOT_DL_STAMP): {{ top_build_dir }}/{{ uboot.archive }}
+	tar -xf $<
+	$(Q)touch $@
 {% endif %}
 
 

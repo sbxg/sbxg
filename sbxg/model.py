@@ -20,7 +20,6 @@
 
 from pathlib import Path
 from urllib.parse import urlparse
-import os
 import yaml
 import cerberus
 
@@ -31,26 +30,21 @@ TOOLCHAIN_SCHEMA = {
     'url': {
         'type': 'string',
         'required': False,
+        'default': '',
     },
     'path': {
         'type': 'string',
-        'required': False,
-        'dependencies': ['url'],
-    },
-    'tar_args': {
-        'type': 'string',
-        'required': False,
-        'dependencies': ['url'],
+        'required': True,
     },
     'arch': {
         'type': 'string',
         'required': False,
-        'dependencies': ['url'],
+        'default': '',
     },
     'xen_arch': {
         'type': 'string',
         'required': False,
-        'dependencies': ['url'],
+        'default': '',
     },
     'prefix': {
         'type': 'string',
@@ -60,10 +54,6 @@ TOOLCHAIN_SCHEMA = {
 
 SOURCE_SCHEMA = {
     'url': {
-        'type': 'string',
-        'required': True,
-    },
-    'tar_args': {
         'type': 'string',
         'required': True,
     },
@@ -83,9 +73,9 @@ def _load_config_file(config_file, schema):
         data = yaml.load(config_contents, Loader=yaml.Loader)
 
     validator = cerberus.Validator(schema)
-    config = validator.normalized(data)
-    # Todo check errors
-    return config
+    if not validator.validate(data):
+        raise E.SbxgError(f"Failed to parse configuration file '{config_file}': {validator.errors}")
+    return validator.normalized(data)
 
 
 def _url_get_basename(url):
