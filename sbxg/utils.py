@@ -99,24 +99,3 @@ def get_arch():
         shell=True,
         universal_newlines=True
     ).rstrip()
-
-
-def fetch(url, dl_dir, expected_path):
-    """Downloads and extract a (compressed) tarball at a given URL into a
-    specified directory
-
-    Args:
-        url (str): URL to the file to be downloaded
-        dl_dir: Path to the directory in which the file to be downloaded
-            shall be placed and extracted to.
-    """
-    curl_cmd = ["curl", "-sS", url]
-    subprocess.check_call(curl_cmd, cwd=dl_dir)
-
-    url_path = Path(urlparse(url).path)
-    basename = url_path.name
-    tar_cmd = ["tar", "-xf", basename]
-    subprocess.check_call(tar_cmd, cwd=dl_dir)
-
-    if not Path(dl_dir, expected_path).exists():
-        raise E.InvalidComponentPath(url, expected_path)

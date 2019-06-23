@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Jean Guyomarc'h
+# Copyright (c) 2017, 2019 Jean Guyomarc'h
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,9 @@ class Templater(object):
         self.database = database
         self.j2_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(search_paths),
-            lstrip_blocks=True
+            lstrip_blocks=True,
+            undefined=jinja2.StrictUndefined
         )
-        self.j2_env.filters['basename'] = os.path.basename
-        self.j2_env.filters['dirname'] = os.path.dirname
 
     def template_file(self, filename, output_file=None):
         template = self.j2_env.get_template(filename)

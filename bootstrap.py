@@ -21,7 +21,14 @@
 # THE SOFTWARE.
 
 import sys
-import traceback
+
+# Make sure we are using python 3.6 or greater
+if sys.version_info[0] != 3 and sys.version_info[1] < 6:
+    print("ERROR: python 3.6 or greater is required")
+    sys.exit(2)
+
+from pathlib import Path
+import subprocess
 
 import sbxg
 
@@ -36,16 +43,10 @@ def error(message):
 # Run the main entry point. We will also catch all the exceptions to
 # pretty-format the reason of failure.
 if __name__ == "__main__":
-    try:
-        sbxg.runner.main(sys.argv)
-    except sbxg.error.SbxgError as exception:
-        # SBXG will raise its own errors through custom exceptions. They are
-        # already well-formated, and correspond to nominal failures.
-        error(exception)
-        sys.exit(1)
-    except Exception:
-        # Generale exceptions are the one not planned by SBXG.
-        error("Unhandled error! Please report the following trace:")
-        traceback.print_exc(file=sys.stderr)
-        error("Aborting!")
+    top_src_dir = Path(__file__).resolve().parent
+    sys.path.append(top_src_dir)
+
+    ret = subprocess.run([sys.executable, '-m', 'sbxg'] + sys.argv[1:])
+    if ret.returncode != 0:
+        error("SBXG failed to generate a build system")
         sys.exit(127)

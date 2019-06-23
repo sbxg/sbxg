@@ -57,7 +57,7 @@ output too flashy or if you want to manipulate the output by another program:
 SBXG relies on third-party tools to fulfill its duty:
 - `git`, to retrieve [genimage][4]'s sources,
 - `python` (at least 3.4),
-- the python packages `jinja` and `pyaml`,
+- the python packages `jinja`, `cerberus` and `pyaml`,
 - `make`,
 - `mkfs` (ext3, vfat),
 - `build-essential` tools (to compile the kernel and u-boot),

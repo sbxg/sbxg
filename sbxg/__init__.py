@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 from . import error
+from . import library
 from . import model
 from . import template
 from . import utils
-from . import __main__ as runner

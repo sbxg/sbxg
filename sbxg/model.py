@@ -18,8 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import abc
-import collections
 from pathlib import Path
 from urllib.parse import urlparse
 import os
@@ -88,25 +86,6 @@ def _load_config_file(config_file, schema):
     config = validator.normalized(data)
     # Todo check errors
     return config
-
-
-
-#class Toolchain:
-#    def __init__(self, config_file):
-#
-#    def load(self):
-#        config = super().load()
-#        self.prefix = self.get_mandatory(config, "prefix")
-#        if not self.local:
-#            self.arch = self.get_mandatory(config, "arch")
-#            self.xen_arch = self.get_mandatory(config, "xen_arch")
-#        # Auto-detect the HOST (in the autotools terminology) The host is the
-#        # cross-compilation target. It shall not end with a dash (that is
-#        # brought by the prefix
-#        self.host = os.path.basename(self.prefix)
-#        if self.host.endswith('-'):
-#            self.host = self.host[:-1]
-#        return config
 
 
 def _url_get_basename(url):

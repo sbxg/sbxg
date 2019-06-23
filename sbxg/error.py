@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Jean Guyomarc'h
+# Copyright (c) 2017, 2019 Jean Guyomarc'h
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,98 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import abc
-
 class SbxgError(Exception):
     """
     Super class, used by exception handlers to filter-out SBXG-related
     exceptions.
     """
     pass
-
-class InvalidComponentPath(SbxgError):
-    def __init__(self, expected_path, url):
-        self.url = url
-        self.expected_path = expected_path
-
-    def __str__(self):
-        return f"Component at URL {self.url} was declared to be extracted " \
-               f"to path {self.expected_path}, but this path does not exists " \
-               f"after extraction"
-
-class InvalidToolchain(SbxgError):
-    def __init__(self, expected_arch, toolchain_arch):
-        self.expected_arch = expected_arch
-        self.toolchain_arch = toolchain_arch
-
-    def __str__(self):
-        return "Invalid toolchain architecture '{}'. '{}' was expected".format(
-            self.toolchain_arch, self.expected_arch
-        )
-
-class MissingRequiredData(SbxgError):
-    def __init__(self, in_file, prop):
-        self.in_file = in_file
-        self.property = prop 
-
-    def __str__(self):
-        return "Missing mandatory property '{}' in '{}'".format(
-            self.property, self.in_file
-        )
-
-class InvalidFileData(SbxgError):
-    def __init__(self, in_file, prop, target):
-        self.in_file = in_file
-        self.property = prop
-        self.target = target
-
-    def __str__(self):
-        return "Cannot find file '{}' requested by property '{}' from file '{}'".format(
-            self.target, self.property, self.in_file
-        )
-
-
-class InvalidKernelType(SbxgError):
-    def __init__(self, config_file, found_type, expected_types):
-        self.config_file = config_file
-        self.found_type = found_type
-        self.expected_types = expected_types
-
-    def __str__(self):
-        return "Kernel type '{}' deduced from file '{}' is not one of '{}'".format(
-            self.found_type, self.config_file, ' '.join(self.expected_types)
-        )
-
-class InvalidVMParameters(SbxgError):
-    def __init__(self, param):
-        self._param = param
-
-    def __str__(self):
-        return "Parameter '{}' is forbidden when 'vm' is set to 'true'".format(
-            self._param)
-
-class SbxgTypeError(SbxgError):
-    @abc.abstractproperty
-    def typename(self):
-        pass
-
-    def __init__(self, in_file, prop):
-        self.in_file = in_file
-        self.property = prop
-
-    def __str__(self):
-        return "Property '{}' in file '{}' is expected to be a list".format(
-            self.property, self.in_file
-        )
-
-class NotAList(SbxgTypeError):
-    def typename(self):
-        return "list"
-
-class NotAString(SbxgTypeError):
-    def typename(self):
-        return "string"
-
-class NotABoolean(SbxgTypeError):
-    def typename(self):
-        return "boolean"
