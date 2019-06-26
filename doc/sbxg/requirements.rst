@@ -1,10 +1,11 @@
-SBXG Requirements
-=================
+Pre-requisites for using SBXG
+===============================================================================
+
+SBXG is a python3 package, that requires python3.6 or higher.
 
 **Python**
   SBXG relies on third-party tools to fulfull its duty. Its core is written
-  with Python_. Python 2.7 will do, but it is advised to use Python 3.4 or
-  later.
+  in Python_. Python 3.6 or higher is required.
 
 **Make**
   SBXG bootstraps its build system, by generating a Makefile. Therefore,
@@ -26,8 +27,8 @@ SBXG Requirements
   environment shall be installed.
 
 
-Packages Installation
-=====================
+Installing the packages
+===============================================================================
 
 SBXG provides per GNU/Linux distribution scripts to install the necessary packages.
 They are contained within the ``utils/`` directory, in the top source directory.

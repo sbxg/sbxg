@@ -28,7 +28,13 @@ import sbxg
 from sbxg.utils import ANSI_STYLE
 from sbxg import error as E
 
-def _cmd_show(args, top_src_dir, top_build_dir):
+def _init_top_build_dir(directory):
+    top_build_dir = Path(directory).resolve()
+    # Create the output directory if it does not exist
+    Path.mkdir(top_build_dir, parents=True, exist_ok=True)
+    return top_build_dir
+
+def _cmd_show(args, top_src_dir):
     lib = sbxg.library.get(args.lib_dir)
     if args.mi:
         print(json.dumps(lib))
@@ -52,11 +58,8 @@ def _cmd_show(args, top_src_dir, top_build_dir):
                   f"{sname}{config['name']}{end}")
 
 
-def _cmd_gen(args, top_src_dir, top_build_dir):
-    # I forbid you to use the source directory as the build directory!
-    if top_src_dir == top_build_dir:
-        raise E.SbxgError("Run bootstrap.py from a build directory that is "
-                          "distinct from the source directory.")
+def _cmd_gen(args, top_src_dir):
+    top_build_dir = _init_top_build_dir(args.outdir)
 
     # The main database that will hold our configuration
     database = sbxg.model.Database(top_src_dir, top_build_dir)
@@ -86,11 +89,8 @@ def _cmd_gen(args, top_src_dir, top_build_dir):
     templater.template_file("Makefile.j2", top_build_dir / "Makefile")
 
 
-def _cmd_board(args, top_src_dir, top_build_dir):
-    # I forbid you to use the source directory as the build directory!
-    if top_src_dir == top_build_dir:
-        raise E.SbxgError("Run bootstrap.py from a build directory that is "
-                          "distinct from the source directory.")
+def _cmd_board(args, top_src_dir):
+    top_build_dir = _init_top_build_dir(args.outdir)
 
     # The main database that will hold our configuration
     database = sbxg.model.Database(top_src_dir, top_build_dir)
@@ -109,7 +109,7 @@ def _cmd_board(args, top_src_dir, top_build_dir):
 
 
 class Help:
-    CHDIR = 'Go to the specified directory before doing anything'
+    OUTDIR = 'Path to the directory in which files should be generated'
     LINUX_SOURCE = "Name of the Linux source file"
     LINUX_CONFIG = "Name of the Linux configuration file"
     XEN_SOURCE = "Name of the Xen source file"
@@ -130,7 +130,6 @@ def getopts(argv):
     parser = argparse.ArgumentParser(description='SBXG Boostrapper')
     subparsers = parser.add_subparsers(dest='cmd')
 
-    parser.add_argument("--directory", "-C", metavar='DIR', help=Help.CHDIR)
     parser.add_argument("--color", choices=["yes", "no", "auto"],
                         default="auto", help=Help.COLOR)
     parser.add_argument('--lib-dir', '-I', action='append', metavar="LIB_DIR",
@@ -160,6 +159,7 @@ def getopts(argv):
                      action='append', default=[], help=Help.UBOOT_CONFIG)
     gen.add_argument('--toolchain',  '-t', metavar='TOOLCHAIN',
                      default='local', help=Help.TOOLCHAIN)
+    gen.add_argument('outdir', metavar='OUTPUT_DIRECTORY', help=Help.OUTDIR)
 
 
     ###########################################################################
@@ -199,13 +199,8 @@ def main(argv):
         for color in ANSI_STYLE:
             ANSI_STYLE[color] = ''
 
-    if args.directory:
-        os.chdir(args.directory)
-
-    # The top source directory is where this script resides, whereas the build
-    # directory is where this script was called from.
+    # The top source directory is where this script resides,
     top_src_dir = Path(__file__).resolve().parent.parent
-    top_build_dir = Path.cwd().resolve()
 
     # The default lib directory search path is lib/
     if not args.lib_dir:
@@ -213,7 +208,7 @@ def main(argv):
     if not args.board_dir:
         args.board_dir = [top_src_dir / "board"]
 
-    args.func(args, top_src_dir, top_build_dir)
+    args.func(args, top_src_dir)
 
 if __name__ == "__main__":
     main(sys.argv)

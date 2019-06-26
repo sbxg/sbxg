@@ -1,3 +1,6 @@
 jinja2
 pyaml
 cerberus
+sphinx
+sphinx-autobuild
+sphinx_rtd_theme

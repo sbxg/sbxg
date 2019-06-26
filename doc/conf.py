@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# SBXG documentation build configuration file, created by
-# sphinx-quickstart on Fri Jul 14 14:09:27 2017.
+# SBXG documentation build configuration file.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -46,8 +45,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SBXG'
-copyright = u'2017, Jean Guyomarc\'h'
-author = u'Jean Guyomarc\'h'
+copyright = u'2017,2019 SBXG Team'
+author = u'SBXG Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -82,7 +81,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'pyramid'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -127,7 +126,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'SBXG.tex', u'SBXG Documentation',
-     u'Jean Guyomarc\'h', 'manual'),
+     u'SBXG Team', 'manual'),
 ]
 
 
@@ -151,6 +150,3 @@ texinfo_documents = [
      author, 'SBXG', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
