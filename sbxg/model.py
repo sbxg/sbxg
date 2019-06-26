@@ -167,8 +167,7 @@ class Database:
     This allows this class to be passed directly to the jinja templating engine
     flawlessly.
     """
-    def __init__(self, top_source_dir, top_build_dir):
-        self.top_source_dir = top_source_dir
+    def __init__(self, top_build_dir):
         self.top_build_dir = top_build_dir
         self.toolchain = None
         self.linuxes = []
@@ -222,5 +221,4 @@ class Database:
             "xens": self.xens,
             "uboots": self.uboots,
             "top_build_dir": self.top_build_dir,
-            "top_source_dir": self.top_source_dir,
         }

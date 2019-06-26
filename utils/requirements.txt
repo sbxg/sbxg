@@ -1,5 +1,5 @@
 jinja2
-pyaml
+pyyaml
 cerberus
 sphinx
 sphinx-autobuild

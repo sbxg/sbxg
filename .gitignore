@@ -2,7 +2,9 @@
 *.sw?
 *.pyc
 __pycache__/
+/sbxg.egg-info/
 /build/
+/dist/
 /doc/build/
 .cache/
 /.venv/
