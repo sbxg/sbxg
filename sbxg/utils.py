@@ -18,10 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import os
 import subprocess
 from pathlib import Path
-from urllib.parse import urlparse
 
 from . import error as E
 
@@ -42,13 +40,12 @@ ANSI_STYLE = {
 }
 
 def get_board_config(search_dirs, board, filename):
-    filename = filename + '.yml'
-    board_cfg = os.path.join(board, filename)
+    cfg_filename = filename + '.yml'
     for search_dir in search_dirs:
-        config_file = os.path.join(search_dir, board_cfg)
-        if os.path.isfile(config_file):
-            return config_file, os.path.join(search_dir, board)
-    raise FileNotFoundError(board_cfg)
+        config_file = search_dir / cfg_filename
+        if config_file.is_file():
+            return config_file
+    raise E.SbxgError(f"Failed to find file {cfg_filename} in library")
 
 def _get_lib_config(lib_dirs, config_file):
     for lib_dir in lib_dirs:
@@ -60,11 +57,11 @@ def _get_lib_config(lib_dirs, config_file):
 def get_toolchain(lib_dirs, toolchain):
     return _get_lib_config(lib_dirs, Path("toolchains", toolchain + '.yml'))
 
-def get_kernel_source(lib_dirs, kernel):
-    return _get_lib_config(lib_dirs, Path("sources", "kernel", kernel + '.yml'))
+def get_linux_source(lib_dirs, linux):
+    return _get_lib_config(lib_dirs, Path("sources", "linux", linux + '.yml'))
 
-def get_kernel_config(lib_dirs, kernel):
-    return _get_lib_config(lib_dirs, Path("configs", "kernel", kernel))
+def get_linux_config(lib_dirs, linux):
+    return _get_lib_config(lib_dirs, Path("configs", "linux", linux))
 
 def get_uboot_source(lib_dirs, uboot):
     return _get_lib_config(lib_dirs, Path("sources", "uboot", uboot + '.yml'))
@@ -77,25 +74,3 @@ def get_xen_source(lib_dirs, xen):
 
 def get_xen_config(lib_dirs, xen):
     return _get_lib_config(lib_dirs, Path("configs", "xen", xen))
-
-def get_arch():
-    """
-    Returns the arch as it is determined by Linux. What is below is the rewritting
-    of the SUBARCH variable assignment in Linux' top-level Makefile.
-    """
-    return subprocess.check_output(
-        "uname -m | sed"
-        " -e s/i.86/x86/"
-        " -e s/x86_64/x86/"
-        " -e s/sun4u/sparc64/"
-        " -e s/arm.*/arm/"
-        " -e s/sa110/arm/"
-        " -e s/s390x/s390/"
-        " -e s/parisc64/parisc/"
-        " -e s/ppc.*/powerpc/"
-        " -e s/mips.*/mips/"
-        " -e s/sh[234].*/sh/"
-        " -e s/aarch64.*/arm64/",
-        shell=True,
-        universal_newlines=True
-    ).rstrip()

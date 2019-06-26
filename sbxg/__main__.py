@@ -21,7 +21,6 @@
 import argparse
 import json
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -65,21 +64,20 @@ def _cmd_gen(args, top_src_dir, top_build_dir):
     toolchain = sbxg.utils.get_toolchain(args.lib_dir, args.toolchain)
     database.set_toolchain(toolchain)
 
-    if args.kernel_source:
-        source = sbxg.utils.get_kernel_source(args.lib_dir, args.kernel_source)
-        config = sbxg.utils.get_kernel_config(args.lib_dir, args.kernel_config)
-        database.set_kernel(source, config)
+    for src, cfg in zip(args.linux_source, args.linux_config):
+        source = sbxg.utils.get_linux_source(args.lib_dir, src)
+        config = sbxg.utils.get_linux_config(args.lib_dir, cfg)
+        database.add_linux(source, config)
 
-    if args.uboot_source:
-        source = sbxg.utils.get_uboot_source(args.lib_dir, args.uboot_source)
-        config = sbxg.utils.get_uboot_config(args.lib_dir, args.uboot_config)
-        database.set_uboot(source, config)
+    for src, cfg in zip(args.uboot_source, args.uboot_config):
+        source = sbxg.utils.get_uboot_source(args.lib_dir, src)
+        config = sbxg.utils.get_uboot_config(args.lib_dir, cfg)
+        database.add_uboot(source, config)
 
-    if args.xen_source:
-        source = sbxg.utils.get_xen_source(args.lib_dir, args.xen_source)
-        config = sbxg.utils.get_xen_config(args.lib_dir, args.xen_config)
-        database.set_xen(source, config)
-
+    for src, cfg in zip(args.xen_source, args.xen_config):
+        source = sbxg.utils.get_xen_source(args.lib_dir, src)
+        config = sbxg.utils.get_xen_config(args.lib_dir, cfg)
+        database.add_xen(source, config)
 
     # Now that we are done collecting the data from the configurations, and we
     # have fed our data model, initialize the templating engine.
@@ -88,11 +86,32 @@ def _cmd_gen(args, top_src_dir, top_build_dir):
     templater.template_file("Makefile.j2", top_build_dir / "Makefile")
 
 
+def _cmd_board(args, top_src_dir, top_build_dir):
+    # I forbid you to use the source directory as the build directory!
+    if top_src_dir == top_build_dir:
+        raise E.SbxgError("Run bootstrap.py from a build directory that is "
+                          "distinct from the source directory.")
+
+    # The main database that will hold our configuration
+    database = sbxg.model.Database(top_src_dir, top_build_dir)
+
+    config = sbxg.utils.get_board_config(args.board_dir, args.board)
+
+    # Now that we are done collecting the data from the configurations, and we
+    # have fed our data model, initialize the templating engine.
+    #template_dirs = [Path(board_dir, "bootscripts"),
+    #                 Path(board_dir, "images") for board_dir in args.board_dir]
+    #template_dirs.append(top_src_dir / "templates")
+    #templater = sbxg.template.Templater(database.context(), template_dirs)
+    #templater.template_file("Makefile.j2", top_build_dir / "Makefile")
+
+
+
 
 class Help:
     CHDIR = 'Go to the specified directory before doing anything'
-    KERNEL_SOURCE = "Name of the kernel source file"
-    KERNEL_CONFIG = "Name of the kernel configuration file"
+    LINUX_SOURCE = "Name of the Linux source file"
+    LINUX_CONFIG = "Name of the Linux configuration file"
     XEN_SOURCE = "Name of the Xen source file"
     XEN_CONFIG = "Name of the Xen configuration file"
     UBOOT_SOURCE = "Name of the U-Boot source file"
@@ -102,6 +121,10 @@ class Help:
     MI = "Output a JSON machine-interface view of the SBXG library"
     LIB_DIR = """Add a directory to the library search path. When this argument
         is not specified, the lib/ directory of SBXG will be used"""
+    BOARD_DIR = """Add a directory to the boards search path. When this argument
+        is not specified, the boards/ directory of SBXG will be used"""
+    BOARD = "Name of the board configuration file to be processed"
+
 
 def getopts(argv):
     parser = argparse.ArgumentParser(description='SBXG Boostrapper')
@@ -110,8 +133,10 @@ def getopts(argv):
     parser.add_argument("--directory", "-C", metavar='DIR', help=Help.CHDIR)
     parser.add_argument("--color", choices=["yes", "no", "auto"],
                         default="auto", help=Help.COLOR)
-    parser.add_argument('--lib-dir', '-L', nargs='+', metavar="LIB_DIR",
+    parser.add_argument('--lib-dir', '-I', action='append', metavar="LIB_DIR",
                         help=Help.LIB_DIR)
+    parser.add_argument('--board-dir', '-B', action='append', metavar="BOARD_DIR",
+                        help=Help.BOARD_DIR)
 
     show = subparsers.add_parser('show')
     show.add_argument("--mi", action='store_true', help=Help.MI)
@@ -121,20 +146,28 @@ def getopts(argv):
     gen = subparsers.add_parser('generate', aliases=['gen'])
     gen.set_defaults(func=_cmd_gen)
 
-    gen.add_argument('--kernel-source', '-K', metavar='KERNEL_SOURCE',
-                        help=Help.KERNEL_SOURCE)
-    gen.add_argument('--kernel-config', '-k', metavar='KERNEL_CONFIG',
-                        help=Help.KERNEL_CONFIG)
+    gen.add_argument('--linux-source', '-L', metavar='LINUX_SOURCE',
+                     action='append', default=[], help=Help.LINUX_SOURCE)
+    gen.add_argument('--linux-config', '-l', metavar='LINUX_CONFIG',
+                     action='append', default=[], help=Help.LINUX_CONFIG)
     gen.add_argument('--xen-source', '-X', metavar='XEN_SOURCE',
-                        help=Help.XEN_SOURCE)
+                     action='append', default=[], help=Help.XEN_SOURCE)
     gen.add_argument('--xen-config', '-x', metavar='XEN_CONFIG',
-                        help=Help.XEN_CONFIG)
+                     action='append', default=[], help=Help.XEN_CONFIG)
     gen.add_argument('--uboot-source', '-U', metavar='UBOOT_SOURCE',
-                        help=Help.UBOOT_SOURCE)
+                     action='append', default=[], help=Help.UBOOT_SOURCE)
     gen.add_argument('--uboot-config', '-u', metavar='UBOOT_CONFIG',
-                        help=Help.UBOOT_CONFIG)
+                     action='append', default=[], help=Help.UBOOT_CONFIG)
     gen.add_argument('--toolchain',  '-t', metavar='TOOLCHAIN',
-                        default='local', help=Help.TOOLCHAIN)
+                     default='local', help=Help.TOOLCHAIN)
+
+
+    ###########################################################################
+    board = subparsers.add_parser('board')
+    board.set_defaults(func=_cmd_board)
+    board.add_argument('board', metavar='BOARD_CONFIG', help=Help.BOARD)
+
+    ###########################################################################
     args = parser.parse_args(argv[1:])
 
     def _component_args_check(opt_cfg, opt_source):
@@ -145,12 +178,14 @@ def getopts(argv):
         #    1     1      OK
         src = getattr(args, opt_source.replace('-', '_'))
         cfg = getattr(args, opt_cfg.replace('-', '_'))
-        if bool(src) != bool(cfg):
+        #src = [] if src is None else src
+        #cfg = [] if cfg is None else cfg
+        if len(src) != len(cfg):
             raise E.SbxgError(f"Options --{opt_cfg} and "
                               f"--{opt_source} must be used together")
 
     if args.cmd == 'gen':
-        for component in ('kernel', 'uboot', 'xen'):
+        for component in ('linux', 'uboot', 'xen'):
             _component_args_check(f"{component}-source", f"{component}-config")
 
     return args
@@ -158,6 +193,12 @@ def getopts(argv):
 
 def main(argv):
     args = getopts(argv)
+
+    # TODO: color==auto
+    if args.color == "no":
+        for color in ANSI_STYLE:
+            ANSI_STYLE[color] = ''
+
     if args.directory:
         os.chdir(args.directory)
 
@@ -169,6 +210,8 @@ def main(argv):
     # The default lib directory search path is lib/
     if not args.lib_dir:
         args.lib_dir = [top_src_dir / "lib"]
+    if not args.board_dir:
+        args.board_dir = [top_src_dir / "board"]
 
     args.func(args, top_src_dir, top_build_dir)
 

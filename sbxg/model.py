@@ -67,6 +67,77 @@ SOURCE_SCHEMA = {
     },
 }
 
+BOARD_SCHEMA = {
+    'toolchain': {
+        'type': 'string',
+        'required': True,
+        'empty': True,
+    },
+    'linux': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'linux_config': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'uboot': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'uboot_config': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'xen': {
+        'type': 'string',
+        'required': False,
+    },
+    'xen_config': {
+        'type': 'string',
+        'required': True,
+    },
+    'boot_script': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'image': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'linux_dtb': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'linux_image': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'uboot_image': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'root': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+    'rootfs': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
+}
+
 def _load_config_file(config_file, schema):
     """"
     Load a given yaml file from the filesystem and return the deserialized
@@ -86,6 +157,9 @@ def _url_get_basename(url):
     url_path = Path(urlparse(url).path)
     return url_path.name
 
+def _canonicalize(name):
+    return name.replace("-", "_").replace(".", "_")
+
 class Database:
     """
     The Database class holds the SBXG configuration. It is an aggregation of
@@ -97,38 +171,56 @@ class Database:
         self.top_source_dir = top_source_dir
         self.top_build_dir = top_build_dir
         self.toolchain = None
-        self.kernel = None
-        self.uboot = None
-        self.xen = None
+        self.linuxes = []
+        self.uboots = []
+        self.xens = []
+        self.downloads = []
 
     def _set_archive_from_url(self, obj):
         obj["archive"] = _url_get_basename(obj["url"])
 
+    def _add_download(self, name, url, archive):
+        item = {
+            "name": name,
+            "url": url,
+            "archive": archive,
+        }
+        if not item in self.downloads:
+            self.downloads.append(item)
+
     def _load_component(self, config_file, kconfig):
         obj = _load_config_file(config_file, SOURCE_SCHEMA)
         obj["config"] = kconfig
+        obj["name"] = _canonicalize(kconfig.name)
+        obj["download"] = _canonicalize(config_file.with_suffix("").name)
         self._set_archive_from_url(obj)
+        self._add_download(obj["download"], obj["url"], obj["archive"])
         return obj
 
     def set_toolchain(self, config_file):
         self.toolchain = _load_config_file(config_file, TOOLCHAIN_SCHEMA)
         self._set_archive_from_url(self.toolchain)
+        if "url" in self.toolchain:
+            url = self.toolchain["url"]
+            archive = self.toolchain["archive"]
+            self._add_download("toolchain", url, archive)
 
-    def set_kernel(self, config_file, kconfig):
-        self.kernel = self._load_component(config_file, kconfig)
+    def add_linux(self, config_file, kconfig):
+        self.linuxes.append(self._load_component(config_file, kconfig))
 
-    def set_uboot(self, config_file, kconfig):
-        self.uboot = self._load_component(config_file, kconfig)
+    def add_uboot(self, config_file, kconfig):
+        self.uboots.append(self._load_component(config_file, kconfig))
 
-    def set_xen(self, config_file, kconfig):
-        self.xen = self._load_component(config_file, kconfig)
+    def add_xen(self, config_file, kconfig):
+        self.xens.append(self._load_component(config_file, kconfig))
 
     def context(self):
         return {
             "toolchain": self.toolchain,
-            "kernel": self.kernel,
-            "xen": self.xen,
-            "uboot": self.uboot,
+            "downloads": self.downloads,
+            "linuxes": self.linuxes,
+            "xens": self.xens,
+            "uboots": self.uboots,
             "top_build_dir": self.top_build_dir,
             "top_source_dir": self.top_source_dir,
         }
