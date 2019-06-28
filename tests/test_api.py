@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Jean Guyomarc'h
+# Copyright (c) 2019 Jean Guyomarc'h
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,25 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import os
-import pytest
-import subprocess
-import sys
+"""
+This module is in charge of unitarily test the python API exposed by SBXG.
 
-@pytest.mark.parametrize("variant", ["xen", "board"])
-def test_cubietruck(env, variant):
-    """Build the cubietruck board with several variants"""
-    env.bootstrap_board("cubietruck", "armv7-eabihf", variant)
-    env.run_make("-j2")
+"""
 
-@pytest.mark.parametrize("variant", ["vexpress-v7"])
-def test_virtual(env, variant):
-    """Build the virtual board with several variants"""
-    env.bootstrap_board("virtual", "armv7-eabihf", variant)
-    env.run_make()
-
-@pytest.mark.parametrize("variant", ["board"])
-def test_orangepi_zero(env, variant):
-    """Build the orange-pi board with several variants"""
-    env.bootstrap_board("orangepi-zero", "armv7-eabihf", variant)
-    env.run_make("-j2")
