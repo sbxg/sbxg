@@ -42,6 +42,8 @@ use opaque (private) user configurations that can leave outside of SBXG
    sbxg/philosophy
    sbxg/install
    sbxg/how_to_use
+   sbxg/library
+   sbxg/mi
    sbxg/rootfs
 
 .. toctree::

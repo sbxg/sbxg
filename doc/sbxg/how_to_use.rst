@@ -28,15 +28,16 @@ will be applied to any command that follows:
   disable or auto-detect if SBXG's output should contain colors.
 * ``-I`` (or ``--lib-dir``): specify a directory to populate SBXG's components
   library. If no arguments are provided, SBXG's built-in library will be used.
-* ``-B`` (or ``--board-dir``): specify a directory to populate SBXG's boards
-  library. If no arguments are provided, SBXG's built-in library will be used.
+  To understand what the library is, please refer to :doc:`/sbxg/library`.
 
 sbxg show
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 SBXG can display the contents of its library, which has been populated with the
-``-I`` and/or ``-B`` options. This command will display in a human-readable way
-on the standard output:
+``-I`` option. Take a look at :doc:`/sbxg/library` if you are unsure of what the
+library is.
+
+This command will display in a human-readable way on the standard output:
 
 * what are the toolchains that are available;
 * what are the linux, u-boot and xen sources available; and
@@ -44,13 +45,7 @@ on the standard output:
 
 Note that this command accepts the ``--mi`` option (for Machine Interface) that
 displays the same information but serialized in JSON. This may come handy if
-used for scripting.
-
-.. admonition:: JSON MI
-   :class: todo
-
-   Document the associated schema.
-
+used for scripting. Refer to :doc:`/sbxg/mi` for details.
 
 sbxg gen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
