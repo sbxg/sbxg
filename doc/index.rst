@@ -40,6 +40,7 @@ use opaque (private) user configurations that can leave outside of SBXG
    :maxdepth: 2
 
    sbxg/philosophy
+   sbxg/install
    sbxg/how_to_use
    sbxg/rootfs
 

@@ -94,6 +94,8 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 #html_static_path = []
 
+html_logo = "img/sbxg.png"
+html_favicon = "img/favicon.png"
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -127,26 +129,4 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'SBXG.tex', u'SBXG Documentation',
      u'SBXG Team', 'manual'),
-]
-
-
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'sbxg', u'SBXG Documentation',
-     [author], 1)
-]
-
-
-# -- Options for Texinfo output -------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'SBXG', u'SBXG Documentation',
-     author, 'SBXG', 'One line description of project.',
-     'Miscellaneous'),
 ]
