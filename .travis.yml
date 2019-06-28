@@ -1,21 +1,9 @@
-sudo: false
+language: python
+python:
+  - "3.6"
 
-addons:
-  apt:
-    packages:
-      - git
-      - curl
-      - make
-      - build-essential
-      - autoconf
-      - autotools-dev
-      - libconfuse-dev
-      - swig
-      - python-dev
-      - python3-pip
-      - python3-pytest
-      - mtools
-      - genext2fs
+install: 
+  - pip install -r requirements.txt
 
-install: "pip3 install --user -r utils/requirements.txt"
-script: python3 -m pytest -vs --maxfail=1
+script:
+  - pytest
