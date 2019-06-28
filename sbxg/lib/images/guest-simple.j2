@@ -4,6 +4,6 @@ image guest.img {
 
    partition rootfs {
       partition-type = 0x83
-      image = "{{ board.rootfs }}"
+      image = "{{ board.rootfs_path }}"
    }
 }

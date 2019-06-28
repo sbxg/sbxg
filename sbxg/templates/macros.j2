@@ -1,0 +1,164 @@
+{# Copyright (c) 2019 Jean Guyomarc'h
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ # THE SOFTWARE.
+-#}
+
+{#############################################################################
+ # dl_stamp(obj)
+ #
+ # Expands to the make variable that contains the stamp file to be generated
+ # once the component has been downloaded and extracted.
+ #############################################################################}
+{% macro dl_stamp(obj) -%}
+$(toolchain_dl_stamp) $({{ obj.download }}_dl_stamp)
+{%- endmacro %}
+
+
+{#############################################################################
+ # linux_make(linux, target)
+ #
+ # Run 'target' inside linux's build directory, effectively calling make with
+ # the appropriate variables and arguments
+ #############################################################################}
+{% macro linux_make(linux, target) -%}
+$(MAKE){% if toolchain.arch %} ARCH={{ toolchain.arch }} CROSS_COMPILE=$(TOOLCHAIN)
+       {%- endif %} O=$(LINUX_{{ linux.name }}_BUILD_DIR) -C {{ linux.path }} {{ target }}
+{%- endmacro %}
+
+
+{#############################################################################
+ # uboot_make(uboot, target)
+ #
+ # Run 'target' inside uboot's build directory, effectively calling make with
+ # the appropriate variables and arguments.
+ #############################################################################}
+{% macro uboot_make(uboot, target) -%}
+$(MAKE){% if toolchain.arch %} ARCH={{ toolchain.arch }} CROSS_COMPILE=$(TOOLCHAIN)
+       {%- endif %} O=$(UBOOT_{{ uboot.name }}_BUILD_DIR) DTC=$(DTC) -C {{ uboot.path }} {{ target }}
+{%- endmacro %}
+
+
+{#############################################################################
+ # xen_make(xen, target)
+ #
+ # Run 'target' inside xen's build directory, effectively calling make with
+ # the appropriate variables and arguments
+ #############################################################################}
+{% macro xen_make(xen, target) -%}
+$(MAKE) {% if toolchain.arch -%}
+  XEN_TARGET_ARCH={{ toolchain.xen_arch }} CROSS_COMPILE=$(TOOLCHAIN)
+     {%- endif %} -C {{ xen.path }} {{ target }}
+{%- endmacro %}
+
+
+{#############################################################################
+ # gen_targets_for_linux(linux, build_dir)
+ #
+ # Generate the variables and targets required to build a Linux kernel
+ #############################################################################}
+{% macro gen_targets_for_linux(linux, build_dir) %}
+###############################################################################
+# linux Targets: {{ linux.name }}
+###############################################################################
+
+LINUX_{{ linux.name }}_BUILD_DIR := {{ build_dir }}/build_{{ linux.name }}
+LINUX_{{ linux.name }}_CONFIG := $(LINUX_{{ linux.name }}_BUILD_DIR)/.config
+LINUX_{{ linux.name }}_DTC := $(LINUX_{{ linux.name }}_BUILD_DIR)/scripts/dtc/dtc
+
+.PHONY: {{ linux.name }} {{ linux.name }}-%
+
+$(LINUX_{{ linux.name }}_CONFIG): {{ linux.config }} {{ dl_stamp(linux) }}
+	$(Q)mkdir -p $(LINUX_{{ linux.name }}_BUILD_DIR)
+	$(Q)cp -u $< $@
+
+$(LINUX_{{ linux.name }}_DTC): $(LINUX_{{ linux.name }}_CONFIG)
+	+{{ linux_make(linux, 'scripts/dtc/') }}
+
+{{ linux.name }}-%: $(LINUX_{{ linux.name }}_CONFIG)
+	+{{ linux_make(linux, '$(patsubst ' ~ linux.name ~ '-%,%,$@)') }}
+
+{{ linux.name }}: $(LINUX_{{ linux.name }}_CONFIG) $(LINUX_{{ linux.name }}_DTC)
+	+{{ linux_make(linux, 'all') }}
+{% endmacro %}
+
+
+{#############################################################################
+ # gen_targets_for_uboot(uboot, build_dir)
+ #
+ # Generate the variables and targets required to build a U-Boot.
+ #############################################################################}
+{% macro gen_targets_for_uboot(uboot, build_dir) %}
+###############################################################################
+# U-Boot Targets: {{ uboot.name }}
+###############################################################################
+
+UBOOT_{{ uboot.name }}_BUILD_DIR := {{ build_dir }}/build_{{ uboot.name }}
+UBOOT_{{ uboot.name }}_CONFIG := $(UBOOT_{{ uboot.name }}_BUILD_DIR)/.config
+UBOOT_{{ uboot.name }}_MKIMAGE := $(UBOOT_{{ uboot.name }}_BUILD_DIR)/tools/mkimage
+
+.PHONY: {{ uboot.name }} {{ uboot.name }}-%
+
+$(UBOOT_{{ uboot.name }}_CONFIG): {{ uboot.config }} {{ dl_stamp(uboot) }} $(DTC)
+	$(Q)mkdir -p $(UBOOT_{{ uboot.name }}_BUILD_DIR)
+	$(Q)cp -u $< $@
+
+$(UBOOT_{{ uboot.name }}_MKIMAGE): $(UBOOT_{{ uboot.name }}_CONFIG)
+	+{{ uboot_make(uboot, 'tools') }}
+
+{{ uboot.name }}-%: $(UBOOT_{{ uboot.name }}_CONFIG)
+	+{{ uboot_make(uboot, '$(patsubst ' ~ uboot.name ~ '-%,%,$@)') }}
+
+{{ uboot.name }}: $(UBOOT_{{ uboot.name }}_CONFIG) {{ dl_stamp(uboot) }}
+	+{{ uboot_make(uboot, 'all') }}
+{% endmacro %}
+
+
+{#############################################################################
+ # gen_targets_for_xen(xen, build_dir)
+ #
+ # Generate the variables and targets required to build a Xen
+ #############################################################################}
+{% macro gen_targets_for_xen(xen, build_dir) %}
+###############################################################################
+# Xen Targets: {{ xen.name }}
+###############################################################################
+
+XEN_{{ xen.name }}_BUILD_DIR := {{ build_dir }}/build_{{ xen.name }}
+XEN_{{ xen.name }}_CONFIG := $(XEN_{{ xen.name }}_BUILD_DIR)/.config
+
+.PHONY: {{ xen.name }} {{ xen.name }}-%
+
+$(XEN_{{ xen.name }}_CONFIG): {{ xen.config }} {{ dl_stamp(xen) }}
+	$(Q)cp -r {{ build_dir }}/{{ xen.path }} $(XEN_{{ xen.name }}_BUILD_DIR)
+{%- if toolchain.arch %}
+	PATH="{{ build_dir }}/{{ toolchain.path }}/{{ toolchain.prefix | dirname }}:$$PATH" \
+{%- endif %}
+	cd "$(XEN_{{ xen.name }}_BUILD_DIR)" && ./configure \
+{%- if toolchain.arch %}
+		--host="{{ toolchain.host }}" \
+{%- endif %}
+		--disable-docs --disable-tools --enable-xen
+	$(Q)cp -u $< $@
+
+{{ xen.name }}-%: $(XEN_{{ xen.name }}_CONFIG) {{ dl_stamp(xen) }}
+	+{{ xen_make(xen, '$(patsubst ' ~ xen.name ~ '-%,%,$@)') }}
+
+{{ xen.name }}: $(XEN_{{ xen.name }}_CONFIG) {{ dl_stamp(xen) }}
+	+{{ xen_make(xen, '') }}
+{% endmacro %}

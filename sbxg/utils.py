@@ -21,7 +21,12 @@
 import subprocess
 from pathlib import Path
 
-from . import error as E
+class SbxgError(Exception):
+    """
+    Super class, used by exception handlers to filter-out SBXG-related
+    exceptions.
+    """
+    pass
 
 
 # This is derivated from https://stackoverflow.com/a/287944
@@ -39,26 +44,24 @@ ANSI_STYLE = {
     'underline': '\033[4m',
 }
 
-def get_board_config(search_dirs, board, filename):
-    cfg_filename = filename + '.yml'
-    for search_dir in search_dirs:
-        config_file = search_dir / cfg_filename
-        if config_file.is_file():
-            return config_file
-    raise E.SbxgError(f"Failed to find file {cfg_filename} in library")
-
 def _get_lib_config(lib_dirs, config_file):
     for lib_dir in lib_dirs:
         config = lib_dir / config_file
         if config.is_file():
             return config
-    raise E.SbxgError(f"Failed to find file {config_file} in library")
+    raise SbxgError(f"Failed to find file {config_file} in library")
+
+def get_board_config(lib_dirs, filename):
+    return _get_lib_config(lib_dirs, Path("boards", filename + '.yml'))
 
 def get_toolchain(lib_dirs, toolchain):
     return _get_lib_config(lib_dirs, Path("toolchains", toolchain + '.yml'))
 
 def get_linux_source(lib_dirs, linux):
     return _get_lib_config(lib_dirs, Path("sources", "linux", linux + '.yml'))
+
+def get_genimage_source(lib_dirs, genimage):
+    return _get_lib_config(lib_dirs, Path("sources", "genimage", genimage + '.yml'))
 
 def get_linux_config(lib_dirs, linux):
     return _get_lib_config(lib_dirs, Path("configs", "linux", linux))

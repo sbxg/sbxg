@@ -1,0 +1,14 @@
+toolchain: armv7-eabihf
+genimage: genimage-v11
+linux: linux-4.12.0
+linux_config: linux-4.12-sunxi
+linux_dtb: sun7i-a20-cubietruck.dtb
+linux_image: zImage
+uboot: uboot-2017.07
+uboot_config: uboot-2017.07-minimal
+uboot_image: u-boot-sunxi-with-spl.bin
+
+boot_script: boot-sunxi-default.j2
+disk_image: sdcard-simple.j2
+root: /dev/mmcblk0p2
+rootfs: file:///home/jean/src/sbxg/rootfs.ext3

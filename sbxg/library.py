@@ -35,7 +35,8 @@ def _walk_yaml_files(lib_dirs, directory):
 
 def get(lib_dirs):
     """
-    Display the content of the SBXG library.
+    Collect the contents of the SBXG library and store them in a well-defined
+    data structure.
 
     Args:
         lib_dirs (list): List of directories that consistute the SBXG library
@@ -43,6 +44,9 @@ def get(lib_dirs):
     sources = []
     toolchains = []
     configurations = []
+    boards = []
+    images = []
+    bootscripts = []
 
     # Search the sources (files that describe how to get components)
     for item, item_dir, item_path in _walk_yaml_files(lib_dirs, "sources"):
@@ -67,8 +71,32 @@ def get(lib_dirs):
             "path": item_path,
         })
 
+    # Search the boards
+    for item, _, item_path in _walk_yaml_files(lib_dirs, "boards"):
+        boards.append({
+            "name": item,
+            "path": item_path,
+        })
+
+    # Search the bootscripts
+    for item, _, item_path in _walk_files(lib_dirs, "bootscripts"):
+        bootscripts.append({
+            "name": item,
+            "path": item_path,
+        })
+
+    # Search the images
+    for item, _, item_path in _walk_files(lib_dirs, "images"):
+        images.append({
+            "name": item,
+            "path": item_path,
+        })
+
     return {
         "sources": sources,
         "toolchains": toolchains,
         "configurations": configurations,
+        "boards": boards,
+        "bootscripts": bootscripts,
+        "images": images,
     }

@@ -23,8 +23,8 @@ from urllib.parse import urlparse
 import yaml
 import cerberus
 
-from . import error as E
-from . import utils
+import sbxg
+from sbxg.utils import SbxgError
 
 TOOLCHAIN_SCHEMA = {
     'url': {
@@ -68,6 +68,11 @@ SOURCE_SCHEMA = {
 }
 
 BOARD_SCHEMA = {
+    'genimage': {
+        'type': 'string',
+        'required': True,
+        'empty': False,
+    },
     'toolchain': {
         'type': 'string',
         'required': True,
@@ -99,14 +104,14 @@ BOARD_SCHEMA = {
     },
     'xen_config': {
         'type': 'string',
-        'required': True,
+        'required': False,
     },
     'boot_script': {
         'type': 'string',
         'required': True,
         'empty': False,
     },
-    'image': {
+    'disk_image': {
         'type': 'string',
         'required': True,
         'empty': False,
@@ -136,6 +141,10 @@ BOARD_SCHEMA = {
         'required': True,
         'empty': False,
     },
+    'linux_bootargs': {
+        'type': 'string',
+        'required': False,
+    },
 }
 
 def _load_config_file(config_file, schema):
@@ -149,7 +158,8 @@ def _load_config_file(config_file, schema):
 
     validator = cerberus.Validator(schema)
     if not validator.validate(data):
-        raise E.SbxgError(f"Failed to parse configuration file '{config_file}': {validator.errors}")
+        raise SbxgError(f"Failed to parse configuration file "
+                        f"'{config_file}': {validator.errors}")
     return validator.normalized(data)
 
 
@@ -157,12 +167,23 @@ def _url_get_basename(url):
     url_path = Path(urlparse(url).path)
     return url_path.name
 
+def _get_rootfs(url):
+    """The rootfs may be specified as a URL or as a path. If it is a path (no
+    URL scheme) or if the URL happens to be a local file, then we consider we
+    have nothing to download, so we return None as the URL.
+
+    Returns: a tuple (url, path)
+    """
+    parsed_url = urlparse(url)
+    path = Path(parsed_url.path)
+    return url, path.name
+
 def _canonicalize(name):
     return name.replace("-", "_").replace(".", "_")
 
-class Database:
+class Model:
     """
-    The Database class holds the SBXG configuration. It is an aggregation of
+    The Model class holds the SBXG configuration. It is an aggregation of
     data models and can be accessed in the same fashion than a dictionary.
     This allows this class to be passed directly to the jinja templating engine
     flawlessly.
@@ -170,10 +191,12 @@ class Database:
     def __init__(self, top_build_dir):
         self.top_build_dir = top_build_dir
         self.toolchain = None
+        self.genimage = None
         self.linuxes = []
         self.uboots = []
         self.xens = []
         self.downloads = []
+        self.board_info = dict()
 
     def _set_archive_from_url(self, obj):
         obj["archive"] = _url_get_basename(obj["url"])
@@ -197,12 +220,27 @@ class Database:
         return obj
 
     def set_toolchain(self, config_file):
+        """Affect to the current model the toolchain to be used, from a given
+        input configuration file
+
+        Args:
+            config_file (Path): path to a toolchain configuration file that
+                describes the characteristics of the toolchain, and how it
+                should be downloaded, if necessary
+        """
         self.toolchain = _load_config_file(config_file, TOOLCHAIN_SCHEMA)
         self._set_archive_from_url(self.toolchain)
         if "url" in self.toolchain:
             url = self.toolchain["url"]
             archive = self.toolchain["archive"]
             self._add_download("toolchain", url, archive)
+
+    def set_genimage(self, config_file):
+        self.genimage = _load_config_file(config_file, SOURCE_SCHEMA)
+        self._set_archive_from_url(self.genimage)
+        url = self.genimage["url"]
+        archive = self.genimage["archive"]
+        self._add_download("genimage", url, archive)
 
     def add_linux(self, config_file, kconfig):
         self.linuxes.append(self._load_component(config_file, kconfig))
@@ -213,6 +251,50 @@ class Database:
     def add_xen(self, config_file, kconfig):
         self.xens.append(self._load_component(config_file, kconfig))
 
+    def set_board(self, lib_dirs, config_file):
+        """
+        From the input configuration file and the SBXG library, set the model's
+        fields so each component involved with the board is setup.
+
+        Args:
+            lib_dirs (list): List of directories that constitute the SBXG
+                library
+            config_file (Path): path to the configuration file that descrives
+                the board to be generated
+        """
+        # First, deserialize the board configuration from the Yaml file
+        board = _load_config_file(config_file, BOARD_SCHEMA)
+
+        # If the file describes a toolchain, set the model's toolchain
+        if "toolchain" in board:
+            toolchain = sbxg.utils.get_toolchain(lib_dirs, board["toolchain"])
+            self.set_toolchain(toolchain)
+
+        genimage = sbxg.utils.get_genimage_source(lib_dirs, board["genimage"])
+        self.set_genimage(genimage)
+
+        # A board always comes with a Linux. Register it.
+        linux_src = sbxg.utils.get_linux_source(lib_dirs, board["linux"])
+        linux_cfg = sbxg.utils.get_linux_config(lib_dirs, board["linux_config"])
+        self.add_linux(linux_src, linux_cfg)
+
+        # A board always comes with a U-Boot. Register it.
+        uboot_src = sbxg.utils.get_uboot_source(lib_dirs, board["uboot"])
+        uboot_cfg = sbxg.utils.get_uboot_config(lib_dirs, board["uboot_config"])
+        self.add_uboot(uboot_src, uboot_cfg)
+
+        rootfs_url, rootfs_path = _get_rootfs(board["rootfs"])
+
+        self.board_info["linux_dtb"] = board["linux_dtb"]
+        self.board_info["linux_image"] = board["linux_image"]
+        self.board_info["uboot_image"] = board["uboot_image"]
+        self.board_info["boot_script"] = board["boot_script"]
+        self.board_info["disk_image"] = board["disk_image"]
+        self.board_info["root"] = board["root"]
+        self.board_info["rootfs_url"] = rootfs_url
+        self.board_info["rootfs_path"] = rootfs_path
+        self.board_info["linux_bootargs"] = board.get("linux_bootargs", '')
+
     def context(self):
         return {
             "toolchain": self.toolchain,
@@ -221,4 +303,6 @@ class Database:
             "xens": self.xens,
             "uboots": self.uboots,
             "top_build_dir": self.top_build_dir,
+            "genimage": self.genimage,
+            "board": self.board_info,
         }
