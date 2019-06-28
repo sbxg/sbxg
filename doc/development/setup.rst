@@ -61,6 +61,6 @@ virtualenv! Not the ones of your system.
 If you just created your virtualenv, you must install the appropriate python
 dependencies::
 
-  pip install -r utils/requirements.txt
+  pip install -r requirements.txt
 
 And you are good to go!

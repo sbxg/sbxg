@@ -36,7 +36,7 @@ use opaque (private) user configurations that can leave outside of SBXG
    redacted, and some key features are being developed.
 
 .. toctree::
-   :caption: SBXG
+   :caption: SBXG Reference Manual
    :maxdepth: 2
 
    sbxg/philosophy
@@ -53,10 +53,11 @@ use opaque (private) user configurations that can leave outside of SBXG
    tutorials/use_builtin
 
 .. toctree::
-   :caption: Development
+   :caption: Developping SBXG
    :maxdepth: 2
 
    development/setup
+   development/coding_practices
 
 
 .. _U-Boot: https://www.denx.de/wiki/U-Boot
