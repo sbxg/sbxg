@@ -18,6 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""
+In SBXG, a **library** is a finite set of *directories* that shall conform to
+a given file hierarchy, as defined in the SBXG documentation.
+
+This module defines the get() method, that retrieves all the revelant files
+from the library and provide these data as a well-defined data structure.
+"""
+
 import os
 from pathlib import Path
 

@@ -20,10 +20,9 @@
 
 import argparse
 import json
-import os
-from pkg_resources import resource_filename
 import sys
 from pathlib import Path
+from pkg_resources import resource_filename
 
 import sbxg
 from sbxg.utils import ANSI_STYLE
@@ -169,7 +168,7 @@ def getopts(argv):
                      action='append', default=[], help=Help.UBOOT_SOURCE)
     gen.add_argument('--uboot-config', '-u', metavar='UBOOT_CONFIG',
                      action='append', default=[], help=Help.UBOOT_CONFIG)
-    gen.add_argument('--toolchain',  '-t', metavar='TOOLCHAIN',
+    gen.add_argument('--toolchain', '-t', metavar='TOOLCHAIN',
                      default='local', help=Help.TOOLCHAIN)
     gen.add_argument('outdir', metavar='OUTPUT_DIRECTORY',
                      type=Path, help=Help.OUTDIR)
@@ -206,8 +205,8 @@ def getopts(argv):
     return args
 
 
-def main(argv=sys.argv):
-    args = getopts(argv)
+def main(argv=None):
+    args = getopts(sys.argv if argv is None else argv)
 
     # TODO: color==auto
     if args.color == "no":

@@ -18,10 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import jinja2
 import os
+import jinja2
 
-class Templater(object):
+class Templater:
     def __init__(self, database, search_paths):
         self.database = database
         self.j2_env = jinja2.Environment(

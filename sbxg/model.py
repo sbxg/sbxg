@@ -181,6 +181,10 @@ def _get_rootfs(url):
 def _canonicalize(name):
     return name.replace("-", "_").replace(".", "_")
 
+def _set_archive_from_url(obj):
+    obj["archive"] = _url_get_basename(obj["url"])
+
+
 class Model:
     """
     The Model class holds the SBXG configuration. It is an aggregation of
@@ -198,16 +202,13 @@ class Model:
         self.downloads = []
         self.board_info = dict()
 
-    def _set_archive_from_url(self, obj):
-        obj["archive"] = _url_get_basename(obj["url"])
-
     def _add_download(self, name, url, archive):
         item = {
             "name": name,
             "url": url,
             "archive": archive,
         }
-        if not item in self.downloads:
+        if item not in self.downloads:
             self.downloads.append(item)
 
     def _load_component(self, config_file, kconfig):
@@ -215,7 +216,7 @@ class Model:
         obj["config"] = kconfig
         obj["name"] = _canonicalize(kconfig.name)
         obj["download"] = _canonicalize(config_file.with_suffix("").name)
-        self._set_archive_from_url(obj)
+        _set_archive_from_url(obj)
         self._add_download(obj["download"], obj["url"], obj["archive"])
         return obj
 
@@ -229,7 +230,7 @@ class Model:
                 should be downloaded, if necessary
         """
         self.toolchain = _load_config_file(config_file, TOOLCHAIN_SCHEMA)
-        self._set_archive_from_url(self.toolchain)
+        _set_archive_from_url(self.toolchain)
         if "url" in self.toolchain:
             url = self.toolchain["url"]
             archive = self.toolchain["archive"]
@@ -237,7 +238,7 @@ class Model:
 
     def set_genimage(self, config_file):
         self.genimage = _load_config_file(config_file, SOURCE_SCHEMA)
-        self._set_archive_from_url(self.genimage)
+        _set_archive_from_url(self.genimage)
         url = self.genimage["url"]
         archive = self.genimage["archive"]
         self._add_download("genimage", url, archive)

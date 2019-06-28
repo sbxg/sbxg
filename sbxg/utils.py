@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import subprocess
 from pathlib import Path
 
 class SbxgError(Exception):
@@ -26,8 +25,6 @@ class SbxgError(Exception):
     Super class, used by exception handlers to filter-out SBXG-related
     exceptions.
     """
-    pass
-
 
 # This is derivated from https://stackoverflow.com/a/287944
 # I don't want to use a module just for color, as this is an extra dependency
