@@ -13,23 +13,31 @@ and something like this will appear::
   List of toolchains:
     - local
     - armv7-eabihf
+
   List of sources:
     - linux: linux-4.14.35
-    - linux: linux-4.14.8
-    - linux: linux-4.14.6
-    - linux: linux-4.14.17
     - linux: linux-4.12.0
     - uboot: uboot-2017.07
-    - xen: xen-4.8.2
     - xen: xen-4.8.3
+    - genimage: genimage-v11
+
   List of configurations:
     - linux: linux-4.12-sunxi
-    - linux: linux-4.12-sunxi-xen-dom0
     - linux: linux-4.14-sunxi-xen-dom0
-    - linux: linux-4.12-xen-domu
     - linux: linux-4.14-xen-domu
     - uboot: uboot-2017.07-minimal
     - xen: xen-4.8-sunxi
+
+  List of bootscripts:
+   - boot-sunxi-default.j2
+   - boot-sunxi-xen.j2
+
+  List of images:
+   - sdcard-simple.j2
+   - guest-simple.j2
+
+  List of boards:
+   - cubietruck-standalone
 
 Now, imagine that you want to build a Linux kernel for a `sunxi
 <https://linux-sunxi.org/Main_Page>` board from your x86 PC. You can see that

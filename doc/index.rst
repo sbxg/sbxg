@@ -43,6 +43,7 @@ use opaque (private) user configurations that can leave outside of SBXG
    sbxg/install
    sbxg/how_to_use
    sbxg/library
+   sbxg/templating
    sbxg/mi
    sbxg/rootfs
 

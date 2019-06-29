@@ -1,4 +1,6 @@
 jinja2
+pytest
+pylint
 pyyaml
 cerberus
 sphinx
